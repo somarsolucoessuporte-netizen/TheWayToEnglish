@@ -1,0 +1,123 @@
+<!doctype html>
+<html lang="pt-br">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Consultor IA Techmassa</title>
+  <link rel="stylesheet" href="./css/styles.css" />
+</head>
+
+<body>
+
+<header class="topbar">
+  <div class="brand">
+    <div class="dot"></div>
+    <img class="brand-logo" src="./assets/logo/logo_techmassa.png" alt="Techmassa" />
+    <div class="brand-text">
+      <div class="title">Consultor IA Techmassa</div>
+      <div class="subtitle">Suporte técnico inteligente</div>
+    </div>
+  </div>
+
+  <div class="status">
+    <span class="pill" id="connPill">Conexão: aguardando…</span>
+    <span class="pill pill-soft" id="statePill">Estado: idle</span>
+  </div>
+</header>
+
+<main class="main">
+
+  <!-- STAGE -->
+  <section class="stage">
+
+    <!-- INTRO -->
+    <div class="intro" id="intro">
+      <video id="introVideo" class="intro-video" playsinline preload="auto">
+        <source src="./assets/video/abertura.mp4" type="video/mp4" />
+      </video>
+
+      <div class="intro-overlay" id="introOverlay">
+        <div class="intro-card">
+          <div class="intro-title">Bem-vindo ao Consultor IA Techmassa</div>
+          <div class="intro-text">
+            Tire dúvidas técnicas sobre argamassas e aplicações.<br>
+            Clique em <b>Iniciar</b> para liberar áudio.
+          </div>
+          <button class="btn btn-primary" id="btnStart" type="button">Iniciar</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- AVATAR -->
+    <div class="avatar-wrap hidden" id="avatarWrap">
+      <div class="avatar-frame">
+
+        <!-- IDLE -->
+        <img
+          id="avatarImg"
+          class="avatar-img"
+          src="./assets/animacao/techmassa_pose_neutral.png"
+          draggable="false"
+          alt="Consultor Techmassa"
+        />
+
+        <!-- TALK LOOP -->
+        <video
+          id="talkVideo"
+          class="avatar-talk hidden"
+          src="./assets/animacao/talk.mp4"
+          muted
+          loop
+          playsinline
+          preload="auto">
+        </video>
+
+        <!-- UI -->
+        <div class="avatar-ui">
+          <div class="avatar-state" id="avatarStateLabel">Pronto</div>
+
+          <div class="avatar-actions">
+            <button class="btn btn-ghost" id="btnMic" type="button">🎙️ Falar</button>
+            <button class="btn btn-ghost" id="btnStopSpeak" type="button">🔈 Parar voz</button>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+  </section>
+
+  <!-- CHAT -->
+  <section class="chat">
+    <div class="chat-header">
+      <div class="chat-title">Conversa</div>
+      <div class="chat-subtitle">Fale ou digite sua dúvida técnica.</div>
+    </div>
+
+    <div class="chat-log" id="chatLog"></div>
+
+    <form class="chat-form" id="chatForm">
+      <input
+        id="chatInput"
+        class="chat-input"
+        placeholder="Ex: Qual argamassa usar?"
+        autocomplete="off"
+      />
+      <button class="btn btn-primary" type="submit">Enviar</button>
+    </form>
+
+    <footer class="footer">
+      Desenvolvido pela Somar.IA — Automações inteligentes.
+    </footer>
+  </section>
+
+</main>
+
+<!-- AUDIO FUNDO (elemento no DOM ajuda iOS) -->
+<audio id="bgAudio" src="./assets/som/audio_fundo.mp3" preload="auto" loop></audio>
+
+<!-- ✅ Anti-cache no iPhone: troque a versão quando atualizar -->
+<script src="./js/app.js?v=12"></script>
+</body>
+</html>
+

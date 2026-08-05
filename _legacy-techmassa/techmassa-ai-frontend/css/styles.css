@@ -1,0 +1,397 @@
+:root{
+  --bg: #0b0d12;
+  --panel: rgba(15, 18, 26, .72);
+  --stroke: rgba(255,255,255,.08);
+  --text: #e8ecf3;
+  --muted: rgba(232,236,243,.72);
+  --accent: #ff7a00;
+  --good: #31d158;
+
+  /* AJUSTE FINO DA BOCA (percentual do frame do avatar) */
+  --mouth-x: 50%;
+  --mouth-y: 56.5%;
+  --mouth-w: 22%;
+}
+
+*{ box-sizing: border-box; }
+html,body{ height:100%; }
+
+body{
+  margin:0;
+  font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial;
+  color: var(--text);
+  background: #000; /* ou var(--bg) */
+}
+
+.topbar{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  padding:14px 16px;
+  border-bottom: 1px solid var(--stroke);
+  background: rgba(0,0,0,.25);
+  backdrop-filter: blur(10px);
+}
+
+.brand{ display:flex; gap:10px; align-items:center; }
+.dot{
+  width:10px; height:10px; border-radius:50%;
+  background: var(--accent);
+  box-shadow: 0 0 18px rgba(255,122,0,.55);
+}
+
+.brand-logo{
+  height: 30px;
+  width: auto;
+  display:block;
+  object-fit: contain;
+  filter: drop-shadow(0 2px 10px rgba(0,0,0,.35));
+}
+
+.brand-text .title{ font-weight:800; letter-spacing:.2px; }
+.brand-text .subtitle{ font-size:12px; color: var(--muted); margin-top:2px; }
+
+.status{ display:flex; gap:10px; align-items:center; }
+.pill{
+  font-size:12px;
+  padding:8px 10px;
+  border-radius: 999px;
+  border:1px solid var(--stroke);
+  background: rgba(10,12,16,.55);
+}
+.pill-soft{ opacity:.85; }
+
+.main{
+  display:grid;
+  grid-template-columns: 1.15fr .85fr;
+  gap:16px;
+  padding:16px;
+  height: calc(100% - 58px);
+}
+
+.stage, .chat{
+  border: 1px solid var(--stroke);
+  border-radius: 18px;
+  background: var(--panel);
+  backdrop-filter: blur(12px);
+  overflow:hidden;
+  min-height: 520px;
+}
+
+.stage{ position:relative; }
+.intro{ position:relative; width:100%; height:100%; display:block; }
+.intro-video{
+  width:100%;
+  height:100%;
+  object-fit: cover;
+  display:block;
+  background: #000;
+}
+
+/* overlay ocupa tudo e mostra card */
+.intro-overlay{
+  position:absolute;
+  inset: 0;
+  display:flex;
+  align-items:flex-end;
+  justify-content:flex-start;
+  padding:18px;
+}
+
+.intro-card{
+  width: min(520px, 92vw);
+  border-radius: 16px;
+  padding: 14px 14px 12px;
+  background: rgba(0,0,0,.45);
+  border:1px solid rgba(255,255,255,.10);
+  backdrop-filter: blur(10px);
+}
+
+.intro-title{
+  font-weight: 900;
+  letter-spacing: .2px;
+  margin-bottom: 6px;
+}
+
+.intro-text{
+  font-size: 13px;
+  color: rgba(255,255,255,.80);
+  line-height: 1.35;
+  margin-bottom: 10px;
+}
+
+.hint{
+  margin-top: 8px;
+  font-size:12px;
+  color: rgba(255,255,255,.72);
+}
+
+.avatar-wrap{ width:100%; height:100%; padding:14px; }
+
+.avatar-frame{
+  position:relative;
+  width:100%;
+  height:100%;
+  border-radius:16px;
+  overflow:hidden;
+  border:1px solid rgba(255,255,255,.08);
+  background: rgba(0,0,0,.2);
+}
+
+.avatar-img{
+  width:100%;
+  height:100%;
+  object-fit: cover;
+  display:block;
+  backface-visibility: hidden;
+  transform: translateZ(0);
+  image-rendering: auto;
+}
+
+/* BOCA recortada sobreposta (sem trocar imagem do avatar) */
+.avatar-mouth{
+  position:absolute;
+  left: var(--mouth-x);
+  top: var(--mouth-y);
+  transform: translate(-50%, -50%);
+  width: var(--mouth-w);
+  height: auto;
+  z-index: 2;
+  pointer-events:none;
+  user-select:none;
+
+  /* suaviza “serrilhado” e evita flicker */
+  backface-visibility: hidden;
+  transform-style: preserve-3d;
+  will-change: opacity, transform;
+  filter: drop-shadow(0 1px 2px rgba(0,0,0,.25));
+}
+
+.avatar-ui{
+  position:absolute;
+  left:12px;
+  bottom:12px;
+  right:12px;
+  display:flex;
+  flex-direction:column;
+  gap:10px;
+  padding:12px;
+  border-radius: 16px;
+  background: rgba(0,0,0,.35);
+  border:1px solid rgba(255,255,255,.08);
+  backdrop-filter: blur(8px);
+  z-index: 3;
+}
+
+.avatar-state{
+  font-size:12px;
+  color: rgba(255,255,255,.78);
+}
+
+.avatar-actions{
+  display:flex;
+  gap:10px;
+  flex-wrap:wrap;
+}
+
+.chat{ display:flex; flex-direction:column; }
+.chat-header{
+  padding:14px 14px 10px;
+  border-bottom:1px solid var(--stroke);
+  background: rgba(0,0,0,.18);
+}
+.chat-title{ font-weight:800; }
+.chat-subtitle{ margin-top:4px; font-size:12px; color: var(--muted); }
+
+.chat-log{
+  padding:14px;
+  overflow:auto;
+  flex:1;
+}
+
+.msg{
+  border:1px solid var(--stroke);
+  background: rgba(0,0,0,.22);
+  padding:12px 12px;
+  border-radius:14px;
+  margin-bottom:10px;
+  white-space: pre-wrap;
+  line-height:1.35;
+}
+.msg.user{ border-color: rgba(255,122,0,.28); }
+.msg.bot{ border-color: rgba(80,140,255,.22); }
+.msg.sys{ border-color: rgba(255,255,255,.10); color: rgba(255,255,255,.85); }
+
+.chat-form{
+  display:flex;
+  gap:10px;
+  padding:14px;
+  border-top:1px solid var(--stroke);
+}
+.chat-input{
+  flex:1;
+  border-radius: 14px;
+  border:1px solid rgba(255,255,255,.10);
+  background: rgba(0,0,0,.25);
+  color: var(--text);
+  padding:12px 12px;
+  outline:none;
+}
+.chat-input:focus{ border-color: rgba(255,122,0,.35); }
+
+.footer{
+  padding:10px 14px 14px;
+  color: rgba(255,255,255,.55);
+  font-size:12px;
+}
+
+.btn{
+  border:1px solid rgba(255,255,255,.10);
+  background: rgba(255,255,255,.06);
+  color: var(--text);
+  padding:10px 12px;
+  border-radius: 14px;
+  cursor:pointer;
+  font-weight:700;
+}
+.btn:hover{ background: rgba(255,255,255,.08); }
+
+.btn-primary{
+  background: var(--accent);
+  border-color: rgba(255,122,0,.35);
+  color: #0b0b0b;
+}
+.btn-primary:hover{ filter: brightness(1.02); }
+
+.btn-ghost{
+  background: rgba(255,255,255,.06);
+  border-color: rgba(255,255,255,.10);
+}
+
+.btn-mic-on{
+  border-color: rgba(46,204,113,.55) !important;
+  box-shadow: 0 0 0 3px rgba(46,204,113,.12);
+}
+
+.hidden{ display:none !important; }
+
+/* MIC INDICATOR */
+.mic-indicator{
+  display:none;
+  gap:6px;
+  align-items:center;
+}
+.mic-indicator.on{ display:flex; }
+.mic-indicator span{
+  width:8px; height:8px; border-radius:50%;
+  background: rgba(255,255,255,.65);
+  opacity:.35;
+  animation: micPulse 1s infinite ease-in-out;
+}
+.mic-indicator span:nth-child(2){ animation-delay: .15s; }
+.mic-indicator span:nth-child(3){ animation-delay: .30s; }
+
+@keyframes micPulse{
+  0%,100%{ transform: translateY(0); opacity:.35; }
+  50%{ transform: translateY(-4px); opacity:.85; }
+}
+
+/* RESPONSIVO */
+@media (max-width: 980px){
+  .main{ grid-template-columns: 1fr; height:auto; }
+  .stage, .chat{ min-height: 420px; }
+}
+
+.avatar-talk{
+  position:absolute;
+  inset:0;
+  width:100%;
+  height:100%;
+  object-fit:cover;
+  z-index:2;
+}
+
+/* ================================
+   EFEITO VISUAL – BOTÃO OUVINDO
+   baseado no estado do avatar
+   (sem mexer em JS)
+================================ */
+
+/* Quando o texto do estado contém "Ouvindo" */
+.avatar-ui:has(#avatarStateLabel:not(:empty)) #btnMic {
+  position: relative;
+  overflow: hidden;
+}
+
+/* Glow verde quando está ouvindo */
+.avatar-ui:has(#avatarStateLabel:not(:empty):not(:contains("Pronto"))) #btnMic {
+  border-color: rgba(46,204,113,.65);
+  box-shadow:
+    0 0 0 3px rgba(46,204,113,.14),
+    0 0 18px rgba(46,204,113,.22);
+}
+
+/* Anel pulsante */
+.avatar-ui:has(#avatarStateLabel:not(:empty):not(:contains("Pronto"))) #btnMic::after {
+  content:"";
+  position:absolute;
+  inset:-6px;
+  border-radius:999px;
+  border:2px solid rgba(46,204,113,.35);
+  animation: micRing 1.25s ease-in-out infinite;
+  pointer-events:none;
+}
+
+/* Ondinhas dentro do botão */
+.avatar-ui:has(#avatarStateLabel:not(:empty):not(:contains("Pronto"))) #btnMic::before {
+  content:"";
+  position:absolute;
+  right:12px;
+  top:50%;
+  transform:translateY(-50%);
+  width:26px;
+  height:14px;
+  pointer-events:none;
+
+  background:
+    linear-gradient(#31d158,#31d158) 0% 50% / 3px 30% no-repeat,
+    linear-gradient(#31d158,#31d158) 25% 50% / 3px 60% no-repeat,
+    linear-gradient(#31d158,#31d158) 50% 50% / 3px 85% no-repeat,
+    linear-gradient(#31d158,#31d158) 75% 50% / 3px 55% no-repeat,
+    linear-gradient(#31d158,#31d158) 100% 50% / 3px 35% no-repeat;
+
+  animation: micBars .65s ease-in-out infinite;
+  filter: drop-shadow(0 0 6px rgba(49,209,88,.25));
+}
+
+/* animações */
+@keyframes micRing{
+  0%{transform:scale(.98);opacity:.25}
+  50%{transform:scale(1.03);opacity:.55}
+  100%{transform:scale(.98);opacity:.25}
+}
+@keyframes micBars{
+  0%,100%{
+    background-size:3px 30%,3px 60%,3px 85%,3px 55%,3px 35%;
+  }
+  50%{
+    background-size:3px 70%,3px 35%,3px 55%,3px 85%,3px 45%;
+  }
+}
+
+/* Desktop: mostrar mais do personagem */
+@media (min-width: 1100px) {
+  .avatar-img,
+  .avatar-talk {
+    object-fit: contain;
+    background: #000;
+  }
+}
+
+/* Mobile continua igual (cover) */
+@media (max-width: 1099px) {
+  .avatar-img,
+  .avatar-talk {
+    object-fit: cover;
+  }
+}
