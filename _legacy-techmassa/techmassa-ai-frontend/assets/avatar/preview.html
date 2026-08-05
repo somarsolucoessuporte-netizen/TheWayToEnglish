@@ -1,0 +1,84 @@
+<!doctype html>
+<html lang="pt-br">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Avatar sprites — preview</title>
+<style>
+  :root {
+    --bg: #0b0d12;
+    --panel: rgba(20, 24, 32, .8);
+    --stroke: rgba(255,255,255,.10);
+    --text: #e8ecf3;
+    --muted: rgba(232,236,243,.6);
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; background: var(--bg); }
+  body {
+    font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial;
+    color: var(--text);
+    padding: 24px 16px 48px;
+  }
+  h1 {
+    font-size: 18px;
+    font-weight: 800;
+    margin: 0 0 4px;
+  }
+  p.sub {
+    margin: 0 0 24px;
+    font-size: 13px;
+    color: var(--muted);
+  }
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 14px;
+    max-width: 900px;
+    margin: 0 auto;
+  }
+  .cell {
+    background: var(--panel);
+    border: 1px solid var(--stroke);
+    border-radius: 14px;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+  }
+  .cell img {
+    display: block;
+    width: 100%;
+    height: auto;
+    background: #000;
+  }
+  .cell .label {
+    padding: 8px 10px;
+    font-size: 12px;
+    color: var(--muted);
+    text-align: center;
+    border-top: 1px solid var(--stroke);
+    font-family: ui-monospace, SFMono-Regular, Consolas, monospace;
+  }
+  @media (max-width: 640px) {
+    .grid { grid-template-columns: repeat(2, 1fr); }
+  }
+  @media (max-width: 380px) {
+    .grid { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+  <h1>Avatar sprites — tamanhos naturais</h1>
+  <p class="sub">9 poses extraídas de sprite-sheet.png — labels removidos, cada imagem no seu tamanho detectado (sem normalização). Ver avatar-manifest.json para as dimensões exatas usadas pelo AvatarEngine.</p>
+  <div class="grid">
+    <div class="cell"><img src="idle.png" alt="idle" /><div class="label">idle.png · 248×403</div></div>
+    <div class="cell"><img src="listening.png" alt="listening" /><div class="label">listening.png · 246×403</div></div>
+    <div class="cell"><img src="thinking.png" alt="thinking" /><div class="label">thinking.png · 241×403</div></div>
+    <div class="cell"><img src="speaking-closed.png" alt="speaking-closed" /><div class="label">speaking-closed.png · 248×379</div></div>
+    <div class="cell"><img src="speaking-small.png" alt="speaking-small" /><div class="label">speaking-small.png · 246×379</div></div>
+    <div class="cell"><img src="speaking-medium.png" alt="speaking-medium" /><div class="label">speaking-medium.png · 241×379</div></div>
+    <div class="cell"><img src="speaking-wide.png" alt="speaking-wide" /><div class="label">speaking-wide.png · 248×437</div></div>
+    <div class="cell"><img src="praise.png" alt="praise" /><div class="label">praise.png · 246×437</div></div>
+    <div class="cell"><img src="correction.png" alt="correction" /><div class="label">correction.png · 241×437</div></div>
+  </div>
+</body>
+</html>

@@ -1,0 +1,38 @@
+{
+  "idle": {
+    "w": 248,
+    "h": 403
+  },
+  "listening": {
+    "w": 246,
+    "h": 403
+  },
+  "thinking": {
+    "w": 241,
+    "h": 403
+  },
+  "speaking-closed": {
+    "w": 248,
+    "h": 379
+  },
+  "speaking-small": {
+    "w": 246,
+    "h": 379
+  },
+  "speaking-medium": {
+    "w": 241,
+    "h": 379
+  },
+  "speaking-wide": {
+    "w": 248,
+    "h": 437
+  },
+  "praise": {
+    "w": 246,
+    "h": 437
+  },
+  "correction": {
+    "w": 241,
+    "h": 437
+  }
+}
