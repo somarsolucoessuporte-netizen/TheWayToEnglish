@@ -28,6 +28,11 @@ export const TutorResponseSchema = z
       .optional(),
     praise: z.boolean().optional(),
     level: z.enum(["A1", "A2", "B1", "B2", "C1"]).optional(),
+    /** Short, real-time tip (in Portuguese) that helps the student answer
+     * THIS turn's question specifically — not a lesson-wide tip list. Shown
+     * on demand behind the 💡 button (see TipsPanel); "" or omitted when
+     * this turn doesn't ask anything a hint would help with. */
+    hint: z.string().optional(),
     /** At most one per reply — a country/continent/city mentioned for the
      * first time in the conversation gets an illustrative image (see
      * VisualCard + /api/image, which resolves `query` via Wikipedia). */

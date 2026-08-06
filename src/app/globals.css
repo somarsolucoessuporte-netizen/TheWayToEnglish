@@ -329,12 +329,8 @@ body {
   line-height: 1;
 }
 
-.tips-list {
+.tips-hint-text {
   margin: 0;
-  padding-left: 20px;
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
   font-size: 13px;
   line-height: 1.45;
   color: rgba(255, 255, 255, 0.88);

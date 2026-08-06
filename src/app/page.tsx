@@ -4,7 +4,6 @@ import { useEffect, useMemo, useState } from "react";
 import { branding } from "@/app-config/branding";
 import { TUTOR_SYSTEM_PROMPT } from "@/app-config/persona";
 import { DEMO_STUDENTS, type DemoStudent } from "@/app-config/demo-students";
-import { getLessonByCode, type CurriculumLesson } from "@/app-config/curriculum";
 import { aiProvider, speechProvider, sttProvider } from "@/app-config/providers";
 import { AvatarEngine } from "@/core/avatar-engine/AvatarEngine";
 import { CharacterStateMachine, type CharacterState } from "@/core/character-state-machine/stateMachine";
@@ -57,7 +56,18 @@ export default function Page() {
   // app-config/demo-students.ts — swap this step out once real login and
   // the school's academic system are wired in.
   const [started, setStarted] = useState(false);
-  const [currentLesson, setCurrentLesson] = useState<CurriculumLesson | undefined>(undefined);
+
+  // Tracks the current turn's hint (see TutorResponse.hint / persona.ts's
+  // HINTS section) — real-time, tied to whatever the tutor just asked, not
+  // a static per-lesson list. Recomputed from `entries` so it's never out
+  // of sync with what's actually on screen.
+  const currentHint = useMemo(() => {
+    for (let i = entries.length - 1; i >= 0; i--) {
+      const entry = entries[i];
+      if (entry.role === "tutor") return entry.response.hint;
+    }
+    return undefined;
+  }, [entries]);
 
   // Tips-button attention animation: only counts idle time that comes right
   // after the tutor finishes speaking (never while listening/thinking/
@@ -110,7 +120,6 @@ export default function Page() {
       window.speechSynthesis.speak(warmUp);
     }
     setStarted(true);
-    setCurrentLesson(getLessonByCode(student.currentLesson));
     await orchestrator.startLesson({ studentName: student.name, currentLessonCode: student.currentLesson });
   }
 
@@ -209,7 +218,7 @@ export default function Page() {
               <div className="chat-subtitle">{branding.copy.chatSubtitle}</div>
             </div>
             <TipsPanel
-              lesson={currentLesson}
+              hint={currentHint}
               attention={tipsAttention}
               onBlinkEnd={() => setTipsAttention("expanded")}
             />
