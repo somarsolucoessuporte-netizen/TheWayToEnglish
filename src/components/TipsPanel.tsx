@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import type { CurriculumLesson } from "@/app-config/curriculum";
 import { branding } from "@/app-config/branding";
 
 /** "normal" = discrete icon (default / just interacted). "expanded" = hint
@@ -10,24 +11,31 @@ import { branding } from "@/app-config/branding";
  * characterState. */
 export type TipsAttention = "normal" | "expanded" | "blinking";
 
-/** Shows the tutor's real-time hint for the question she just asked (see
- * TutorResponse.hint / persona.ts's HINTS section) — not a static per-lesson
- * tip list. Tracks the conversation turn by turn: the button hides itself
- * whenever the current turn has no hint. */
+/**
+ * Prefers the tutor's real-time hint for the question she just asked (see
+ * TutorResponse.hint / persona.ts's HINTS section) — falls back to the
+ * lesson's fixed tips list whenever the current turn has no hint (e.g. the
+ * very first render, before the opening line lands, or any turn the tutor
+ * didn't attach one to). Only hides entirely when neither exists.
+ */
 export function TipsPanel({
   hint,
+  lesson,
   attention,
   onBlinkEnd,
 }: {
   hint: string | undefined;
+  lesson: CurriculumLesson | undefined;
   attention: TipsAttention;
   onBlinkEnd: () => void;
 }) {
   const [open, setOpen] = useState(false);
 
-  if (!hint) return null;
+  const fallbackTips = lesson?.tips ?? [];
+  if (!hint && fallbackTips.length === 0) return null;
 
   const expanded = attention !== "normal";
+  const cardTitle = hint ? "💡 Dica para esta pergunta" : "📚 Dicas da lição";
 
   return (
     <>
@@ -41,8 +49,8 @@ export function TipsPanel({
           // settle back to the plain expanded look once the 3 flashes finish.
           if (e.animationName === "blink-attention") onBlinkEnd();
         }}
-        aria-label="Dica da pergunta atual"
-        title="Dica da pergunta atual"
+        aria-label="Dicas"
+        title="Dicas"
       >
         💡{expanded && <span>{branding.copy.tipsAttentionPrompt}</span>}
       </button>
@@ -51,7 +59,7 @@ export function TipsPanel({
         <div className="tips-overlay" onClick={() => setOpen(false)}>
           <div className="tips-card" onClick={(e) => e.stopPropagation()}>
             <div className="tips-card-header">
-              <div className="tips-card-title">Dica</div>
+              <div className="tips-card-title">{cardTitle}</div>
               <button
                 type="button"
                 className="tips-card-close"
@@ -61,7 +69,15 @@ export function TipsPanel({
                 ×
               </button>
             </div>
-            <p className="tips-hint-text">{hint}</p>
+            {hint ? (
+              <p className="tips-hint-text">{hint}</p>
+            ) : (
+              <ul className="tips-list">
+                {fallbackTips.map((tip, i) => (
+                  <li key={i}>{tip}</li>
+                ))}
+              </ul>
+            )}
           </div>
         </div>
       )}

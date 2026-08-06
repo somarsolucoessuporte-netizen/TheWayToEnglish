@@ -1,11 +1,21 @@
 import { NextRequest, NextResponse } from "next/server";
 import { GroqAIProvider } from "@/core/ai/GroqAIProvider";
+import { OpenAIProvider } from "@/core/ai/OpenAIProvider";
 import { TutorResponseSchema } from "@/core/ai/TutorResponse";
 import { TUTOR_SYSTEM_PROMPT } from "@/app-config/persona";
 import { getCourseOverview, getLessonByCode } from "@/app-config/curriculum";
 import type { Message } from "@/core/ai/AIProvider";
 
-const provider = new GroqAIProvider();
+// The provider swap lives here, not in app-config/providers.ts: both
+// providers hold an API key server-side (GROQ_API_KEY / OPENAI_API_KEY),
+// so they must never be imported into client ("use client") code — the
+// client always talks to this route through HttpAIProvider instead. Swap
+// engines with this one line:
+//   Opção A: Groq/Llama (rápido, gratuito)
+// const provider = new GroqAIProvider();
+//   Opção B: OpenAI GPT (melhor PT/JSON) — ativo agora, mesma
+//   OPENAI_API_KEY já usada pelo TTS.
+const provider = new OpenAIProvider();
 
 export async function GET() {
   return NextResponse.json({ status: "online", projeto: "the-way-to-english" });

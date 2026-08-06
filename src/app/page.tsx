@@ -1,16 +1,20 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { branding } from "@/app-config/branding";
 import { TUTOR_SYSTEM_PROMPT } from "@/app-config/persona";
 import { DEMO_STUDENTS, type DemoStudent } from "@/app-config/demo-students";
+import { getLessonByCode, type CurriculumLesson } from "@/app-config/curriculum";
 import { aiProvider, speechProvider, sttProvider } from "@/app-config/providers";
 import { AvatarEngine } from "@/core/avatar-engine/AvatarEngine";
+import { preloadAvatarSprites } from "@/core/avatar-engine/preloadSprites";
+import { waitForVoices } from "@/core/speech/waitForVoices";
 import { CharacterStateMachine, type CharacterState } from "@/core/character-state-machine/stateMachine";
 import { ConversationOrchestrator, type ChatEntry } from "@/core/conversation/orchestrator";
 import { Avatar } from "@/components/Avatar";
 import { ChatLog } from "@/components/ChatLog";
 import { ForceSendButton } from "@/components/ForceSendButton";
+import { LoadingScreen } from "@/components/LoadingScreen";
 import { StatusPills } from "@/components/StatusPills";
 import { TipsPanel, type TipsAttention } from "@/components/TipsPanel";
 
@@ -18,6 +22,28 @@ import { TipsPanel, type TipsAttention } from "@/components/TipsPanel";
  * before the tips button starts drawing attention to itself. */
 const TIPS_EXPAND_AFTER_MS = 8000;
 const TIPS_BLINK_AFTER_MS = 15000;
+
+const HEALTH_CHECK_TIMEOUT_MS = 5000;
+/** How long the loading screen's fade-out (and the app's fade-in behind
+ * it) take — must match .loading-screen's transition and .app-fade-in's
+ * animation duration in globals.css. */
+const BOOT_FADE_MS = 300;
+
+/** GET /api/chat as a lightweight readiness probe — same endpoint the app
+ * already used for the "Conectado"/"Sem conexão" pill, just with a hard
+ * timeout so a stalled request can't hang the loading screen forever. */
+async function checkApiHealth(timeoutMs: number): Promise<boolean> {
+  const controller = new AbortController();
+  const timer = window.setTimeout(() => controller.abort(), timeoutMs);
+  try {
+    const res = await fetch("/api/chat", { signal: controller.signal });
+    return res.ok;
+  } catch {
+    return false;
+  } finally {
+    window.clearTimeout(timer);
+  }
+}
 
 const STATE_LABELS: Record<CharacterState, string> = {
   idle: branding.copy.stateIdle,
@@ -56,6 +82,47 @@ export default function Page() {
   // app-config/demo-students.ts — swap this step out once real login and
   // the school's academic system are wired in.
   const [started, setStarted] = useState(false);
+  const [currentLesson, setCurrentLesson] = useState<CurriculumLesson | undefined>(undefined);
+
+  // Boot gate: the avatar and chat never mount until the 9 sprites are
+  // decoded, speechSynthesis has voices (or 2s passed), and /api/chat has
+  // answered — mounting them earlier is what used to make the avatar and
+  // audio try to start against half-loaded assets or a cold API. "fading"
+  // is a brief transitional state: the loading screen fades out while the
+  // just-mounted app fades in underneath it (see .loading-screen-fadeout /
+  // .app-fade-in in globals.css).
+  const [bootState, setBootState] = useState<"loading" | "fading" | "ready" | "error">("loading");
+
+  const runBoot = useCallback(() => {
+    setBootState("loading");
+    let cancelled = false;
+
+    (async () => {
+      const [, , healthOk] = await Promise.all([
+        preloadAvatarSprites(),
+        waitForVoices(2000),
+        checkApiHealth(HEALTH_CHECK_TIMEOUT_MS).then((ok) => {
+          if (!cancelled) setConnected(ok);
+          return ok;
+        }),
+      ]);
+      if (cancelled) return;
+      if (!healthOk) {
+        setBootState("error");
+        return;
+      }
+      setBootState("fading");
+      window.setTimeout(() => {
+        if (!cancelled) setBootState("ready");
+      }, BOOT_FADE_MS);
+    })();
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  useEffect(() => runBoot(), [runBoot]);
 
   // Tracks the current turn's hint (see TutorResponse.hint / persona.ts's
   // HINTS section) — real-time, tied to whatever the tutor just asked, not
@@ -97,10 +164,6 @@ export default function Page() {
     const unsubApiStatus = orchestrator.onApiStatus(setConnected);
     const unsubTranscribing = orchestrator.onTranscribing(setTranscribing);
 
-    fetch("/api/chat")
-      .then((r) => setConnected(r.ok))
-      .catch(() => setConnected(false));
-
     return () => {
       unsubEntries();
       unsubState();
@@ -120,6 +183,7 @@ export default function Page() {
       window.speechSynthesis.speak(warmUp);
     }
     setStarted(true);
+    setCurrentLesson(getLessonByCode(student.currentLesson));
     await orchestrator.startLesson({ studentName: student.name, currentLessonCode: student.currentLesson });
   }
 
@@ -159,92 +223,105 @@ export default function Page() {
 
   return (
     <main style={{ height: "100dvh", display: "flex", flexDirection: "column" }} onClick={resetTipsAttention}>
-      <header className="topbar">
-        <div className="brand">
-          <div className="dot" />
-          <div className="brand-text">
-            <div className="title">{branding.productName}</div>
-            <div className="subtitle">{branding.companyName}</div>
-          </div>
-        </div>
-        <StatusPills connected={connected} stateLabel={stateLabel} />
-      </header>
+      {bootState !== "ready" && (
+        <LoadingScreen
+          status={bootState === "error" ? "error" : "loading"}
+          fadingOut={bootState === "fading"}
+          onRetry={runBoot}
+        />
+      )}
 
-      <div className="main">
-        <section className="stage">
-          <Avatar engine={avatarEngine} />
-
-          {!started && (
-            <div className="intro-overlay">
-              <div className="intro-card">
-                <div className="intro-title">{branding.copy.demoLoginTitle}</div>
-                <div className="unit-list">
-                  {DEMO_STUDENTS.map((student) => (
-                    <button
-                      key={student.id}
-                      type="button"
-                      className="btn btn-ghost unit-btn"
-                      onClick={() => handleStudentPick(student)}
-                    >
-                      {student.name}
-                    </button>
-                  ))}
-                </div>
+      {(bootState === "fading" || bootState === "ready") && (
+        <div className={`app-shell${bootState === "fading" ? " app-fade-in" : ""}`}>
+          <header className="topbar">
+            <div className="brand">
+              <div className="dot" />
+              <div className="brand-text">
+                <div className="title">{branding.productName}</div>
+                <div className="subtitle">{branding.companyName}</div>
               </div>
             </div>
-          )}
+            <StatusPills connected={connected} stateLabel={stateLabel} />
+          </header>
 
-          {started && (
-            <div className="avatar-ui">
-              <div className="avatar-state">{stateLabel}</div>
-              {characterState !== "speaking" && (
-                <div className="avatar-actions">
-                  <ForceSendButton
-                    label={branding.copy.forceSendButton}
-                    listeningLabel={branding.copy.forceSendWhileListening}
-                    isListening={characterState === "listening"}
-                    onClick={handleTalkClick}
-                  />
+          <div className="main">
+            <section className="stage">
+              <Avatar engine={avatarEngine} />
+
+              {!started && (
+                <div className="intro-overlay">
+                  <div className="intro-card">
+                    <div className="intro-title">{branding.copy.demoLoginTitle}</div>
+                    <div className="unit-list">
+                      {DEMO_STUDENTS.map((student) => (
+                        <button
+                          key={student.id}
+                          type="button"
+                          className="btn btn-ghost unit-btn"
+                          onClick={() => handleStudentPick(student)}
+                        >
+                          {student.name}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
                 </div>
               )}
-            </div>
-          )}
-        </section>
 
-        <section className="chat">
-          <div className="chat-header">
-            <div>
-              <div className="chat-title">{branding.copy.chatTitle}</div>
-              <div className="chat-subtitle">{branding.copy.chatSubtitle}</div>
-            </div>
-            <TipsPanel
-              hint={currentHint}
-              attention={tipsAttention}
-              onBlinkEnd={() => setTipsAttention("expanded")}
-            />
+              {started && (
+                <div className="avatar-ui">
+                  <div className="avatar-state">{stateLabel}</div>
+                  {characterState !== "speaking" && (
+                    <div className="avatar-actions">
+                      <ForceSendButton
+                        label={branding.copy.forceSendButton}
+                        listeningLabel={branding.copy.forceSendWhileListening}
+                        isListening={characterState === "listening"}
+                        onClick={handleTalkClick}
+                      />
+                    </div>
+                  )}
+                </div>
+              )}
+            </section>
+
+            <section className="chat">
+              <div className="chat-header">
+                <div>
+                  <div className="chat-title">{branding.copy.chatTitle}</div>
+                  <div className="chat-subtitle">{branding.copy.chatSubtitle}</div>
+                </div>
+                <TipsPanel
+                  hint={currentHint}
+                  lesson={currentLesson}
+                  attention={tipsAttention}
+                  onBlinkEnd={() => setTipsAttention("expanded")}
+                />
+              </div>
+
+              <ChatLog entries={entries} />
+
+              <form className="chat-form" onSubmit={handleSubmit}>
+                <input
+                  className="chat-input"
+                  placeholder={branding.copy.chatPlaceholder}
+                  value={inputValue}
+                  onChange={(e) => {
+                    setInputValue(e.target.value);
+                    resetTipsAttention();
+                  }}
+                  autoComplete="off"
+                />
+                <button className="btn btn-primary" type="submit">
+                  Enviar
+                </button>
+              </form>
+
+              <footer className="footer">{branding.copy.footer}</footer>
+            </section>
           </div>
-
-          <ChatLog entries={entries} />
-
-          <form className="chat-form" onSubmit={handleSubmit}>
-            <input
-              className="chat-input"
-              placeholder={branding.copy.chatPlaceholder}
-              value={inputValue}
-              onChange={(e) => {
-                setInputValue(e.target.value);
-                resetTipsAttention();
-              }}
-              autoComplete="off"
-            />
-            <button className="btn btn-primary" type="submit">
-              Enviar
-            </button>
-          </form>
-
-          <footer className="footer">{branding.copy.footer}</footer>
-        </section>
-      </div>
+        </div>
+      )}
     </main>
   );
 }
