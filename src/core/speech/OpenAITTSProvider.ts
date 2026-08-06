@@ -3,14 +3,14 @@ import type { SpeechEvent, SpeechOptions, SpeechProvider } from "./SpeechProvide
 type Listener = (e?: unknown) => void;
 
 /**
- * Prepared but NOT activated by default (see app-config/providers.ts).
- * Speaks by requesting audio from /api/tts-elevenlabs (a server route that
- * holds the ELEVENLABS_API_KEY / ELEVENLABS_VOICE_ID secret) and playing
- * the returned audio through a real <audio> element — which means, unlike
- * WebSpeechProvider, this one gives the avatar engine real amplitude data
- * instead of the synthetic fallback.
+ * Speaks by requesting audio from /api/tts (a server route that holds the
+ * OPENAI_API_KEY secret and calls OpenAI's /v1/audio/speech) and playing
+ * the returned MP3 through a real <audio> element — unlike
+ * WebSpeechProvider, this gives the avatar engine real amplitude data
+ * (via AnalyserNode, wired up by the orchestrator through getAudioElement)
+ * instead of the synthetic talking-rhythm fallback.
  */
-export class ElevenLabsSpeechProvider implements SpeechProvider {
+export class OpenAITTSProvider implements SpeechProvider {
   private audio: HTMLAudioElement | null = null;
   private speaking = false;
   private readonly listeners: Record<SpeechEvent, Set<Listener>> = {
@@ -23,14 +23,15 @@ export class ElevenLabsSpeechProvider implements SpeechProvider {
     this.cancel();
 
     try {
-      const response = await fetch("/api/tts-elevenlabs", {
+      const response = await fetch("/api/tts", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ text }),
       });
       if (!response.ok) throw new Error(`TTS HTTP ${response.status}`);
 
-      const blob = await response.blob();
+      const arrayBuffer = await response.arrayBuffer();
+      const blob = new Blob([arrayBuffer], { type: "audio/mpeg" });
       const url = URL.createObjectURL(blob);
       const audio = new Audio(url);
       this.audio = audio;
@@ -58,7 +59,14 @@ export class ElevenLabsSpeechProvider implements SpeechProvider {
         });
       });
     } catch (err) {
+      // Explicit, not silent: log here AND rethrow so the orchestrator's
+      // existing error handling (ERROR state, error toast) actually fires
+      // instead of the conversation quietly proceeding as if nothing
+      // happened — this used to only emit locally, which nothing outside
+      // this class was guaranteed to surface.
+      console.error("[OpenAI TTS] erro:", err);
       this.emit("error", err);
+      throw err;
     }
   }
 
@@ -79,6 +87,9 @@ export class ElevenLabsSpeechProvider implements SpeechProvider {
     return () => this.listeners[event].delete(cb);
   }
 
+  /** Real <audio> element playing the current utterance — the avatar
+   * engine connects an AnalyserNode to this for genuine amplitude-driven
+   * mouth movement instead of the synthetic fallback. */
   getAudioElement(): HTMLAudioElement | null {
     return this.audio;
   }

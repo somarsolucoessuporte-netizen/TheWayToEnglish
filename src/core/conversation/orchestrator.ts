@@ -49,6 +49,10 @@ export class ConversationOrchestrator {
    * active SpeechToTextProvider (see WhisperSTTProvider) decides when the
    * student is done talking. */
   private voiceModeEnabled = false;
+  /** Guards against overlapping start() calls — the auto-relisten hook
+   * (idle -> startListening) and a manual button click can otherwise both
+   * fire while getUserMedia is still resolving from a previous call. */
+  private listeningStartInFlight = false;
 
   private readonly entryListeners = new Set<EntriesListener>();
   private readonly errorListeners = new Set<ErrorListener>();
@@ -155,7 +159,9 @@ export class ConversationOrchestrator {
   }
 
   async startListening(): Promise<void> {
-    if (this.busy) return;
+    if (this.busy || this.listeningStartInFlight) return;
+    if (this.stateMachine.getState() === "listening") return; // already listening, nothing to do
+    this.listeningStartInFlight = true;
     this.setTranscribing(false);
     try {
       await this.stt.start();
@@ -163,17 +169,20 @@ export class ConversationOrchestrator {
     } catch (err) {
       this.emitError(errorMessage(err));
       this.stateMachine.dispatch({ type: "ERROR" });
+    } finally {
+      this.listeningStartInFlight = false;
     }
   }
 
   /**
    * Manual override (spec item 5): force the current utterance to send
    * right now, without waiting for VAD to detect a silence gap — e.g. the
-   * student clicked "Enviar agora", or the room is too noisy for silence
-   * detection to work. The actual state transition and message handling
-   * happen in the "final"/"end" listeners wired in the constructor — not
-   * here — because a hands-free provider may have already finished the
-   * utterance on its own (via VAD) before this is even called.
+   * student clicked the talk button while already listening, or the room
+   * is too noisy for silence detection to work. The actual state
+   * transition and message handling happen in the "final"/"end" listeners
+   * wired in the constructor — not here — because a hands-free provider
+   * may have already finished the utterance on its own (via VAD) before
+   * this is even called.
    */
   async stopListening(): Promise<void> {
     await this.stt.stop();

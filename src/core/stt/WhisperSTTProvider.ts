@@ -83,7 +83,16 @@ export class WhisperSTTProvider implements SpeechToTextProvider {
     this.chunks = [];
     this.finished = false;
 
-    this.stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+    console.log("[STT] iniciando getUserMedia...");
+    try {
+      this.stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+    } catch (error) {
+      const err = error as DOMException;
+      console.error("[STT] erro getUserMedia:", error);
+      console.error("[STT] nome do erro:", err?.name);
+      console.error("[STT] mensagem:", err?.message);
+      throw error; // preserved: orchestrator.startListening() catches this and surfaces ERROR state
+    }
 
     const recorder = new MediaRecorder(this.stream);
     recorder.ondataavailable = (e) => {

@@ -1,5 +1,6 @@
 import type { SpeechProvider } from "@/core/speech/SpeechProvider";
-import { WebSpeechProvider } from "@/core/speech/WebSpeechProvider";
+// import { WebSpeechProvider } from "@/core/speech/WebSpeechProvider";
+import { OpenAITTSProvider } from "@/core/speech/OpenAITTSProvider";
 // import { ElevenLabsSpeechProvider } from "@/core/speech/ElevenLabsSpeechProvider";
 
 import type { SpeechToTextProvider } from "@/core/stt/SpeechToTextProvider";
@@ -16,7 +17,8 @@ import { HttpAIProvider } from "@/core/ai/HttpAIProvider";
  *
  *   export const speechProvider: SpeechProvider = new ElevenLabsSpeechProvider();
  */
-export const speechProvider: SpeechProvider = new WebSpeechProvider();
+export const speechProvider: SpeechProvider = new OpenAITTSProvider();
+// export const speechProvider: SpeechProvider = new WebSpeechProvider();
 
 // Whisper (Groq) is the default STT — better accuracy for Brazilian-accented
 // English than the browser's native recognizer, plus works in more browsers.

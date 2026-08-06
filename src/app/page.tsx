@@ -88,9 +88,16 @@ export default function Page() {
     await orchestrator.startLesson({ studentName: student.name, currentLessonCode: student.currentLesson });
   }
 
-  async function handleForceSend() {
-    console.log("[voice] force-send clicked");
-    await orchestrator.stopListening();
+  async function handleTalkClick() {
+    const isListening = characterState === "listening";
+    console.log("[voice] botão Falar clicado");
+    console.log("[voice] estado atual:", characterState);
+    console.log("[voice] isListening:", isListening);
+    if (isListening) {
+      await orchestrator.stopListening(); // force-send early
+    } else {
+      await orchestrator.startListening(); // manual kick-off — covers cases where auto-VAD hasn't started yet
+    }
   }
 
   async function handleSubmit(e: React.FormEvent) {
@@ -149,7 +156,10 @@ export default function Page() {
               <div className="avatar-state">{stateLabel}</div>
               {characterState !== "speaking" && (
                 <div className="avatar-actions">
-                  <ForceSendButton onClick={handleForceSend} />
+                  <ForceSendButton
+                    label={characterState === "listening" ? branding.copy.forceSendWhileListening : branding.copy.forceSendButton}
+                    onClick={handleTalkClick}
+                  />
                 </div>
               )}
             </div>
