@@ -224,6 +224,64 @@ body {
   background: rgba(255, 255, 255, 0.1);
 }
 
+/* Attention animation: draws the student's eye to the tips button after a
+   stretch of silence following the tutor's turn (see page.tsx's idle timer,
+   gated strictly on characterState === "idle"). Two stages: "expanded"
+   (8s of idle) shows the hint text with a soft pulsing glow; "blinking"
+   (15s of idle) layers three opacity flashes on top, then settles back to
+   the expanded look until the student interacts. */
+.tips-btn-expanded {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 12px;
+  border-radius: 20px;
+  background: rgba(255, 200, 0, 0.1);
+  border: 1px solid rgba(255, 200, 0, 0.4);
+  color: #ffc800;
+  font-size: 13px;
+  white-space: nowrap;
+  cursor: pointer;
+  animation: slide-in-tip 300ms ease-out, pulse-gold 2s infinite;
+}
+
+.tips-btn-expanded.tips-btn-blinking {
+  animation: pulse-gold 2s infinite, blink-attention 0.5s ease-in-out 3;
+}
+
+@keyframes slide-in-tip {
+  from {
+    opacity: 0;
+    transform: translateX(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes pulse-gold {
+  0% {
+    box-shadow: 0 0 0 0 rgba(255, 200, 0, 0.4);
+  }
+  70% {
+    box-shadow: 0 0 0 8px rgba(255, 200, 0, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(255, 200, 0, 0);
+  }
+}
+
+@keyframes blink-attention {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.3;
+  }
+}
+
 .tips-overlay {
   position: fixed;
   inset: 0;
@@ -337,6 +395,16 @@ body {
   flex: none;
 }
 
+.pronunciation-btn {
+  flex: none;
+  border: none;
+  background: none;
+  cursor: pointer;
+  font-size: 15px;
+  line-height: 1;
+  padding: 0;
+}
+
 .visual-card {
   align-self: flex-start;
   max-width: 220px;
@@ -415,6 +483,67 @@ body {
   border-color: var(--accent-soft) !important;
   background: rgba(59, 169, 160, 0.16);
   color: var(--accent);
+}
+
+/* Recording state of the talk button: a pulsing equalizer replaces the
+   label so the student gets a live visual confirmation the mic is on —
+   the button itself stays green/clickable to force-send early. */
+.listening-indicator {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+
+.listening-label {
+  font-size: 11px;
+  color: #00c853;
+}
+
+.sound-wave {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  height: 24px;
+}
+
+.sound-wave span {
+  display: block;
+  width: 4px;
+  background: #00c853;
+  border-radius: 2px;
+  animation: sound-bar 0.8s ease-in-out infinite;
+}
+
+.sound-wave span:nth-child(1) {
+  animation-delay: 0s;
+  height: 8px;
+}
+.sound-wave span:nth-child(2) {
+  animation-delay: 0.1s;
+  height: 16px;
+}
+.sound-wave span:nth-child(3) {
+  animation-delay: 0.2s;
+  height: 24px;
+}
+.sound-wave span:nth-child(4) {
+  animation-delay: 0.1s;
+  height: 16px;
+}
+.sound-wave span:nth-child(5) {
+  animation-delay: 0s;
+  height: 8px;
+}
+
+@keyframes sound-bar {
+  0%,
+  100% {
+    transform: scaleY(0.4);
+  }
+  50% {
+    transform: scaleY(1);
+  }
 }
 
 @media (max-width: 980px) {

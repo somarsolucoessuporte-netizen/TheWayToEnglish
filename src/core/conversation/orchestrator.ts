@@ -247,10 +247,16 @@ export class ConversationOrchestrator {
       });
       this.pushEntry({ role: "tutor", response });
 
-      await this.speakParts([
-        { text: response.speech.english, lang: "en-US" },
-        { text: response.speech.portuguese, lang: "pt-BR" },
-      ]);
+      // Normally English plays first, Portuguese second. A correction is the
+      // one exception: the "hear it, repeat it" flow needs the Portuguese
+      // explanation (ending in "Agora repita comigo:") to land right before
+      // the English repeat-model it's cueing up — see persona.ts's
+      // CORRECTING A MISTAKE sequence.
+      const englishPart = { text: response.speech.english, lang: "en-US" };
+      const portuguesePart = { text: response.speech.portuguese, lang: "pt-BR" };
+      await this.speakParts(
+        response.correction ? [portuguesePart, englishPart] : [englishPart, portuguesePart]
+      );
       // speakParts has already brought the state machine back to idle by
       // the time it resolves — praise/correction now overlays on top of
       // that idle state and reverts back to it on its own after ~1.5s.

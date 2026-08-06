@@ -19,6 +19,11 @@ export const TutorResponseSchema = z
         studentSaid: z.string(),
         corrected: z.string(),
         explanation: z.string(),
+        /** Simplified, non-phonetic pronunciation hint for the on-screen
+         * card (e.g. "Éfrica", "iú-rop") — the audible pronunciation model
+         * is speech.english itself; this is just a visual reminder the
+         * student can also click 🔊 to replay (see CorrectionCard). */
+        pronunciation: z.string().optional(),
       })
       .optional(),
     praise: z.boolean().optional(),

@@ -13,7 +13,12 @@ import { Avatar } from "@/components/Avatar";
 import { ChatLog } from "@/components/ChatLog";
 import { ForceSendButton } from "@/components/ForceSendButton";
 import { StatusPills } from "@/components/StatusPills";
-import { TipsPanel } from "@/components/TipsPanel";
+import { TipsPanel, type TipsAttention } from "@/components/TipsPanel";
+
+/** How long the tutor must sit idle (turn over, student not yet responding)
+ * before the tips button starts drawing attention to itself. */
+const TIPS_EXPAND_AFTER_MS = 8000;
+const TIPS_BLINK_AFTER_MS = 15000;
 
 const STATE_LABELS: Record<CharacterState, string> = {
   idle: branding.copy.stateIdle,
@@ -53,6 +58,27 @@ export default function Page() {
   // the school's academic system are wired in.
   const [started, setStarted] = useState(false);
   const [currentLesson, setCurrentLesson] = useState<CurriculumLesson | undefined>(undefined);
+
+  // Tips-button attention animation: only counts idle time that comes right
+  // after the tutor finishes speaking (never while listening/thinking/
+  // speaking) — resets the moment characterState leaves "idle", and the
+  // effect re-arms fresh every time it re-enters "idle" (each transition
+  // into idle is a new value, so this effect body reruns exactly once per
+  // idle stretch, not on every render).
+  const [tipsAttention, setTipsAttention] = useState<TipsAttention>("normal");
+
+  useEffect(() => {
+    if (characterState !== "idle") {
+      setTipsAttention("normal");
+      return;
+    }
+    const expandTimer = window.setTimeout(() => setTipsAttention("expanded"), TIPS_EXPAND_AFTER_MS);
+    const blinkTimer = window.setTimeout(() => setTipsAttention("blinking"), TIPS_BLINK_AFTER_MS);
+    return () => {
+      window.clearTimeout(expandTimer);
+      window.clearTimeout(blinkTimer);
+    };
+  }, [characterState]);
 
   useEffect(() => {
     const unsubEntries = orchestrator.onEntriesChange(setEntries);
@@ -108,6 +134,14 @@ export default function Page() {
     await orchestrator.sendTextMessage(text);
   }
 
+  // Any interaction — a click anywhere, or the student starting to type —
+  // cancels the attention animation immediately, per spec. Voice input is
+  // covered separately: it flips characterState off "idle", which the
+  // timer effect above already resets on its own.
+  function resetTipsAttention() {
+    setTipsAttention("normal");
+  }
+
   // Avatar sprite stays on "listening" throughout the transcription gap
   // (see orchestrator.onTranscribing) — only the text label changes, so
   // the wait for a batch STT provider's upload doesn't read as a freeze.
@@ -115,7 +149,7 @@ export default function Page() {
     transcribing && characterState === "listening" ? branding.copy.stateTranscribing : STATE_LABELS[characterState];
 
   return (
-    <main style={{ height: "100dvh", display: "flex", flexDirection: "column" }}>
+    <main style={{ height: "100dvh", display: "flex", flexDirection: "column" }} onClick={resetTipsAttention}>
       <header className="topbar">
         <div className="brand">
           <div className="dot" />
@@ -157,7 +191,9 @@ export default function Page() {
               {characterState !== "speaking" && (
                 <div className="avatar-actions">
                   <ForceSendButton
-                    label={characterState === "listening" ? branding.copy.forceSendWhileListening : branding.copy.forceSendButton}
+                    label={branding.copy.forceSendButton}
+                    listeningLabel={branding.copy.forceSendWhileListening}
+                    isListening={characterState === "listening"}
                     onClick={handleTalkClick}
                   />
                 </div>
@@ -172,7 +208,11 @@ export default function Page() {
               <div className="chat-title">{branding.copy.chatTitle}</div>
               <div className="chat-subtitle">{branding.copy.chatSubtitle}</div>
             </div>
-            <TipsPanel lesson={currentLesson} />
+            <TipsPanel
+              lesson={currentLesson}
+              attention={tipsAttention}
+              onBlinkEnd={() => setTipsAttention("expanded")}
+            />
           </div>
 
           <ChatLog entries={entries} />
@@ -182,7 +222,10 @@ export default function Page() {
               className="chat-input"
               placeholder={branding.copy.chatPlaceholder}
               value={inputValue}
-              onChange={(e) => setInputValue(e.target.value)}
+              onChange={(e) => {
+                setInputValue(e.target.value);
+                resetTipsAttention();
+              }}
               autoComplete="off"
             />
             <button className="btn btn-primary" type="submit">

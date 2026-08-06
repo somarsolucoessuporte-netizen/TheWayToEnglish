@@ -20,10 +20,11 @@ export const branding = {
   copy: {
     demoLoginTitle: "Entrar como:",
     forceSendButton: "Falar",
-    forceSendWhileListening: "Enviar agora",
+    forceSendWhileListening: "Ouvindo...",
     chatTitle: "Conversa",
     chatSubtitle: "Fale ou digite em inglês.",
     chatPlaceholder: "Ex: How do I say 'saudade' in English?",
+    tipsAttentionPrompt: "Precisa de uma dica?",
     stateIdle: "Pronta para conversar",
     stateListening: "Ouvindo…",
     stateTranscribing: "Processando…",

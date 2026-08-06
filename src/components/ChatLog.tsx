@@ -39,10 +39,25 @@ export function ChatLog({ entries }: { entries: ChatEntry[] }) {
         ) : (
           <div key={i} style={{ display: "flex", flexDirection: "column", gap: 8 }}>
             <div className="msg bot">
-              {entry.response.speech.english}
-              {entry.response.speech.english && entry.response.speech.portuguese && <br />}
-              {entry.response.speech.portuguese && (
-                <span className="msg-pt">{entry.response.speech.portuguese}</span>
+              {/* Text order mirrors spoken order: normally English-then-
+                  Portuguese, but reversed for a correction so the on-screen
+                  text doesn't read backwards from what the student just
+                  heard (see orchestrator's correction-aware speakParts
+                  ordering). */}
+              {entry.response.correction ? (
+                <>
+                  {entry.response.speech.portuguese && <span className="msg-pt">{entry.response.speech.portuguese}</span>}
+                  {entry.response.speech.english && entry.response.speech.portuguese && <br />}
+                  {entry.response.speech.english}
+                </>
+              ) : (
+                <>
+                  {entry.response.speech.english}
+                  {entry.response.speech.english && entry.response.speech.portuguese && <br />}
+                  {entry.response.speech.portuguese && (
+                    <span className="msg-pt">{entry.response.speech.portuguese}</span>
+                  )}
+                </>
               )}
             </div>
             {entry.response.correction && <CorrectionCard correction={entry.response.correction} />}
