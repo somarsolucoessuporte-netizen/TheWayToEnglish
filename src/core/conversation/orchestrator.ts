@@ -264,14 +264,16 @@ export class ConversationOrchestrator {
       // CORRECTING A MISTAKE sequence.
       const englishPart = { text: response.speech.english, lang: "en-US" };
       const portuguesePart = { text: response.speech.portuguese, lang: "pt-BR" };
+      const correction = response.correction;
       await this.speakParts(
-        response.correction ? [portuguesePart, englishPart] : [englishPart, portuguesePart]
+        correction ? [portuguesePart, englishPart] : [englishPart, portuguesePart],
+        correction ? { after: () => this.runPronunciationDrill(correction.corrected) } : {}
       );
       // speakParts has already brought the state machine back to idle by
       // the time it resolves — correction now overlays on top of that idle
       // state and reverts back to it on its own after ~1.5s. Praise already
       // happened above, before speaking.
-      if (response.correction) this.stateMachine.dispatch({ type: "CORRECTION" });
+      if (correction) this.stateMachine.dispatch({ type: "CORRECTION" });
     } catch (err) {
       this.setApiStatus(false);
       this.emitError(errorMessage(err));
@@ -304,21 +306,49 @@ export class ConversationOrchestrator {
   /**
    * Speaks one or more parts back-to-back as a single logical "speaking"
    * turn: dispatches SPEECH_START once before the first non-empty part
-   * and SPEECH_END once after the last one, regardless of how many actual
-   * speak() calls happen underneath. This is what lets a bilingual reply
-   * (English part, then Portuguese part) play as one continuous avatar
-   * "speaking" state instead of flickering back to idle — and briefly
-   * re-triggering hands-free auto-listen — between the two parts.
+   * and SPEECH_END once after the last one (and after `opts.after`, if
+   * given), regardless of how many actual speak() calls happen underneath.
+   * This is what lets a bilingual reply (English part, then Portuguese
+   * part) — or a correction's spoken explanation plus its automatic
+   * pronunciation drill (see runPronunciationDrill) — play as one
+   * continuous avatar "speaking" state instead of flickering back to idle
+   * (and briefly re-triggering hands-free auto-listen) in between.
    */
-  private async speakParts(parts: { text: string; lang: string }[]): Promise<void> {
+  private async speakParts(
+    parts: { text: string; lang: string }[],
+    opts: { after?: () => Promise<void> } = {}
+  ): Promise<void> {
     const nonEmpty = parts.filter((p) => p.text.trim().length > 0);
-    if (nonEmpty.length === 0) return;
+    if (nonEmpty.length === 0 && !opts.after) return;
 
     this.stateMachine.dispatch({ type: "SPEECH_START" });
     for (const part of nonEmpty) {
       await this.speech.speak(part.text, { lang: part.lang });
     }
+    if (opts.after) await opts.after();
     this.stateMachine.dispatch({ type: "SPEECH_END" });
+  }
+
+  /**
+   * Automatic "hear it, repeat it" pronunciation model that follows a
+   * correction's spoken explanation: the corrected word/phrase at normal
+   * speed, a beat of silence, the same word again at 0.65x speed (real TTS
+   * speed control via SpeechProvider.speakSlow — see OpenAITTSProvider —
+   * not a pitch-shifted playback hack), another beat, then the cue to try
+   * it themselves. Called as speakParts' `after` step so it runs inside
+   * the same SPEECH_START/END span as the correction's explanation — the
+   * avatar stays "speaking" throughout instead of dropping to idle (and
+   * re-triggering hands-free listening) mid-drill.
+   */
+  private async runPronunciationDrill(word: string): Promise<void> {
+    const trimmed = word.trim();
+    if (!trimmed) return;
+    await this.speech.speak(trimmed, { lang: "en-US" });
+    await sleep(800);
+    if (this.speech.speakSlow) await this.speech.speakSlow(trimmed, { lang: "en-US" });
+    else await this.speech.speak(trimmed, { lang: "en-US" });
+    await sleep(500);
+    await this.speech.speak("Now you try.", { lang: "en-US" });
   }
 
   private pushEntry(entry: ChatEntry): void {
@@ -341,4 +371,8 @@ export class ConversationOrchestrator {
 
 function errorMessage(err: unknown): string {
   return err instanceof Error ? err.message : String(err);
+}
+
+function sleep(ms: number): Promise<void> {
+  return new Promise((resolve) => setTimeout(resolve, ms));
 }

@@ -2,6 +2,12 @@ import type { SpeechEvent, SpeechOptions, SpeechProvider } from "./SpeechProvide
 
 type Listener = (e?: unknown) => void;
 
+/** Slower-than-normal playback speed used for the "hear it, repeat it"
+ * pronunciation model (see SpeechProvider.speakSlow) — passed straight
+ * through to OpenAI's TTS `speed` parameter, not a client-side
+ * playbackRate hack, so it stays crisp instead of sounding pitched down. */
+const SLOW_SPEED = 0.65;
+
 /**
  * Speaks by requesting audio from /api/tts (a server route that holds the
  * OPENAI_API_KEY secret and calls OpenAI's /v1/audio/speech) and playing
@@ -20,13 +26,22 @@ export class OpenAITTSProvider implements SpeechProvider {
   };
 
   async speak(text: string, _opts: SpeechOptions = {}): Promise<void> {
+    return this.speakAtSpeed(text, 1.0);
+  }
+
+  /** See SpeechProvider.speakSlow. */
+  async speakSlow(text: string, _opts: SpeechOptions = {}): Promise<void> {
+    return this.speakAtSpeed(text, SLOW_SPEED);
+  }
+
+  private async speakAtSpeed(text: string, speed: number): Promise<void> {
     this.cancel();
 
     try {
       const response = await fetch("/api/tts", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ text }),
+        body: JSON.stringify({ text, speed }),
       });
       if (!response.ok) throw new Error(`TTS HTTP ${response.status}`);
 

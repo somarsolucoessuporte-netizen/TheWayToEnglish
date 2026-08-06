@@ -18,10 +18,15 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ erro: "OPENAI_API_KEY não configurada" }, { status: 500 });
   }
 
-  const { text } = await req.json();
+  const { text, speed } = await req.json();
   if (!text || typeof text !== "string") {
     return NextResponse.json({ erro: "texto não enviado" }, { status: 400 });
   }
+  // OpenAI's TTS speed range is [0.25, 4.0] — clamp rather than reject so a
+  // slightly out-of-range client value (or a future default change) can't
+  // 400 the whole request over a cosmetic detail.
+  const rawSpeed = typeof speed === "number" && Number.isFinite(speed) ? speed : 1.0;
+  const clampedSpeed = Math.min(4.0, Math.max(0.25, rawSpeed));
 
   let response: Response;
   try {
@@ -35,6 +40,7 @@ export async function POST(req: NextRequest) {
         model: "tts-1",
         input: text,
         voice,
+        speed: clampedSpeed,
         response_format: "mp3",
       }),
     });

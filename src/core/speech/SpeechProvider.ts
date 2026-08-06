@@ -26,4 +26,13 @@ export interface SpeechProvider {
    * audio amplitude (AnalyserNode) instead of a blind timer.
    */
   getAudioElement?(): HTMLAudioElement | null;
+  /**
+   * Speaks `text` noticeably slower than normal (see OpenAITTSProvider's
+   * 0.65x) — used for the "hear it, repeat it" pronunciation model after a
+   * correction (see orchestrator) and the correction card's 🐢 button.
+   * Optional: providers without real speed control (e.g. WebSpeechProvider)
+   * can omit this; callers should fall back to a normal speak() when it's
+   * missing rather than failing.
+   */
+  speakSlow?(text: string, opts?: SpeechOptions): Promise<void>;
 }
