@@ -147,7 +147,7 @@ export default function Page() {
           {started && (
             <div className="avatar-ui">
               <div className="avatar-state">{stateLabel}</div>
-              {characterState === "listening" && (
+              {characterState !== "speaking" && (
                 <div className="avatar-actions">
                   <ForceSendButton onClick={handleForceSend} />
                 </div>

@@ -13,3 +13,6 @@ npm-debug.log*
 # Material didático da escola — licenciado, não é código do produto.
 # Nunca deve entrar em um commit, mesmo que o repositório vire público.
 public/material_do_curso/
+
+.vercel
+.env*

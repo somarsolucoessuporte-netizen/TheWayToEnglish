@@ -19,7 +19,7 @@ export const branding = {
 
   copy: {
     demoLoginTitle: "Entrar como:",
-    forceSendButton: "Enviar agora",
+    forceSendButton: "Falar",
     chatTitle: "Conversa",
     chatSubtitle: "Fale ou digite em inglês.",
     chatPlaceholder: "Ex: How do I say 'saudade' in English?",
