@@ -38,7 +38,13 @@ export function ChatLog({ entries }: { entries: ChatEntry[] }) {
           </div>
         ) : (
           <div key={i} style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-            <div className="msg bot">{entry.response.speech}</div>
+            <div className="msg bot">
+              {entry.response.speech.english}
+              {entry.response.speech.english && entry.response.speech.portuguese && <br />}
+              {entry.response.speech.portuguese && (
+                <span className="msg-pt">{entry.response.speech.portuguese}</span>
+              )}
+            </div>
             {entry.response.correction && <CorrectionCard correction={entry.response.correction} />}
             {entry.response.visual && firstOccurrenceIndex.has(i) && (
               <VisualCard visual={entry.response.visual} />

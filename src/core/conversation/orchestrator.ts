@@ -1,7 +1,7 @@
 import type { SpeechProvider } from "../speech/SpeechProvider";
 import type { SpeechToTextProvider, SttResult } from "../stt/SpeechToTextProvider";
 import type { AIProvider, Message } from "../ai/AIProvider";
-import { speechLangFor, type TutorResponse } from "../ai/TutorResponse";
+import type { TutorResponse } from "../ai/TutorResponse";
 import type { AvatarEngine } from "../avatar-engine/AvatarEngine";
 import { CharacterStateMachine, type CharacterState } from "../character-state-machine/stateMachine";
 
@@ -81,12 +81,18 @@ export class ConversationOrchestrator {
       if (state === "idle" && this.voiceModeEnabled) void this.startListening();
     });
 
+    // Only re-binds the avatar's amplitude source to whichever <audio>
+    // element is currently playing — does NOT drive the state machine.
+    // A reply's speech can be spoken as multiple sequential speak() calls
+    // (English part, then Portuguese part — see speakParts), and each
+    // call fires its own provider-level "start"/"end". If those directly
+    // dispatched SPEECH_START/SPEECH_END, the state machine would drop to
+    // "idle" between parts — which, with hands-free voice mode on, would
+    // start recording the tutor's own voice as if the student were
+    // talking. speakParts is the sole authority for SPEECH_START/END.
     this.speech.on("start", () => {
       this.avatar.onAudioElement(this.speech.getAudioElement?.() ?? null);
-      this.stateMachine.dispatch({ type: "SPEECH_START" });
     });
-    this.speech.on("end", () => this.stateMachine.dispatch({ type: "SPEECH_END" }));
-    this.speech.on("error", () => this.stateMachine.dispatch({ type: "SPEECH_END" }));
 
     // The transcript is delivered here, not through stop()'s return value —
     // continuous:false engines (the default BrowserSTTProvider) stop
@@ -235,14 +241,19 @@ export class ConversationOrchestrator {
       });
       this.setApiStatus(true);
 
-      this.history.push({ role: "assistant", content: response.speech });
+      this.history.push({
+        role: "assistant",
+        content: [response.speech.english, response.speech.portuguese].filter((s) => s.trim()).join(" / "),
+      });
       this.pushEntry({ role: "tutor", response });
 
-      await this.speech.speak(response.speech, { lang: speechLangFor(response.language) });
-      // SPEECH_END (wired in the constructor) has already brought the
-      // state machine back to idle by the time speak() resolves — praise/
-      // correction now overlays on top of that idle state and reverts
-      // back to it on its own after ~1.5s.
+      await this.speakParts([
+        { text: response.speech.english, lang: "en-US" },
+        { text: response.speech.portuguese, lang: "pt-BR" },
+      ]);
+      // speakParts has already brought the state machine back to idle by
+      // the time it resolves — praise/correction now overlays on top of
+      // that idle state and reverts back to it on its own after ~1.5s.
       if (response.correction) this.stateMachine.dispatch({ type: "CORRECTION" });
       else if (response.praise) this.stateMachine.dispatch({ type: "PRAISE" });
     } catch (err) {
@@ -252,6 +263,26 @@ export class ConversationOrchestrator {
     } finally {
       this.busy = false;
     }
+  }
+
+  /**
+   * Speaks one or more parts back-to-back as a single logical "speaking"
+   * turn: dispatches SPEECH_START once before the first non-empty part
+   * and SPEECH_END once after the last one, regardless of how many actual
+   * speak() calls happen underneath. This is what lets a bilingual reply
+   * (English part, then Portuguese part) play as one continuous avatar
+   * "speaking" state instead of flickering back to idle — and briefly
+   * re-triggering hands-free auto-listen — between the two parts.
+   */
+  private async speakParts(parts: { text: string; lang: string }[]): Promise<void> {
+    const nonEmpty = parts.filter((p) => p.text.trim().length > 0);
+    if (nonEmpty.length === 0) return;
+
+    this.stateMachine.dispatch({ type: "SPEECH_START" });
+    for (const part of nonEmpty) {
+      await this.speech.speak(part.text, { lang: part.lang });
+    }
+    this.stateMachine.dispatch({ type: "SPEECH_END" });
   }
 
   private pushEntry(entry: ChatEntry): void {

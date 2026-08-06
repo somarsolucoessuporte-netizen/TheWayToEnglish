@@ -309,6 +309,13 @@ body {
   border-color: rgba(80, 140, 255, 0.22);
 }
 
+.msg-pt {
+  display: block;
+  margin-top: 6px;
+  color: var(--muted);
+  font-style: italic;
+}
+
 .correction-card {
   border: 1px solid rgba(224, 169, 74, 0.4);
   background: rgba(224, 169, 74, 0.08);
