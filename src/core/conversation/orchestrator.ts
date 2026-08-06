@@ -3,6 +3,7 @@ import type { SpeechToTextProvider, SttResult } from "../stt/SpeechToTextProvide
 import type { AIProvider, Message } from "../ai/AIProvider";
 import type { TutorResponse } from "../ai/TutorResponse";
 import type { AvatarEngine } from "../avatar-engine/AvatarEngine";
+import { playCorrectSound } from "../audio/playCorrectSound";
 import { CharacterStateMachine, type CharacterState } from "../character-state-machine/stateMachine";
 
 export interface ConversationOrchestratorOptions {
@@ -247,6 +248,15 @@ export class ConversationOrchestrator {
       });
       this.pushEntry({ role: "tutor", response });
 
+      // Praise plays out BEFORE speaking, not after: a short chord plus the
+      // avatar's praise pose for ~1.5s, then normal speech resumes — the
+      // "you got it right" beat should land the moment the answer's judged
+      // correct, not as an afterthought once the tutor's already talking.
+      if (response.praise) {
+        playCorrectSound();
+        await this.enterPraiseBeforeSpeaking();
+      }
+
       // Normally English plays first, Portuguese second. A correction is the
       // one exception: the "hear it, repeat it" flow needs the Portuguese
       // explanation (ending in "Agora repita comigo:") to land right before
@@ -258,10 +268,10 @@ export class ConversationOrchestrator {
         response.correction ? [portuguesePart, englishPart] : [englishPart, portuguesePart]
       );
       // speakParts has already brought the state machine back to idle by
-      // the time it resolves — praise/correction now overlays on top of
-      // that idle state and reverts back to it on its own after ~1.5s.
+      // the time it resolves — correction now overlays on top of that idle
+      // state and reverts back to it on its own after ~1.5s. Praise already
+      // happened above, before speaking.
       if (response.correction) this.stateMachine.dispatch({ type: "CORRECTION" });
-      else if (response.praise) this.stateMachine.dispatch({ type: "PRAISE" });
     } catch (err) {
       this.setApiStatus(false);
       this.emitError(errorMessage(err));
@@ -269,6 +279,26 @@ export class ConversationOrchestrator {
     } finally {
       this.busy = false;
     }
+  }
+
+  /**
+   * Puts the avatar in the "praise" pose and waits for it to revert on its
+   * own (CharacterStateMachine's transient timer, ~1.5s) before resolving —
+   * that revert lands back on "thinking" (the persistent state captured
+   * when PRAISE was dispatched, since a response always arrives while
+   * still "thinking"), which is exactly the state speakParts' SPEECH_START
+   * needs to transition out of next.
+   */
+  private async enterPraiseBeforeSpeaking(): Promise<void> {
+    return new Promise<void>((resolve) => {
+      const unsubscribe = this.stateMachine.subscribe((state) => {
+        if (state !== "praise") {
+          unsubscribe();
+          resolve();
+        }
+      });
+      this.stateMachine.dispatch({ type: "PRAISE" });
+    });
   }
 
   /**

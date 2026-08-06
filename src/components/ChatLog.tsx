@@ -29,12 +29,33 @@ export function ChatLog({ entries }: { entries: ChatEntry[] }) {
     return firstIndexForIndex;
   }, [entries]);
 
+  // Flags the student's own message when the tutor's very next reply
+  // praises it — the flash + checkmark are a reaction to that specific
+  // answer, not the conversation in general. Once an entry lands in this
+  // set it stays there for the entry's lifetime (entries are never
+  // reordered), so the flash animation fires exactly once and the
+  // checkmark stays permanent, per spec.
+  const praisedUserIndex = useMemo(() => {
+    const praised = new Set<number>();
+    entries.forEach((entry, i) => {
+      if (entry.role === "tutor" && entry.response.praise && entries[i - 1]?.role === "user") {
+        praised.add(i - 1);
+      }
+    });
+    return praised;
+  }, [entries]);
+
   return (
     <div className="chat-log" ref={logRef}>
       {entries.map((entry, i) =>
         entry.role === "user" ? (
-          <div key={i} className="msg user">
+          <div key={i} className={`msg user${praisedUserIndex.has(i) ? " msg-correct" : ""}`}>
             {entry.text}
+            {praisedUserIndex.has(i) && (
+              <span className="msg-correct-badge" aria-label="Resposta correta">
+                ✓
+              </span>
+            )}
           </div>
         ) : (
           <div key={i} style={{ display: "flex", flexDirection: "column", gap: 8 }}>
