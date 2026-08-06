@@ -52,21 +52,74 @@ export const TutorResponseSchema = z
 export type TutorResponse = z.infer<typeof TutorResponseSchema>;
 
 /**
- * Parses raw LLM output into a TutorResponse. Never throws: a malformed or
- * non-JSON reply is treated as plain English speech so the conversation
- * never breaks over a formatting slip.
+ * Parses raw LLM output into a TutorResponse. Never throws, and never
+ * surfaces raw JSON to the student: response_format: json_object (see
+ * GroqAIProvider/OpenAIProvider) should already guarantee syntactically
+ * valid JSON, but a model can still emit JSON that's syntactically fine yet
+ * doesn't match TutorResponseSchema's shape (e.g. speech.english as null
+ * instead of "", or speech as a bare string) — those get normalized rather
+ * than rejected. Only a response that fails ALL of that falls through to
+ * the last-resort branch below, which is careful never to hand back
+ * something JSON-shaped as if it were spoken text.
  */
 export function parseTutorResponse(raw: string): TutorResponse {
-  const jsonCandidate = extractJsonObject(raw);
+  const stripped = stripMarkdownFence(raw);
+  const jsonCandidate = extractJsonObject(stripped);
   if (jsonCandidate) {
     try {
-      const parsed = TutorResponseSchema.safeParse(JSON.parse(jsonCandidate));
+      const parsed = TutorResponseSchema.safeParse(normalizeForSchema(JSON.parse(jsonCandidate)));
       if (parsed.success) return parsed.data;
     } catch {
-      // fall through to plain-text fallback
+      // fall through to the last-resort branch below
     }
   }
-  return { speech: { english: raw.trim(), portuguese: "" } };
+
+  // Nothing above produced a valid TutorResponse. If what's left still
+  // looks JSON-shaped, showing it verbatim would just dump braces/quotes
+  // into the chat — use a generic apology instead. Genuinely
+  // non-JSON prose (the model ignored response_format entirely, which
+  // response_format is supposed to prevent but isn't a hard guarantee) is
+  // the one case safe to show as-is, and even then it's spoken Portuguese
+  // per LANGUAGE STRATEGY's rescue case, never English.
+  const trimmed = stripped.trim();
+  const looksLikeJson = trimmed.startsWith("{") || trimmed.startsWith("[");
+  return {
+    speech: {
+      english: "",
+      portuguese: looksLikeJson
+        ? "Desculpe, tive um problema para responder agora. Pode repetir, por favor?"
+        : trimmed,
+    },
+  };
+}
+
+/** Strips ``` / ```json code-fence markers a model sometimes wraps JSON in
+ * despite response_format: json_object — harmless no-op when there's no
+ * fence to begin with. */
+function stripMarkdownFence(raw: string): string {
+  return raw.replace(/```(?:json)?/gi, "").trim();
+}
+
+/** Coerces shapes real models occasionally emit that are valid JSON but
+ * not quite TutorResponseSchema — null instead of "" for an empty speech
+ * field, or `speech` as a bare string instead of {english, portuguese} —
+ * into the schema's expected shape, so a shape hiccup normalizes instead
+ * of raw JSON leaking into the chat as fallback text. */
+function normalizeForSchema(value: unknown): unknown {
+  if (typeof value !== "object" || value === null) return value;
+  const obj = value as Record<string, unknown>;
+  let speech: unknown = obj.speech;
+  if (typeof speech === "string") {
+    speech = { english: speech, portuguese: "" };
+  }
+  if (typeof speech === "object" && speech !== null) {
+    const s = speech as Record<string, unknown>;
+    speech = {
+      english: typeof s.english === "string" ? s.english : "",
+      portuguese: typeof s.portuguese === "string" ? s.portuguese : "",
+    };
+  }
+  return { ...obj, speech };
 }
 
 function extractJsonObject(raw: string): string | null {
