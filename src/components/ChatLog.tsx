@@ -1,0 +1,51 @@
+"use client";
+
+import { useEffect, useMemo, useRef } from "react";
+import type { ChatEntry } from "@/core/conversation/orchestrator";
+import { CorrectionCard } from "./CorrectionCard";
+import { VisualCard } from "./VisualCard";
+
+export function ChatLog({ entries }: { entries: ChatEntry[] }) {
+  const logRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const el = logRef.current;
+    if (el) el.scrollTop = el.scrollHeight;
+  }, [entries]);
+
+  // A query only renders its image the first time it shows up in the
+  // session — recomputed from `entries` each time so it never gets out of
+  // sync with the actual chat history.
+  const firstOccurrenceIndex = useMemo(() => {
+    const seen = new Set<string>();
+    const firstIndexForIndex = new Set<number>();
+    entries.forEach((entry, i) => {
+      const query = entry.role === "tutor" ? entry.response.visual?.query : undefined;
+      if (query && !seen.has(query)) {
+        seen.add(query);
+        firstIndexForIndex.add(i);
+      }
+    });
+    return firstIndexForIndex;
+  }, [entries]);
+
+  return (
+    <div className="chat-log" ref={logRef}>
+      {entries.map((entry, i) =>
+        entry.role === "user" ? (
+          <div key={i} className="msg user">
+            {entry.text}
+          </div>
+        ) : (
+          <div key={i} style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+            <div className="msg bot">{entry.response.speech}</div>
+            {entry.response.correction && <CorrectionCard correction={entry.response.correction} />}
+            {entry.response.visual && firstOccurrenceIndex.has(i) && (
+              <VisualCard visual={entry.response.visual} />
+            )}
+          </div>
+        )
+      )}
+    </div>
+  );
+}

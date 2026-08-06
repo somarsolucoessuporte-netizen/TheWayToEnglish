@@ -1,0 +1,688 @@
+{
+  "lessons": [
+    {
+      "id": "book01-u1-3a",
+      "book": "Book 1",
+      "unit": "Unit 1",
+      "lessonCode": "3A",
+      "title": "Where are you from?",
+      "type": "speaking",
+      "vocabulary": [
+        "Brazil",
+        "Canada",
+        "Japan"
+      ],
+      "grammarPoints": [
+        "Where are you from? (singular: you/he/she)"
+      ],
+      "targetPhrases": [
+        "Where are you from?",
+        "Where is he from?",
+        "Where is she from?",
+        "I'm from Brazil.",
+        "He's from Canada.",
+        "She's from Japan."
+      ],
+      "canDo": [
+        "can ask where someone is from (singular)",
+        "can say what country/state/city/region someone is from"
+      ],
+      "exampleExchanges": [
+        {
+          "q": "Where are you from?",
+          "a": "I'm from Brazil."
+        },
+        {
+          "q": "Where is he from?",
+          "a": "He's from Canada."
+        },
+        {
+          "q": "Where is she from?",
+          "a": "She's from Japan."
+        }
+      ],
+      "prerequisiteLessonIds": [],
+      "notes": "A resposta pode ser um país, um estado, uma cidade ou uma região.",
+      "cumulativeScope": [
+        "Brazil",
+        "Canada",
+        "Japan",
+        "Where are you from? (singular: you/he/she)"
+      ],
+      "tips": [
+        "Para dizer de onde você é, use 'I'm from' + país ou cidade. Exemplo: 'I'm from Brazil' (Eu sou do Brasil), 'I'm from São Paulo' (Eu sou de São Paulo).",
+        "Atenção, brasileiros: em inglês não se usa 'of' para indicar origem. Não diga 'I am of Brazil' — o certo é 'I'm from Brazil'.",
+        "Você pode responder com país, estado ou cidade — todas as opções estão corretas."
+      ]
+    },
+    {
+      "id": "book01-u1-3b",
+      "book": "Book 1",
+      "unit": "Unit 1",
+      "lessonCode": "3B",
+      "title": "Verb to be with We, You and They (plural pronouns) — Origins and Nationalities",
+      "type": "grammar",
+      "vocabulary": [
+        "we",
+        "you",
+        "they"
+      ],
+      "grammarPoints": [
+        "Verb to be (am/is/are) with I/you/he/she/it/we/you/they",
+        "Plural pronouns we, you, they all use ARE",
+        "Yes/No questions and short answers with verb to be"
+      ],
+      "targetPhrases": [
+        "Where are we from?",
+        "Are we from Brazil?",
+        "Where are they from?",
+        "Are they from Brazil?"
+      ],
+      "canDo": [
+        "can conjugate verb to be with all subject pronouns (singular and plural)",
+        "can ask and answer yes/no questions about origin with verb to be"
+      ],
+      "exampleExchanges": [
+        {
+          "q": "Am I from Brazil?",
+          "a": "Yes, I am. / No, I'm not."
+        },
+        {
+          "q": "Are you from Brazil? (singular)",
+          "a": "Yes, you are. / No, you're not."
+        },
+        {
+          "q": "Is he from Brazil?",
+          "a": "Yes, he is. / No, he's not."
+        },
+        {
+          "q": "Is she from Brazil?",
+          "a": "Yes, she is. / No, she's not."
+        },
+        {
+          "q": "Is it from Brazil?",
+          "a": "Yes, it is. / No, it's not."
+        },
+        {
+          "q": "Are we from Brazil?",
+          "a": "Yes, we are. / No, we're not."
+        },
+        {
+          "q": "Are you from Brazil? (plural)",
+          "a": "Yes, you are. / No, you're not."
+        },
+        {
+          "q": "Are they from Brazil?",
+          "a": "Yes, they are. / No, they're not."
+        }
+      ],
+      "prerequisiteLessonIds": [
+        "book01-u1-3a"
+      ],
+      "notes": "Introduz os pronomes plurais we/you/they; o verbo to be é ARE para os três. Referencia a sequência: Lição 1 (nomes) e Lição 2 (idades), fora deste conjunto de arquivos.",
+      "cumulativeScope": [
+        "Brazil",
+        "Canada",
+        "Japan",
+        "Where are you from? (singular: you/he/she)",
+        "we",
+        "you",
+        "they",
+        "Verb to be (am/is/are) with I/you/he/she/it/we/you/they",
+        "Plural pronouns we, you, they all use ARE",
+        "Yes/No questions and short answers with verb to be"
+      ],
+      "tips": [
+        "Os pronomes we (nós), you (vocês) e they (eles/elas) usam sempre o verbo ARE. Exemplo: 'we are' (nós somos/estamos), 'you are' (vocês são/estão), 'they are' (eles são/estão).",
+        "Forma contraída, muito comum na fala: we're (pronuncia-se 'uí-er'), you're (pronuncia-se 'iôr'), they're (pronuncia-se 'dêi-er'). Exemplo: 'We're Brazilian' (Nós somos brasileiros).",
+        "Na resposta curta de Yes/No, não use a forma contraída. Pergunta: 'Are you Brazilian?' (Você é brasileiro?) — resposta certa: 'Yes, I am', nunca 'Yes, I'm'."
+      ]
+    },
+    {
+      "id": "book01-u1-3c",
+      "book": "Book 1",
+      "unit": "Unit 1",
+      "lessonCode": "3C",
+      "title": "Continents and Countries",
+      "type": "vocabulary",
+      "vocabulary": [
+        "Africa",
+        "Morocco",
+        "Egypt",
+        "South Africa",
+        "Senegal",
+        "North America",
+        "The United States",
+        "Canada",
+        "Central America",
+        "Jamaica",
+        "Cuba",
+        "South America",
+        "Brazil",
+        "Chile",
+        "Argentina",
+        "Asia",
+        "China",
+        "Japan",
+        "Korea",
+        "Australia",
+        "New Zealand",
+        "Europe",
+        "Italy",
+        "France",
+        "Portugal",
+        "Germany"
+      ],
+      "grammarPoints": [],
+      "targetPhrases": [],
+      "canDo": [
+        "can name the five continents",
+        "can name countries within each continent"
+      ],
+      "exampleExchanges": [],
+      "prerequisiteLessonIds": [],
+      "notes": "The United States = the US = The States = America. Lista aberta no material original: \"Add more countries to this list!\"",
+      "cumulativeScope": [
+        "Brazil",
+        "Canada",
+        "Japan",
+        "Where are you from? (singular: you/he/she)",
+        "we",
+        "you",
+        "they",
+        "Verb to be (am/is/are) with I/you/he/she/it/we/you/they",
+        "Plural pronouns we, you, they all use ARE",
+        "Yes/No questions and short answers with verb to be",
+        "Africa",
+        "Morocco",
+        "Egypt",
+        "South Africa",
+        "Senegal",
+        "North America",
+        "The United States",
+        "Central America",
+        "Jamaica",
+        "Cuba",
+        "South America",
+        "Chile",
+        "Argentina",
+        "Asia",
+        "China",
+        "Korea",
+        "Australia",
+        "New Zealand",
+        "Europe",
+        "Italy",
+        "France",
+        "Portugal",
+        "Germany"
+      ],
+      "tips": [
+        "Nomes de países não usam artigo antes em inglês. Diga 'I'm from Brazil' (Eu sou do Brasil) — NUNCA 'I'm from the Brazil'.",
+        "Exceção: alguns países usam 'the' antes do nome, como 'the United States' (os Estados Unidos) e 'the UK' (o Reino Unido) — são exceções à regra acima, decore esses casos específicos.",
+        "'The USA', 'the US', 'The States' e 'America' são todas formas corretas e equivalentes de se referir aos Estados Unidos.",
+        "Os nomes dos continentes sempre começam com letra maiúscula em inglês: Africa (África, pronuncia-se 'áfrica'), Asia (Ásia, pronuncia-se 'êi-ja'), Europe (Europa, pronuncia-se 'iú-rop' — repare que é bem diferente do português), America (América), Australia (Austrália)."
+      ]
+    },
+    {
+      "id": "book01-u1-3d",
+      "book": "Book 1",
+      "unit": "Unit 1",
+      "lessonCode": "3D",
+      "title": "Ask about nationalities (Speaking)",
+      "type": "speaking",
+      "vocabulary": [],
+      "grammarPoints": [
+        "Full verb to be paradigm (I/you/he/she/it/we/you/they) applied to origin questions"
+      ],
+      "targetPhrases": [],
+      "canDo": [
+        "can state where someone is from using declarative, question and short-answer forms for all pronouns"
+      ],
+      "exampleExchanges": [
+        {
+          "q": "Where am I from?",
+          "a": "I'm from Brazil."
+        },
+        {
+          "q": "Am I from Brazil?",
+          "a": "Yes, I am. / No, I'm not."
+        },
+        {
+          "q": "Where are you from? (singular)",
+          "a": "You're from Brazil."
+        },
+        {
+          "q": "Are you from Brazil?",
+          "a": "Yes, you are. / No, you're not."
+        },
+        {
+          "q": "Where is he from?",
+          "a": "He's from Brazil."
+        },
+        {
+          "q": "Is he from Brazil?",
+          "a": "Yes, he is. / No, he's not."
+        },
+        {
+          "q": "Where is she from?",
+          "a": "She's from Brazil."
+        },
+        {
+          "q": "Is she from Brazil?",
+          "a": "Yes, she is. / No, she's not."
+        },
+        {
+          "q": "Where is it from?",
+          "a": "It's from Brazil."
+        },
+        {
+          "q": "Is it from Brazil?",
+          "a": "Yes, it is. / No, it's not."
+        },
+        {
+          "q": "Where are we from?",
+          "a": "We're from Brazil."
+        },
+        {
+          "q": "Are we from Brazil?",
+          "a": "Yes, we are. / No, we're not."
+        },
+        {
+          "q": "Where are you from? (plural)",
+          "a": "You're from Brazil."
+        },
+        {
+          "q": "Are you from Brazil? (plural)",
+          "a": "Yes, you are. / No, you're not."
+        },
+        {
+          "q": "Where are they from?",
+          "a": "They're from Brazil."
+        },
+        {
+          "q": "Are they from Brazil?",
+          "a": "Yes, they are. / No, they're not."
+        }
+      ],
+      "prerequisiteLessonIds": [
+        "book01-u1-3a",
+        "book01-u1-3b"
+      ],
+      "notes": null,
+      "cumulativeScope": [
+        "Brazil",
+        "Canada",
+        "Japan",
+        "Where are you from? (singular: you/he/she)",
+        "we",
+        "you",
+        "they",
+        "Verb to be (am/is/are) with I/you/he/she/it/we/you/they",
+        "Plural pronouns we, you, they all use ARE",
+        "Yes/No questions and short answers with verb to be",
+        "Africa",
+        "Morocco",
+        "Egypt",
+        "South Africa",
+        "Senegal",
+        "North America",
+        "The United States",
+        "Central America",
+        "Jamaica",
+        "Cuba",
+        "South America",
+        "Chile",
+        "Argentina",
+        "Asia",
+        "China",
+        "Korea",
+        "Australia",
+        "New Zealand",
+        "Europe",
+        "Italy",
+        "France",
+        "Portugal",
+        "Germany",
+        "Full verb to be paradigm (I/you/he/she/it/we/you/they) applied to origin questions"
+      ],
+      "tips": [
+        "Padrão de pergunta e resposta: 'Are you + nacionalidade?' (Você é + nacionalidade?) → resposta curta: 'Yes, I am' (Sim, sou) ou 'No, I'm not' (Não, não sou).",
+        "Atenção, brasileiros: diga 'I'm Brazilian' (Eu sou brasileiro), não 'I'm from Brazilian' — 'Brazilian' já é o adjetivo de nacionalidade, não precisa do 'from' antes."
+      ]
+    },
+    {
+      "id": "book01-u1-3e",
+      "book": "Book 1",
+      "unit": "Unit 1",
+      "lessonCode": "3E",
+      "title": "Vocabulary 2 – Nationalities",
+      "type": "vocabulary",
+      "vocabulary": [
+        "Brazilian",
+        "Argentinian",
+        "Australian",
+        "American",
+        "German",
+        "Korean",
+        "Chinese",
+        "Japanese",
+        "Vietnamese",
+        "British",
+        "Turkish",
+        "English",
+        "French",
+        "Thai",
+        "Swiss",
+        "Czech"
+      ],
+      "grammarPoints": [
+        "Nationality suffixes: -IAN, -AN, -ESE, -ISH",
+        "Irregular nationality forms (France→French, Thailand→Thai, Switzerland→Swiss, Czech Republic→Czech)"
+      ],
+      "targetPhrases": [
+        "I'm from Brazil. / I'm Brazilian.",
+        "He's from the United States. He's American."
+      ],
+      "canDo": [
+        "can form nationality adjectives from country names using common suffixes",
+        "can recognize irregular nationality forms"
+      ],
+      "exampleExchanges": [],
+      "prerequisiteLessonIds": [
+        "book01-u1-3a",
+        "book01-u1-3c"
+      ],
+      "notes": "Documento menciona \"exercícios na plataforma\", conteúdo fora deste material.",
+      "cumulativeScope": [
+        "Brazil",
+        "Canada",
+        "Japan",
+        "Where are you from? (singular: you/he/she)",
+        "we",
+        "you",
+        "they",
+        "Verb to be (am/is/are) with I/you/he/she/it/we/you/they",
+        "Plural pronouns we, you, they all use ARE",
+        "Yes/No questions and short answers with verb to be",
+        "Africa",
+        "Morocco",
+        "Egypt",
+        "South Africa",
+        "Senegal",
+        "North America",
+        "The United States",
+        "Central America",
+        "Jamaica",
+        "Cuba",
+        "South America",
+        "Chile",
+        "Argentina",
+        "Asia",
+        "China",
+        "Korea",
+        "Australia",
+        "New Zealand",
+        "Europe",
+        "Italy",
+        "France",
+        "Portugal",
+        "Germany",
+        "Full verb to be paradigm (I/you/he/she/it/we/you/they) applied to origin questions",
+        "Brazilian",
+        "Argentinian",
+        "Australian",
+        "American",
+        "German",
+        "Korean",
+        "Chinese",
+        "Japanese",
+        "Vietnamese",
+        "British",
+        "Turkish",
+        "English",
+        "French",
+        "Thai",
+        "Swiss",
+        "Czech",
+        "Nationality suffixes: -IAN, -AN, -ESE, -ISH",
+        "Irregular nationality forms (France→French, Thailand→Thai, Switzerland→Swiss, Czech Republic→Czech)"
+      ],
+      "tips": [
+        "Sufixo -IAN forma nacionalidades como: Brazilian (brasileiro), Argentinian (argentino), Australian (australiano).",
+        "Sufixo -AN forma nacionalidades como: American (americano), German (alemão), Korean (coreano).",
+        "Sufixo -ESE forma nacionalidades como: Chinese (chinês), Japanese (japonês) — nunca diga 'Chinesian', essa palavra não existe em inglês.",
+        "Sufixo -ISH forma nacionalidades como: British (britânico), English (inglês), Turkish (turco).",
+        "Algumas nacionalidades são irregulares e precisam ser decoradas, sem seguir nenhum sufixo: French (francês), Thai (tailandês, pronuncia-se 'tai', rima com 'my' em inglês), Swiss (suíço, pronuncia-se 'suís')."
+      ]
+    },
+    {
+      "id": "book01-u1-3f",
+      "book": "Book 1",
+      "unit": "Unit 1",
+      "lessonCode": "3F",
+      "title": "Ask about Origins and Nationalities – Yes/No Questions",
+      "type": "exercise",
+      "vocabulary": [
+        "Chinese",
+        "English",
+        "Scottish",
+        "Japanese",
+        "American",
+        "African"
+      ],
+      "grammarPoints": [
+        "Yes/No questions with verb to be about nationality, with short answers and corrections"
+      ],
+      "targetPhrases": [],
+      "canDo": [
+        "can ask and answer yes/no questions about nationality",
+        "can correct a wrong guess using \"No, ...not. ...\""
+      ],
+      "exampleExchanges": [
+        {
+          "q": "Is he Chinese?",
+          "a": "Yes, he is."
+        },
+        {
+          "q": "Is he English?",
+          "a": "No, he's not. He's Scottish."
+        },
+        {
+          "q": "Is he Chinese?",
+          "a": "No, she's not. She's Japanese."
+        },
+        {
+          "q": "Are they American?",
+          "a": "No, they're not. They're Chinese."
+        },
+        {
+          "q": "Are they Scottish?",
+          "a": "No, they're not. They're English."
+        },
+        {
+          "q": "Are they African?",
+          "a": "Yes, they are."
+        }
+      ],
+      "prerequisiteLessonIds": [
+        "book01-u1-3b",
+        "book01-u1-3d",
+        "book01-u1-3e"
+      ],
+      "notes": "No material original, cada pergunta desta tabela vem acompanhada de uma foto (exercício visual) — por decisão do usuário, as imagens foram excluídas do escopo deste JSON; só os pares pergunta/resposta em texto foram extraídos. A 3ª linha tem uma inconsistência de pronome no próprio documento original (pergunta \"Is he...?\" com resposta usando \"she\") — reproduzida como está, não corrigida.",
+      "cumulativeScope": [
+        "Brazil",
+        "Canada",
+        "Japan",
+        "Where are you from? (singular: you/he/she)",
+        "we",
+        "you",
+        "they",
+        "Verb to be (am/is/are) with I/you/he/she/it/we/you/they",
+        "Plural pronouns we, you, they all use ARE",
+        "Yes/No questions and short answers with verb to be",
+        "Africa",
+        "Morocco",
+        "Egypt",
+        "South Africa",
+        "Senegal",
+        "North America",
+        "The United States",
+        "Central America",
+        "Jamaica",
+        "Cuba",
+        "South America",
+        "Chile",
+        "Argentina",
+        "Asia",
+        "China",
+        "Korea",
+        "Australia",
+        "New Zealand",
+        "Europe",
+        "Italy",
+        "France",
+        "Portugal",
+        "Germany",
+        "Full verb to be paradigm (I/you/he/she/it/we/you/they) applied to origin questions",
+        "Brazilian",
+        "Argentinian",
+        "Australian",
+        "American",
+        "German",
+        "Korean",
+        "Chinese",
+        "Japanese",
+        "Vietnamese",
+        "British",
+        "Turkish",
+        "English",
+        "French",
+        "Thai",
+        "Swiss",
+        "Czech",
+        "Nationality suffixes: -IAN, -AN, -ESE, -ISH",
+        "Irregular nationality forms (France→French, Thailand→Thai, Switzerland→Swiss, Czech Republic→Czech)",
+        "Scottish",
+        "African",
+        "Yes/No questions with verb to be about nationality, with short answers and corrections"
+      ],
+      "tips": [
+        "Perguntas de Yes/No começam com o verbo, não com o sujeito. Exemplo: 'Is he Chinese?' (Ele é chinês?), 'Are they American?' (Eles são americanos?).",
+        "A resposta deve ser sempre uma resposta curta completa, nunca só 'Yes' ou 'No' sozinho. Diga 'Yes, he is' (Sim, ele é) ou 'No, he isn't' (Não, ele não é)."
+      ]
+    },
+    {
+      "id": "book01-u1-3g",
+      "book": "Book 1",
+      "unit": "Unit 1",
+      "lessonCode": "3G",
+      "title": "Grammar: Wh- vs Yes/No Questions",
+      "type": "grammar",
+      "vocabulary": [],
+      "grammarPoints": [
+        "Wh- questions (WHERE, WHAT, HOW OLD + verb to be + subject)",
+        "Yes/No questions (verb to be + subject, short answer Yes/No)"
+      ],
+      "targetPhrases": [
+        "What is your name?",
+        "How old is she?",
+        "Where are they from?"
+      ],
+      "canDo": [
+        "can distinguish Wh- questions from Yes/No questions",
+        "can form both question types with verb to be"
+      ],
+      "exampleExchanges": [
+        {
+          "q": "Are you Piedro?",
+          "a": "Yes, I am."
+        },
+        {
+          "q": "Is she 20 years old?",
+          "a": "No, she's not."
+        },
+        {
+          "q": "Are they Chinese?",
+          "a": "Yes, they are."
+        },
+        {
+          "q": "Is your last name Silva?",
+          "a": "No, it's not."
+        }
+      ],
+      "prerequisiteLessonIds": [
+        "book01-u1-3a",
+        "book01-u1-3b",
+        "book01-u1-3f"
+      ],
+      "notes": null,
+      "cumulativeScope": [
+        "Brazil",
+        "Canada",
+        "Japan",
+        "Where are you from? (singular: you/he/she)",
+        "we",
+        "you",
+        "they",
+        "Verb to be (am/is/are) with I/you/he/she/it/we/you/they",
+        "Plural pronouns we, you, they all use ARE",
+        "Yes/No questions and short answers with verb to be",
+        "Africa",
+        "Morocco",
+        "Egypt",
+        "South Africa",
+        "Senegal",
+        "North America",
+        "The United States",
+        "Central America",
+        "Jamaica",
+        "Cuba",
+        "South America",
+        "Chile",
+        "Argentina",
+        "Asia",
+        "China",
+        "Korea",
+        "Australia",
+        "New Zealand",
+        "Europe",
+        "Italy",
+        "France",
+        "Portugal",
+        "Germany",
+        "Full verb to be paradigm (I/you/he/she/it/we/you/they) applied to origin questions",
+        "Brazilian",
+        "Argentinian",
+        "Australian",
+        "American",
+        "German",
+        "Korean",
+        "Chinese",
+        "Japanese",
+        "Vietnamese",
+        "British",
+        "Turkish",
+        "English",
+        "French",
+        "Thai",
+        "Swiss",
+        "Czech",
+        "Nationality suffixes: -IAN, -AN, -ESE, -ISH",
+        "Irregular nationality forms (France→French, Thailand→Thai, Switzerland→Swiss, Czech Republic→Czech)",
+        "Scottish",
+        "African",
+        "Yes/No questions with verb to be about nationality, with short answers and corrections",
+        "Wh- questions (WHERE, WHAT, HOW OLD + verb to be + subject)",
+        "Yes/No questions (verb to be + subject, short answer Yes/No)"
+      ],
+      "tips": [
+        "Perguntas com Wh- começam com uma palavra interrogativa — WHERE (onde), WHAT (o quê), HOW OLD (que idade) — seguida do verbo to be e depois o sujeito.",
+        "Exemplos: 'What is your name?' (Qual é o seu nome?), 'Where are you from?' (De onde você é?), 'How old are you?' (Quantos anos você tem?).",
+        "Perguntas com Wh- não podem ser respondidas só com 'Yes' ou 'No' — é preciso dar uma informação real.",
+        "Atenção, brasileiros: a tradução literal de 'quantos anos você tem' não funciona em inglês. Nunca diga 'How old have you?' — o certo é sempre 'How old ARE you?' (usa o verbo to be, não o verbo to have)."
+      ]
+    }
+  ]
+}
