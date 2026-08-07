@@ -1,10 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
 import { GroqAIProvider } from "@/core/ai/GroqAIProvider";
 import { OpenAIProvider } from "@/core/ai/OpenAIProvider";
-import { TutorResponseSchema } from "@/core/ai/TutorResponse";
+import { TutorResponseSchema, type TutorResponse } from "@/core/ai/TutorResponse";
 import { TUTOR_SYSTEM_PROMPT } from "@/app-config/persona";
 import { getCourseOverview, getLessonByCode } from "@/app-config/curriculum";
-import type { Message } from "@/core/ai/AIProvider";
+import type { AIOptions, Message } from "@/core/ai/AIProvider";
 
 // The provider swap lives here, not in app-config/providers.ts: both
 // providers hold an API key server-side (GROQ_API_KEY / OPENAI_API_KEY),
@@ -49,6 +49,39 @@ const NUDGE_INSTRUCTIONS: Record<NonNullable<ChatRequestBody["nudge"]>, string> 
 };
 
 const MAX_NAME_LEN = 80;
+
+/** Strips accents and normalizes case/whitespace for a loose but reliable
+ * substring comparison — see findLeakedAnswer. */
+function normalizeForComparison(text: string): string {
+  return text
+    .normalize("NFD")
+    .replace(/\p{M}/gu, "") // strip diacritics (combining marks left after NFD)
+    .toLowerCase()
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+/**
+ * Defense in depth for persona.ts's ASKING VS. HELPING rule: even with
+ * explicit prompt instructions, a small model still sometimes answers its
+ * own question inside `speech`. This mechanically checks speech.english +
+ * speech.portuguese for any of expectedAnswer.values (case/accent-
+ * insensitive substring match) and returns the specific value found
+ * leaked, or null if clean. Only meaningful when the turn actually
+ * declared a checkable "enum" expectedAnswer — a "free" or missing one
+ * has nothing fixed to check against.
+ */
+function findLeakedAnswer(response: TutorResponse): string | null {
+  const expected = response.expectedAnswer;
+  if (!expected || expected.type !== "enum" || !expected.values?.length) return null;
+
+  const spoken = normalizeForComparison(`${response.speech.english} ${response.speech.portuguese}`);
+  for (const value of expected.values) {
+    const normalizedValue = normalizeForComparison(value);
+    if (normalizedValue && spoken.includes(normalizedValue)) return value;
+  }
+  return null;
+}
 
 export async function POST(req: NextRequest) {
   let body: ChatRequestBody;
@@ -139,20 +172,47 @@ export async function POST(req: NextRequest) {
   }
 
   try {
-    const response = await provider.send(
-      [{ role: "system", content: TUTOR_SYSTEM_PROMPT }, ...hints, ...conversation],
-      {
-        sessionId: body.sessionId,
-        detectedLanguage: body.detectedLanguage,
-        studentName,
-        currentLessonCode: body.currentLessonCode,
-        timeWarning: body.timeWarning,
-        attemptCount: body.attemptCount,
-        nudge: body.nudge,
-        usedNudges: body.usedNudges,
+    const messages: Message[] = [{ role: "system", content: TUTOR_SYSTEM_PROMPT }, ...hints, ...conversation];
+    const sendOptions: AIOptions = {
+      sessionId: body.sessionId,
+      detectedLanguage: body.detectedLanguage,
+      studentName,
+      currentLessonCode: body.currentLessonCode,
+      timeWarning: body.timeWarning,
+      attemptCount: body.attemptCount,
+      nudge: body.nudge,
+      usedNudges: body.usedNudges,
+    };
+
+    let response = TutorResponseSchema.parse(await provider.send(messages, sendOptions));
+
+    // Server-side guard (defense in depth for persona.ts's ASKING VS.
+    // HELPING rule) — even with explicit prompt instructions, a small
+    // model still sometimes answers its own question inside `speech`.
+    // One retry with a reinforced instruction, never more: this must
+    // never become an unbounded loop on a model that keeps leaking.
+    const leaked = findLeakedAnswer(response);
+    if (leaked) {
+      console.error(`[chat] "speech" vazou a resposta esperada ("${leaked}") — regenerando o turno`);
+      const reinforcedMessages: Message[] = [
+        ...messages,
+        {
+          role: "system",
+          content:
+            `Your previous reply said "${leaked}" inside speech, but that is the answer to the question ` +
+            `you were asking — ASKING VS. HELPING forbids this. Regenerate this turn: speech must contain ` +
+            `ONLY the question itself, nothing that reveals or hints at the answer. Any help belongs in ` +
+            `"hints" instead, not in speech.`,
+        },
+      ];
+      const retryResponse = TutorResponseSchema.parse(await provider.send(reinforcedMessages, sendOptions));
+      if (findLeakedAnswer(retryResponse)) {
+        console.error('[chat] segunda tentativa ainda vazou a resposta — usando mesmo assim (sem 3a tentativa)');
       }
-    );
-    return NextResponse.json(TutorResponseSchema.parse(response));
+      response = retryResponse;
+    }
+
+    return NextResponse.json(response);
   } catch (err) {
     console.error(err);
     return NextResponse.json({ erro: "Erro ao consultar IA" }, { status: 500 });

@@ -9,6 +9,11 @@
   --good: #31d158;
   --warn: #e0a94a;
   --bubble-student: rgba(0, 0, 0, 0.22);
+  /* Fixed px (not unitless) so it can be multiplied inside calc() below —
+     15px font-size * 1.4 matches the caption's typography exactly. Keep
+     this in sync with CAPTION_LINE_HEIGHT_PX in MobileVoiceScreen.tsx,
+     which uses the same number to measure real line wraps for pagination. */
+  --caption-line-height: 21px;
 }
 
 * {
@@ -237,8 +242,14 @@ body {
   image-rendering: auto;
   /* All 5 clips (see Avatar.tsx) are stills of the same character, shot
      the same way — same lighting, framing and scale — so a plain opacity
-     crossfade is enough to hide the switch, no need to mask a hard cut. */
-  transition: opacity 220ms ease-in-out;
+     crossfade is enough to hide the switch, no need to mask a hard cut.
+     280ms (not the previous 220ms) reads as a genuine soft fade rather
+     than a quick flick between layers; will-change hints the browser to
+     keep this layer's compositing ready so the fade itself stays smooth
+     even while the state switch also has other work happening (a video
+     seeking to frame 0, a new one starting playback) in the same tick. */
+  transition: opacity 280ms ease-in-out;
+  will-change: opacity;
 }
 
 .avatar-ui {
@@ -499,11 +510,47 @@ body {
   line-height: 1;
 }
 
-.tips-hint-text {
-  margin: 0;
+/* The 3-level hint ladder (see TipsPanel / persona.ts's HINTS LADDER) —
+   revealed hints stack top to bottom, oldest first, so the student can
+   still see the reformulation they already read while a later level adds
+   on top of it rather than replacing it. */
+.tips-hint-ladder {
+  margin: 0 0 12px;
+  padding-left: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
   font-size: 13px;
   line-height: 1.45;
   color: rgba(255, 255, 255, 0.88);
+}
+
+.tips-hint-latest {
+  color: var(--text);
+  font-weight: 600;
+}
+
+.tips-hint-more {
+  width: 100%;
+  border: 1px solid var(--accent-soft);
+  background: rgba(59, 169, 160, 0.12);
+  color: var(--accent);
+  border-radius: 12px;
+  padding: 10px 12px;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.tips-hint-more:hover {
+  background: rgba(59, 169, 160, 0.2);
+}
+
+.tips-hint-done {
+  text-align: center;
+  font-size: 13px;
+  color: var(--muted);
+  padding: 6px 0 0;
 }
 
 .tips-list {
@@ -744,6 +791,79 @@ body {
   color: var(--accent);
 }
 
+/* The single essential action on screen — solid primary treatment (never
+   ghost/outline, unlike every other button here), so it reads as the
+   thing to press, not decoration. idle state pulses slowly to draw the
+   eye ("sua vez de falar"); .force-send-btn--listening and
+   .force-send-btn--processing (below) override the look for the other
+   two states — see ForceSendButton.tsx for which class applies when. */
+.force-send-btn {
+  background: var(--accent);
+  border: 1px solid var(--accent-soft);
+  color: #06110f;
+  min-height: 56px;
+  padding: 12px 22px;
+  border-radius: 999px;
+  font-weight: 800;
+  font-size: 15px;
+  backdrop-filter: blur(8px);
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.35);
+  transition: background 150ms ease, box-shadow 150ms ease;
+  animation: force-send-pulse 2600ms ease-in-out infinite;
+}
+
+.force-send-btn:hover {
+  background: #46bcb2;
+}
+
+@keyframes force-send-pulse {
+  0%,
+  100% {
+    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.35), 0 0 0 0 rgba(59, 169, 160, 0.5);
+  }
+  50% {
+    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.35), 0 0 0 10px rgba(59, 169, 160, 0);
+  }
+}
+
+.force-send-btn--listening {
+  background: #00c853;
+  border-color: rgba(0, 200, 83, 0.5);
+  animation: none; /* the live waveform is the active indicator now, not the idle pulse */
+}
+
+.force-send-btn--listening:hover {
+  background: #00b84c;
+}
+
+.force-send-btn--processing {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: var(--stroke);
+  color: var(--muted);
+  cursor: not-allowed;
+  animation: none;
+  box-shadow: none;
+}
+
+.force-send-btn--processing:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.force-send-spinner {
+  width: 16px;
+  height: 16px;
+  border: 2px solid rgba(255, 255, 255, 0.25);
+  border-top-color: var(--muted);
+  border-radius: 50%;
+  animation: force-send-spin 700ms linear infinite;
+}
+
+@keyframes force-send-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
 /* Recording state of the talk button: an equalizer replaces the label so
    the student gets a live visual confirmation the mic is on — the button
    itself stays green/clickable to force-send early. Bar height is driven
@@ -796,6 +916,12 @@ body {
   }
   .avatar-frame {
     animation: none !important;
+  }
+  .force-send-btn {
+    animation: none !important;
+  }
+  .force-send-spinner {
+    animation-duration: 1500ms !important;
   }
 }
 
@@ -910,8 +1036,16 @@ body {
 }
 
 /* Sits just above the floating controls (see .mobile-avatar-controls'
-   height budget below) — tapping it opens the drawer, same as the handle. */
-.mobile-caption-float {
+   height budget below) — tapping it opens the drawer, same as the handle.
+   Reserves a fixed 3-line-tall block (min-height AND max-height, so it
+   can't grow OR shrink) at all times while started, even with no caption
+   text yet — otherwise the Falar button above it would jump position
+   every time a caption appears/disappears. Padding lives HERE, on the
+   wrapper, deliberately outside .mobile-caption-float's own clamp box
+   below — padding inside the clamped element used to eat into the
+   overflow:hidden area and slice the 3rd line in half instead of the
+   clip always landing exactly on a line boundary. */
+.mobile-caption-wrap {
   position: absolute;
   left: 14px;
   right: 14px;
@@ -921,15 +1055,48 @@ body {
   border-radius: 14px;
   background: rgba(0, 0, 0, 0.55);
   backdrop-filter: blur(8px);
-  font-size: 15px;
-  line-height: 1.4;
-  color: var(--text);
   cursor: pointer;
+  min-height: calc(3 * var(--caption-line-height) + 20px);
+  max-height: calc(3 * var(--caption-line-height) + 20px);
+  box-sizing: border-box;
+  display: flex;
+  align-items: flex-start;
+}
+
+.mobile-caption-float {
+  margin: 0;
+  font-size: 15px;
+  line-height: var(--caption-line-height);
+  color: var(--text);
   display: -webkit-box;
-  -webkit-line-clamp: 2;
+  -webkit-line-clamp: 3;
   -webkit-box-orient: vertical;
   overflow: hidden;
+  max-height: calc(3 * var(--caption-line-height));
   transition: opacity 200ms ease;
+}
+
+/* Invisible probe used purely to measure real line-wrap breaks for
+   pagination (see MobileVoiceScreen's computeCaptionPages) — same
+   font-size/line-height/effective width as the visible caption (24px =
+   this wrap's own 14px + .mobile-caption-wrap's 10px padding, so the
+   content-box width matches exactly), but unclamped and off-screen so its
+   natural scrollHeight reflects the TRUE number of lines a given chunk of
+   text would take, with no cap. */
+.mobile-caption-measure {
+  position: fixed;
+  left: 24px;
+  right: 24px;
+  top: 0;
+  visibility: hidden;
+  pointer-events: none;
+  z-index: -1;
+  font-size: 15px;
+  line-height: var(--caption-line-height);
+  height: auto;
+  max-height: none;
+  overflow: visible;
+  white-space: normal;
 }
 
 /* Falar + tips, floating over the avatar — hidden while the drawer is
@@ -1011,8 +1178,20 @@ body {
   flex: none;
   display: flex;
   gap: 8px;
-  padding: 10px 14px calc(env(safe-area-inset-bottom, 0px) + 10px);
+  padding: 10px 14px;
   border-top: 1px solid var(--stroke);
+}
+
+/* SOMAR Mobile Experience credit — the drawer's own footer, mirroring
+   desktop's .footer at the bottom of the chat section. Sits below the
+   text input as the true last element, so it (not the input row) owns
+   the safe-area bottom padding on notched/gesture-bar phones. */
+.mobile-footer-credit {
+  flex: none;
+  padding: 4px 14px calc(env(safe-area-inset-bottom, 0px) + 10px);
+  color: rgba(255, 255, 255, 0.4);
+  font-size: 11px;
+  text-align: center;
 }
 
 .mobile-screen .lesson-complete-overlay {

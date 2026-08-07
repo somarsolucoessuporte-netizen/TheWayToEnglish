@@ -35,11 +35,34 @@ export const TutorResponseSchema = z
      * off at least once, independent of the session timer. */
     completedGoals: z.array(z.string()).optional(),
     level: z.enum(["A1", "A2", "B1", "B2", "C1"]).optional(),
-    /** Short, real-time tip (in Portuguese) that helps the student answer
-     * THIS turn's question specifically — not a lesson-wide tip list. Shown
-     * on demand behind the 💡 button (see TipsPanel); "" or omitted when
-     * this turn doesn't ask anything a hint would help with. */
-    hint: z.string().optional(),
+    /** What answer(s) would satisfy THIS turn's question, if it asked one —
+     * never spoken or shown to the student. Exists purely so the server-
+     * side guard (see app/api/chat/route.ts's checkForLeakedAnswer) can
+     * mechanically verify `speech` never states one of these outright —
+     * defense in depth against the model leaking the answer inside the
+     * question itself (see persona.ts's ASKING VS. HELPING section).
+     * Omitted for turns that don't ask a checkable question (open-ended
+     * prompts, corrections, praise, etc.). */
+    expectedAnswer: z
+      .object({
+        type: z.enum(["enum", "free"]),
+        /** Required when type is "enum" — every acceptable surface form of
+         * the answer (e.g. ["Africa"], or ["Yes, I am", "Yes I am"] for a
+         * short-answer question). Omitted for "free" (open-ended, nothing
+         * fixed to check against). */
+        values: z.array(z.string()).optional(),
+      })
+      .optional(),
+    /** Up to 3 escalating hints for THIS turn's question — see persona.ts's
+     * ASKING VS. HELPING section for what each level should contain
+     * (reformulation, partial clue, guided answer, in that order). NEVER
+     * spoken by the TTS and NEVER shown automatically — only revealed one
+     * level at a time behind the 💡 button (see TipsPanel), which is the
+     * whole point: the student must attempt the question in silence before
+     * any help appears. Omitted when this turn doesn't ask anything a hint
+     * would help with (pure praise, a correction already carrying its own
+     * audio model, etc.). */
+    hints: z.array(z.string()).max(3).optional(),
     /** At most one per reply — a country/continent/city mentioned for the
      * first time in the conversation gets an illustrative image (see
      * VisualCard + /api/image, which resolves `query` via Wikipedia). */
@@ -126,7 +149,15 @@ function normalizeForSchema(value: unknown): unknown {
       portuguese: typeof s.portuguese === "string" ? s.portuguese : "",
     };
   }
-  return { ...obj, speech };
+  const result: Record<string, unknown> = { ...obj, speech };
+  // Coerces the retired single "hint" string (a model still trained on/
+  // echoing the old field shape) into the new "hints" array rather than
+  // failing schema validation outright — see TutorResponseSchema.hints.
+  if (typeof result.hint === "string" && result.hint.trim() && !Array.isArray(result.hints)) {
+    result.hints = [result.hint.trim()];
+  }
+  delete result.hint;
+  return result;
 }
 
 function extractJsonObject(raw: string): string | null {

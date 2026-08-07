@@ -325,17 +325,45 @@ export default function Page() {
           ? branding.copy.bootConnecting
           : branding.copy.bootReady;
 
-  // Tracks the current turn's hint (see TutorResponse.hint / persona.ts's
-  // HINTS section) — real-time, tied to whatever the tutor just asked, not
-  // a static per-lesson list. Recomputed from `entries` so it's never out
-  // of sync with what's actually on screen.
-  const currentHint = useMemo(() => {
+  // Tracks the current turn's 3-level hint ladder (see TutorResponse.hints
+  // / persona.ts's HINTS LADDER section) — real-time, tied to whatever the
+  // tutor just asked, not a static per-lesson list. Recomputed from
+  // `entries` so it's never out of sync with what's actually on screen.
+  // currentHintsEntryIndex identifies WHICH tutor turn currentHints came
+  // from (not just its content), so the reveal-level effect below can
+  // tell "the tutor asked a new question" apart from "the array is empty
+  // both times" — content equality alone can't distinguish those.
+  const currentHintsEntryIndex = useMemo(() => {
     for (let i = entries.length - 1; i >= 0; i--) {
-      const entry = entries[i];
-      if (entry.role === "tutor") return entry.response.hint;
+      if (entries[i].role === "tutor") return i;
     }
     return undefined;
   }, [entries]);
+  const currentHints = useMemo(() => {
+    if (currentHintsEntryIndex === undefined) return undefined;
+    const entry = entries[currentHintsEntryIndex];
+    return entry.role === "tutor" ? entry.response.hints : undefined;
+  }, [entries, currentHintsEntryIndex]);
+
+  // How many of currentHints[] the student has revealed so far (0 = none
+  // — the whole point of ASKING VS. HELPING is that nothing shows until
+  // the student actively asks for it). Resets to 0 the instant a new
+  // tutor turn arrives, regardless of whether it has hints at all.
+  const [hintLevel, setHintLevel] = useState(0);
+  useEffect(() => {
+    setHintLevel(0);
+  }, [currentHintsEntryIndex]);
+
+  // Every 💡 click advances one level (see TipsPanel) — logged as the
+  // "hintLevelUsed" metric the client asked to have recorded, since
+  // there's no analytics backend to send it to yet.
+  function handleHintReveal() {
+    setHintLevel((prev) => {
+      const next = Math.min(prev + 1, currentHints?.length ?? 3);
+      console.log("[hint] nível usado:", next);
+      return next;
+    });
+  }
 
   const isMobile = useIsMobile();
 
@@ -504,7 +532,9 @@ export default function Page() {
               showTimeUpNotice={showTimeUpNotice}
               entries={entries}
               currentLesson={currentLesson}
-              currentHint={currentHint}
+              currentHints={currentHints}
+              hintLevel={hintLevel}
+              onHintReveal={handleHintReveal}
               tipsAttention={tipsAttention}
               onTipsBlinkEnd={() => setTipsAttention("expanded")}
               inputValue={inputValue}
@@ -516,6 +546,7 @@ export default function Page() {
               lessonComplete={lessonComplete}
               onEndLesson={handleEndLesson}
               micAmplitude={micAmplitude}
+              transcribing={transcribing}
             />
           ) : (
             <div className="main">
@@ -551,6 +582,7 @@ export default function Page() {
                           label={branding.copy.forceSendButton}
                           listeningLabel={branding.copy.forceSendWhileListening}
                           isListening={characterState === "listening"}
+                          processing={transcribing}
                           onClick={handleTalkClick}
                           amplitude={micAmplitude}
                         />
@@ -567,7 +599,9 @@ export default function Page() {
                     <div className="chat-subtitle">{branding.copy.chatSubtitle}</div>
                   </div>
                   <TipsPanel
-                    hint={currentHint}
+                    hints={currentHints}
+                    hintLevel={hintLevel}
+                    onHintReveal={handleHintReveal}
                     lesson={currentLesson}
                     attention={tipsAttention}
                     onBlinkEnd={() => setTipsAttention("expanded")}

@@ -7,6 +7,8 @@ import type { CharacterState } from "../character-state-machine/stateMachine";
 export type AvatarVideoState = "idle" | "listening" | "thinking" | "speaking" | "praise";
 
 type AvatarListener = (state: AvatarVideoState) => void;
+type AudioDurationListener = (durationSec: number | null) => void;
+type SpeechSegmentEndedListener = () => void;
 
 /**
  * Minimal state relay between the conversation orchestrator and the Avatar
@@ -26,6 +28,8 @@ export class AvatarEngine {
   private currentState: CharacterState = "idle";
   private transcribing = false;
   private readonly listeners = new Set<AvatarListener>();
+  private readonly audioDurationListeners = new Set<AudioDurationListener>();
+  private readonly speechSegmentEndedListeners = new Set<SpeechSegmentEndedListener>();
 
   subscribe(listener: AvatarListener): () => void {
     this.listeners.add(listener);
@@ -72,6 +76,41 @@ export class AvatarEngine {
     // Only "listening" is ever affected by this flag — no-op notify
     // otherwise (nothing downstream would actually change).
     if (this.currentState === "listening") this.notify();
+  }
+
+  /**
+   * Called by the orchestrator (see its speech.on("start", ...) handler)
+   * the instant a new TTS audio segment actually starts playing, with that
+   * segment's real duration in seconds (or null if unavailable) — used by
+   * Avatar.tsx to size the speaking clip's manual loop count for THIS
+   * segment (see public/avatar's smart-loop rule: a 3-part correction
+   * drill fires this once per part, each with its own duration, all while
+   * the character state stays "speaking" continuously throughout).
+   */
+  setSpeechAudioDuration(durationSec: number | null): void {
+    for (const cb of this.audioDurationListeners) cb(durationSec);
+  }
+
+  onSpeechAudioDuration(cb: AudioDurationListener): () => void {
+    this.audioDurationListeners.add(cb);
+    return () => this.audioDurationListeners.delete(cb);
+  }
+
+  /**
+   * Called by the orchestrator (see its speech.on("end"/"error", ...)
+   * handlers) the instant the CURRENT audio segment's real playback stops
+   * — fires once per speak() call, not once per multi-part turn (compare
+   * setState("idle"), which only happens after the WHOLE turn's SPEECH_END).
+   * Avatar.tsx uses this to snap the speaking clip to a neutral frame
+   * instead of riding out a mostly-empty final loop in silence.
+   */
+  notifySpeechSegmentEnded(): void {
+    for (const cb of this.speechSegmentEndedListeners) cb();
+  }
+
+  onSpeechSegmentEnded(cb: SpeechSegmentEndedListener): () => void {
+    this.speechSegmentEndedListeners.add(cb);
+    return () => this.speechSegmentEndedListeners.delete(cb);
   }
 
   private notify(): void {

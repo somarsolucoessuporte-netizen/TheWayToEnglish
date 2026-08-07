@@ -30,6 +30,8 @@ export class GroqAIProvider implements AIProvider {
         model: this.model,
         messages,
         temperature: 0.6,
+        // Bounds worst-case latency — see OpenAIProvider's matching comment.
+        max_tokens: 500,
         response_format: { type: "json_object" },
       }),
     });

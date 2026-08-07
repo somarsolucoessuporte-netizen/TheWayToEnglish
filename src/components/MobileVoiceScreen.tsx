@@ -8,11 +8,57 @@ import type { AvatarEngine } from "@/core/avatar-engine/AvatarEngine";
 import type { CharacterState } from "@/core/character-state-machine/stateMachine";
 import type { ChatEntry } from "@/core/conversation/orchestrator";
 import { Avatar } from "./Avatar";
-import { ChatLog, revealedText } from "./ChatLog";
+import { ChatLog } from "./ChatLog";
 import { ForceSendButton } from "./ForceSendButton";
 import { LessonCompleteCard } from "./LessonCompleteCard";
 import { LessonTimer } from "./LessonTimer";
 import { TipsPanel, type TipsAttention } from "./TipsPanel";
+
+/** Must match --caption-line-height in globals.css — used to compute the
+ * 3-line height budget when measuring real line wraps for caption
+ * pagination (see computeCaptionPages). */
+const CAPTION_LINE_HEIGHT_PX = 21;
+/** +1px of slack for subpixel rounding when comparing a measured
+ * scrollHeight against the exact 3-line budget. */
+const CAPTION_MAX_HEIGHT_PX = CAPTION_LINE_HEIGHT_PX * 3 + 1;
+
+interface CaptionPage {
+  /** Index of this page's first word within the full, combined (english
+   * words then portuguese words) word sequence for the current tutor
+   * entry — lets the reveal-driven render below figure out which page
+   * the most recently revealed word falls into. */
+  startWordIndex: number;
+  words: string[];
+}
+
+/** Splits `words` into pages that each fit within a 3-line block at the
+ * caption's real rendered width, using `measureEl` (see
+ * .mobile-caption-measure) to grow a candidate line by line and check its
+ * true wrapped height — this is the only reliable way to know where a
+ * line actually breaks for a given font/width without reimplementing the
+ * browser's own text-wrapping algorithm. Never truncates: a question that
+ * genuinely needs more than 3 lines gets a 2nd (3rd, ...) page instead of
+ * losing content, per the "nunca cortar instrução" requirement. */
+function computeCaptionPages(words: string[], measureEl: HTMLDivElement): CaptionPage[] {
+  if (words.length === 0) return [];
+  const pages: CaptionPage[] = [];
+  let currentWords: string[] = [];
+  let currentStart = 0;
+
+  for (let i = 0; i < words.length; i++) {
+    const candidate = [...currentWords, words[i]];
+    measureEl.textContent = candidate.join(" ");
+    if (measureEl.scrollHeight > CAPTION_MAX_HEIGHT_PX && currentWords.length > 0) {
+      pages.push({ startWordIndex: currentStart, words: currentWords });
+      currentStart = i;
+      currentWords = [words[i]];
+    } else {
+      currentWords = candidate;
+    }
+  }
+  pages.push({ startWordIndex: currentStart, words: currentWords });
+  return pages;
+}
 
 /** Below this drag-position percentage (0 = fully open, 100 = fully
  * closed) the drawer snaps open on release; at/above it, closed. Only
@@ -60,7 +106,9 @@ export function MobileVoiceScreen({
   showTimeUpNotice,
   entries,
   currentLesson,
-  currentHint,
+  currentHints,
+  hintLevel,
+  onHintReveal,
   tipsAttention,
   onTipsBlinkEnd,
   inputValue,
@@ -69,6 +117,7 @@ export function MobileVoiceScreen({
   lessonComplete,
   onEndLesson,
   micAmplitude,
+  transcribing,
 }: {
   avatarEngine: AvatarEngine;
   started: boolean;
@@ -81,7 +130,9 @@ export function MobileVoiceScreen({
   showTimeUpNotice: boolean;
   entries: ChatEntry[];
   currentLesson: CurriculumLesson | undefined;
-  currentHint: string | undefined;
+  currentHints: string[] | undefined;
+  hintLevel: number;
+  onHintReveal: () => void;
   tipsAttention: TipsAttention;
   onTipsBlinkEnd: () => void;
   inputValue: string;
@@ -90,6 +141,7 @@ export function MobileVoiceScreen({
   lessonComplete: boolean;
   onEndLesson: () => void;
   micAmplitude: number;
+  transcribing: boolean;
 }) {
   const [drawerOpen, setDrawerOpen] = useState(false);
   const drawerRef = useRef<HTMLDivElement>(null);
@@ -202,28 +254,82 @@ export function MobileVoiceScreen({
     return undefined;
   }, [entries]);
 
-  const captionText = useMemo(() => {
-    if (lastTutorEntryIndex === undefined) return undefined;
+  // The FULL text for the current tutor turn (english words, then
+  // portuguese words — same order the reveal plays them in), independent
+  // of how much has actually been revealed so far. Used only to precompute
+  // page boundaries ahead of time (see the pagination effect below) — it
+  // is NEVER rendered directly, so knowing it early (even while `pending`)
+  // doesn't leak anything to the student.
+  const fullCaptionWords = useMemo(() => {
+    if (lastTutorEntryIndex === undefined) return [];
     const entry = entries[lastTutorEntryIndex];
-    if (entry.role !== "tutor" || entry.pending) return undefined;
-    const english = revealedText(entry.response.speech.english, entry.reveal?.englishWordsShown);
-    const portuguese = revealedText(entry.response.speech.portuguese, entry.reveal?.portugueseWordsShown);
-    return [english, portuguese].filter((s) => s.trim()).join(" ") || undefined;
+    if (entry.role !== "tutor") return [];
+    const englishWords = entry.response.speech.english.trim().split(/\s+/).filter(Boolean);
+    const portugueseWords = entry.response.speech.portuguese.trim().split(/\s+/).filter(Boolean);
+    return [...englishWords, ...portugueseWords];
   }, [entries, lastTutorEntryIndex]);
 
+  // Paginated once per NEW tutor entry (see computeCaptionPages) — not on
+  // every revealed word, since the full text (and therefore the page
+  // breaks) is already fixed the moment the entry exists; only which page
+  // is CURRENTLY SHOWN changes as words reveal (see revealedWordCount
+  // below), which is cheap array math, not a DOM remeasure.
+  const measureRef = useRef<HTMLDivElement>(null);
+  const [captionPages, setCaptionPages] = useState<CaptionPage[]>([]);
+  useEffect(() => {
+    const measureEl = measureRef.current;
+    if (!measureEl || fullCaptionWords.length === 0) {
+      setCaptionPages([]);
+      return;
+    }
+    setCaptionPages(computeCaptionPages(fullCaptionWords, measureEl));
+    // Deliberately keyed on lastTutorEntryIndex alone, not fullCaptionWords
+    // — the words for a given entry index never change after the entry is
+    // created, so re-measuring on every reveal tick (which produces a new
+    // `entries` array reference, and would recompute fullCaptionWords'
+    // memo identity too) would be pure waste.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [lastTutorEntryIndex]);
+
+  const revealedWordCount = useMemo(() => {
+    if (lastTutorEntryIndex === undefined) return 0;
+    const entry = entries[lastTutorEntryIndex];
+    if (entry.role !== "tutor" || entry.pending) return 0;
+    // No reveal state at all (e.g. a scripted forceAnnounce entry, which
+    // skips the reveal machinery) means "show everything immediately".
+    if (!entry.reveal) return fullCaptionWords.length;
+    return entry.reveal.englishWordsShown + entry.reveal.portugueseWordsShown;
+  }, [entries, lastTutorEntryIndex, fullCaptionWords.length]);
+
+  // Which page the most recently revealed word falls into, and how much
+  // of THAT page's text to show — words already revealed on an earlier
+  // page are simply gone once the boundary is crossed (a hard page swap,
+  // not a scroll), matching "mostra bloco 1 → avança quando o TTS chega
+  // no próximo segmento".
+  const pageText = useMemo(() => {
+    if (captionPages.length === 0 || revealedWordCount === 0) return undefined;
+    let page = captionPages[0];
+    for (const candidate of captionPages) {
+      if (candidate.startWordIndex < revealedWordCount) page = candidate;
+      else break;
+    }
+    const wordsRevealedInPage = Math.min(page.words.length, revealedWordCount - page.startWordIndex);
+    return page.words.slice(0, wordsRevealedInPage).join(" ") || undefined;
+  }, [captionPages, revealedWordCount]);
+
   // Fades in exactly once per tutor entry, the moment its first word
-  // appears — NOT on every subsequent word (captionText itself changes on
-  // every revealed word, which would otherwise flicker the opacity on
-  // every single word instead of fading in smoothly once).
+  // appears — NOT on every subsequent word or page turn (pageText itself
+  // changes on every revealed word, which would otherwise flicker the
+  // opacity constantly instead of fading in smoothly once).
   const [captionVisible, setCaptionVisible] = useState(true);
   const fadedInForIndexRef = useRef<number | undefined>(undefined);
   useEffect(() => {
-    if (!captionText || fadedInForIndexRef.current === lastTutorEntryIndex) return;
+    if (!pageText || fadedInForIndexRef.current === lastTutorEntryIndex) return;
     fadedInForIndexRef.current = lastTutorEntryIndex;
     setCaptionVisible(false);
     const t = window.setTimeout(() => setCaptionVisible(true), 20);
     return () => window.clearTimeout(t);
-  }, [captionText, lastTutorEntryIndex]);
+  }, [pageText, lastTutorEntryIndex]);
 
   return (
     <div className="mobile-screen">
@@ -260,15 +366,23 @@ export function MobileVoiceScreen({
 
       {started && (
         <>
-          {captionText && (
-            <div
-              className="mobile-caption-float"
-              style={{ opacity: captionVisible ? 1 : 0 }}
-              onClick={openDrawer}
-            >
-              {captionText}
-            </div>
-          )}
+          {/* Always rendered (space reserved for a full 3-line block via
+              .mobile-caption-wrap's min/max-height — see globals.css) so
+              the Falar button below it never jumps position between an
+              empty turn and a 3-line one. The text itself only shows once
+              there's something revealed to show (pageText undefined
+              otherwise), same as before. */}
+          <div className="mobile-caption-wrap" onClick={openDrawer}>
+            {pageText && (
+              <p className="mobile-caption-float" style={{ opacity: captionVisible ? 1 : 0 }}>
+                {pageText}
+              </p>
+            )}
+          </div>
+          {/* Invisible measuring probe for computeCaptionPages — see its
+              doc comment and the .mobile-caption-measure CSS rule. Never
+              shown; textContent is written to it imperatively. */}
+          <div ref={measureRef} className="mobile-caption-measure" aria-hidden="true" />
 
           {!drawerOpen && (
             <div className="mobile-avatar-controls">
@@ -276,10 +390,18 @@ export function MobileVoiceScreen({
                 label={branding.copy.forceSendButton}
                 listeningLabel={branding.copy.forceSendWhileListening}
                 isListening={characterState === "listening"}
+                processing={transcribing}
                 onClick={handleTalkClick}
                 amplitude={micAmplitude}
               />
-              <TipsPanel hint={currentHint} lesson={currentLesson} attention={tipsAttention} onBlinkEnd={onTipsBlinkEnd} />
+              <TipsPanel
+                hints={currentHints}
+                hintLevel={hintLevel}
+                onHintReveal={onHintReveal}
+                lesson={currentLesson}
+                attention={tipsAttention}
+                onBlinkEnd={onTipsBlinkEnd}
+              />
             </div>
           )}
 
@@ -322,6 +444,8 @@ export function MobileVoiceScreen({
                   Enviar
                 </button>
               </form>
+
+              <footer className="mobile-footer-credit">{branding.copy.mobileFooter}</footer>
             </div>
           </div>
         </>

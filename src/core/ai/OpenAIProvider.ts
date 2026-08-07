@@ -32,6 +32,13 @@ export class OpenAIProvider implements AIProvider {
         model: this.model,
         messages,
         temperature: 0.6,
+        // Bounds worst-case latency: generation time is roughly linear in
+        // token count, and TutorResponse's JSON shape (a couple of short
+        // spoken sentences, up to 3 short hints) never legitimately needs
+        // more than this — without a cap, an occasional runaway
+        // completion (the model rambling before closing the JSON object)
+        // is pure wasted time the student is sitting there for.
+        max_tokens: 500,
         response_format: { type: "json_object" },
       }),
     });

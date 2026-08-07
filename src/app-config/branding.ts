@@ -21,6 +21,7 @@ export const branding = {
     demoLoginTitle: "Entrar como:",
     forceSendButton: "Falar",
     forceSendWhileListening: "Ouvindo...",
+    forceSendProcessing: "Um instante…",
     chatTitle: "Conversa",
     chatSubtitle: "Fale ou digite em inglês.",
     chatPlaceholder: "Ex: How do I say 'saudade' in English?",
@@ -43,5 +44,6 @@ export const branding = {
     bootErrorText: "Estamos com instabilidade. Tente novamente em instantes.",
     bootRetryButton: "Tentar novamente",
     footer: "The Way To English — Tutor IA",
+    mobileFooter: "Somar Soluções Digitais",
   },
 } as const;

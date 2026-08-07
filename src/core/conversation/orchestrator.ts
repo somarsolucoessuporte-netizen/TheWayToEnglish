@@ -180,7 +180,16 @@ export class ConversationOrchestrator {
     // through an entire multi-part turn and stop only at its true end.
     this.speech.on("start", () => {
       this.stateMachine.dispatch({ type: "SPEECH_START" });
+      // Lets Avatar.tsx size the speaking clip's manual loop count for
+      // THIS specific segment — see AvatarEngine.setSpeechAudioDuration's
+      // doc comment for why this fires once per part, not once per turn.
+      this.avatar.setSpeechAudioDuration(this.speech.getAudioElement?.()?.duration ?? null);
     });
+    // Fires once per individual speak() call's real end (or failure) — see
+    // AvatarEngine.notifySpeechSegmentEnded's doc comment for why this is
+    // NOT the same thing as the whole turn's SPEECH_END.
+    this.speech.on("end", () => this.avatar.notifySpeechSegmentEnded());
+    this.speech.on("error", () => this.avatar.notifySpeechSegmentEnded());
 
     // The transcript is delivered here, not through stop()'s return value —
     // continuous:false engines (the default BrowserSTTProvider) stop
