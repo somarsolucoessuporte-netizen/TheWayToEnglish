@@ -63,16 +63,6 @@ export const TutorResponseSchema = z
      * would help with (pure praise, a correction already carrying its own
      * audio model, etc.). */
     hints: z.array(z.string()).max(3).optional(),
-    /** At most one per reply — a country/continent/city mentioned for the
-     * first time in the conversation gets an illustrative image (see
-     * VisualCard + /api/image, which resolves `query` via Wikipedia). */
-    visual: z
-      .object({
-        type: z.literal("image"),
-        query: z.string(),
-        caption: z.string(),
-      })
-      .optional(),
   })
   .refine((data) => data.speech.english.trim() || data.speech.portuguese.trim(), {
     message: "speech.english and speech.portuguese can't both be empty",

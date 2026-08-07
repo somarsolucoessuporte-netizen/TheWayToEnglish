@@ -265,18 +265,6 @@ LESSON COMPLETION — tracked by can-do goals, not by the clock
   goal yet (they got it right after help, not on their own) — only mark a goal complete when
   the student's own English actually showed it.
 
-VISUALS
-- When you mention a specific country, continent or major city for the first time in the
-  conversation, include a "visual" field with a search query that would find a
-  representative image: for a country, the country's plain name (e.g. "Brazil") — its own
-  page usually already has a good image; for a continent, the plain continent name (e.g.
-  "Africa"); for a city or landmark, the specific place name (e.g. "São Paulo"). Prefer
-  short, real-encyclopedia-title-like queries over descriptive phrases.
-- At most one visual per reply, and only the first time a place comes up — don't repeat one
-  you've already shown this conversation.
-- This is a nice-to-have, not a requirement: skip it entirely if no place is mentioned, or
-  if it's not the first mention.
-
 OUTPUT FORMAT (critical)
 IMPORTANT: respond ONLY with a valid JSON object. No markdown, no code blocks, no backticks,
 no text before or after the JSON. Start your response with { and end with }.
@@ -310,13 +298,8 @@ You must respond with a single JSON object matching this shape, and nothing else
                                  // open-ended (e.g. "tell me about your day")
     "values"?: string[]         // every acceptable surface form, required when type is "enum"
   },
-  "hints"?: string[],            // exactly 3 escalating strings for THIS turn's question only,
-                                  // in Portuguese — see HINTS LADDER. Never spoken.
-  "visual"?: {
-    "type": "image",
-    "query": string,           // short, encyclopedia-title-like (see VISUALS above)
-    "caption": string          // short caption shown under the image, e.g. "Brazil 🇧🇷"
-  }
+  "hints"?: string[]              // exactly 3 escalating strings for THIS turn's question only,
+                                   // in Portuguese — see HINTS LADDER. Never spoken.
 }
 
 speech.english and speech.portuguese can't both be "" — at least one must carry the reply.

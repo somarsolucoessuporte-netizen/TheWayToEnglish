@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useRef } from "react";
 import type { ChatEntry } from "@/core/conversation/orchestrator";
+import { detectVisualEntity } from "@/core/utils/detectVisualEntity";
 import { CorrectionCard } from "./CorrectionCard";
 import { MiniCorrectionCard } from "./MiniCorrectionCard";
 import { VisualCard } from "./VisualCard";
@@ -29,20 +30,25 @@ export function ChatLog({ entries, compact = false }: { entries: ChatEntry[]; co
     if (el) el.scrollTop = el.scrollHeight;
   }, [entries]);
 
-  // A query only renders its image the first time it shows up in the
-  // session — recomputed from `entries` each time so it never gets out of
-  // sync with the actual chat history.
-  const firstOccurrenceIndex = useMemo(() => {
+  // Which entity (if any — see detectVisualEntity/app-config/visual-
+  // entities.ts) earns an illustrative image for a given tutor entry —
+  // code-side detection, not a model-generated field (see TutorResponse's
+  // history: the model followed a "visual" instruction inconsistently).
+  // Only the FIRST message that mentions a given entity gets the card —
+  // recomputed from `entries` each time so it never gets out of sync with
+  // the actual chat history, same dedupe behavior as before.
+  const visualEntityForIndex = useMemo(() => {
     const seen = new Set<string>();
-    const firstIndexForIndex = new Set<number>();
+    const result = new Map<number, string>();
     entries.forEach((entry, i) => {
-      const query = entry.role === "tutor" ? entry.response.visual?.query : undefined;
-      if (query && !seen.has(query)) {
-        seen.add(query);
-        firstIndexForIndex.add(i);
+      if (entry.role !== "tutor" || entry.pending) return;
+      const entity = detectVisualEntity(entry.response.speech.english);
+      if (entity && !seen.has(entity)) {
+        seen.add(entity);
+        result.set(i, entity);
       }
     });
-    return firstIndexForIndex;
+    return result;
   }, [entries]);
 
   // Flags the student's own message when the tutor's very next reply
@@ -136,8 +142,8 @@ export function ChatLog({ entries, compact = false }: { entries: ChatEntry[]; co
               ) : (
                 <CorrectionCard correction={entry.response.correction} />
               ))}
-            {entry.response.visual && firstOccurrenceIndex.has(i) && (
-              <VisualCard visual={entry.response.visual} />
+            {visualEntityForIndex.has(i) && (
+              <VisualCard query={visualEntityForIndex.get(i)!} caption={visualEntityForIndex.get(i)!} />
             )}
           </div>
         );

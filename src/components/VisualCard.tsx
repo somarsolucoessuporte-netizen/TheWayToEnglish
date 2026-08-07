@@ -1,16 +1,19 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import type { TutorResponse } from "@/core/ai/TutorResponse";
 
-export function VisualCard({ visual }: { visual: NonNullable<TutorResponse["visual"]> }) {
+/** `query` is what /api/image resolves via Wikipedia (see that route);
+ * `caption` is shown under the image once it loads — see ChatLog's
+ * detectVisualEntity for where both come from (a plain string match
+ * against app-config/visual-entities.ts, not a model-generated field). */
+export function VisualCard({ query, caption }: { query: string; caption: string }) {
   const [imageUrl, setImageUrl] = useState<string | null>(null);
 
   useEffect(() => {
     let cancelled = false;
     setImageUrl(null);
 
-    fetch(`/api/image?q=${encodeURIComponent(visual.query)}`)
+    fetch(`/api/image?q=${encodeURIComponent(query)}`)
       .then((res) => (res.ok ? res.json() : { imageUrl: null }))
       .then((data: { imageUrl: string | null }) => {
         if (!cancelled) setImageUrl(data.imageUrl);
@@ -22,7 +25,7 @@ export function VisualCard({ visual }: { visual: NonNullable<TutorResponse["visu
     return () => {
       cancelled = true;
     };
-  }, [visual.query]);
+  }, [query]);
 
   // Wikipedia had nothing (or the lookup failed) — never break the chat
   // over a missing picture, just show nothing.
@@ -30,8 +33,8 @@ export function VisualCard({ visual }: { visual: NonNullable<TutorResponse["visu
 
   return (
     <div className="visual-card">
-      <img src={imageUrl} alt={visual.caption} className="visual-card-img" />
-      <div className="visual-card-caption">{visual.caption}</div>
+      <img src={imageUrl} alt={caption} className="visual-card-img" />
+      <div className="visual-card-caption">{caption}</div>
     </div>
   );
 }
