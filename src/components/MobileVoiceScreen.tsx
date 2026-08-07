@@ -118,6 +118,8 @@ export function MobileVoiceScreen({
   onEndLesson,
   micAmplitude,
   transcribing,
+  shakeTrigger,
+  onForceReset,
 }: {
   avatarEngine: AvatarEngine;
   started: boolean;
@@ -142,6 +144,8 @@ export function MobileVoiceScreen({
   onEndLesson: () => void;
   micAmplitude: number;
   transcribing: boolean;
+  shakeTrigger: number;
+  onForceReset: () => void;
 }) {
   const [drawerOpen, setDrawerOpen] = useState(false);
   const drawerRef = useRef<HTMLDivElement>(null);
@@ -384,6 +388,8 @@ export function MobileVoiceScreen({
               shown; textContent is written to it imperatively. */}
           <div ref={measureRef} className="mobile-caption-measure" aria-hidden="true" />
 
+          {!drawerOpen && <div className="dock-scrim" />}
+
           {!drawerOpen && (
             <div className="mobile-avatar-controls">
               <ForceSendButton
@@ -392,7 +398,9 @@ export function MobileVoiceScreen({
                 isListening={characterState === "listening"}
                 processing={transcribing}
                 onClick={handleTalkClick}
+                onLongPress={onForceReset}
                 amplitude={micAmplitude}
+                shakeTrigger={shakeTrigger}
               />
               <TipsPanel
                 hints={currentHints}

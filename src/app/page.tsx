@@ -15,6 +15,7 @@ import { ConversationOrchestrator, type ChatEntry } from "@/core/conversation/or
 import { prefetchGreeting, type PrefetchedGreeting } from "@/core/conversation/greetingPrefetch";
 import { Avatar } from "@/components/Avatar";
 import { ChatLog } from "@/components/ChatLog";
+import { ErrorToast } from "@/components/ErrorToast";
 import { ForceSendButton } from "@/components/ForceSendButton";
 import { LessonCompleteCard } from "@/components/LessonCompleteCard";
 import { LessonTimer } from "@/components/LessonTimer";
@@ -36,6 +37,10 @@ const TIME_WARNING_THRESHOLD_SECONDS = 180;
  * before the tips button starts drawing attention to itself. */
 const TIPS_EXPAND_AFTER_MS = 8000;
 const TIPS_BLINK_AFTER_MS = 15000;
+
+/** How long an orchestrator.onError message (see ErrorToast) stays
+ * visible before auto-dismissing. */
+const ERROR_TOAST_DURATION_MS = 4000;
 
 const HEALTH_CHECK_TIMEOUT_MS = 5000;
 /** How long the loading screen's fade-out (and the app's fade-in behind
@@ -135,6 +140,16 @@ export default function Page() {
   // with actual voice amplitude. Stays 0 for an STT provider without a
   // real VAD (e.g. BrowserSTTProvider), which just means flat bars.
   const [micAmplitude, setMicAmplitude] = useState(0);
+  // Visible feedback for orchestrator.onError (see ErrorToast) — auto-
+  // dismisses so a stale message never lingers after the student's moved
+  // on. A ref (not just clearing on the next message) is what lets a
+  // SECOND error arriving mid-display restart the same 4s window instead
+  // of inheriting whatever was left of the first one's timer.
+  const [toastMessage, setToastMessage] = useState<string | null>(null);
+  const toastTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  // Bumped every time a Falar click was silently ignored (orchestrator
+  // busy) — see ForceSendButton's shakeTrigger prop.
+  const [shakeTrigger, setShakeTrigger] = useState(0);
 
   // Holds the AudioContext created by runBoot's audioCtx step (see below)
   // for the page's lifetime — some platforms have real first-AudioContext
@@ -391,7 +406,12 @@ export default function Page() {
   useEffect(() => {
     const unsubEntries = orchestrator.onEntriesChange(setEntries);
     const unsubState = orchestrator.onStateChange(setCharacterState);
-    const unsubError = orchestrator.onError((message) => console.error("[conversation]", message));
+    const unsubError = orchestrator.onError((message) => {
+      console.error("[conversation]", message);
+      setToastMessage(message);
+      if (toastTimeoutRef.current !== null) clearTimeout(toastTimeoutRef.current);
+      toastTimeoutRef.current = setTimeout(() => setToastMessage(null), ERROR_TOAST_DURATION_MS);
+    });
     const unsubApiStatus = orchestrator.onApiStatus(setConnected);
     const unsubTranscribing = orchestrator.onTranscribing((value) => {
       setTranscribing(value);
@@ -406,6 +426,7 @@ export default function Page() {
       unsubApiStatus();
       unsubTranscribing();
       unsubAmplitude();
+      if (toastTimeoutRef.current !== null) clearTimeout(toastTimeoutRef.current);
     };
   }, [orchestrator, avatarEngine]);
 
@@ -464,8 +485,21 @@ export default function Page() {
     if (isListening) {
       await orchestrator.stopListening(); // force-send early
     } else {
-      await orchestrator.startListening(); // the one and only mic-open path
+      // startListening() returns false when the click was a no-op (the
+      // orchestrator is busy with something else) — see its doc comment.
+      // A shake makes that "not yet" visible instead of the click just
+      // silently doing nothing, which reads identically to a frozen app.
+      const started = await orchestrator.startListening();
+      if (!started) setShakeTrigger((n) => n + 1);
     }
+  }
+
+  // Long-press escape hatch (see ForceSendButton / orchestrator.forceReset's
+  // doc comments) — a safety net the student can reach for themselves if
+  // the Falar button ever does get stuck despite the timeouts throughout
+  // the app that are supposed to prevent that in the first place.
+  function handleForceReset() {
+    orchestrator.forceReset();
   }
 
   async function handleSubmit(e: React.FormEvent) {
@@ -500,6 +534,8 @@ export default function Page() {
           statusText={bootStatusText}
         />
       )}
+
+      <ErrorToast message={toastMessage} />
 
       {(bootState === "fading" || bootState === "ready") && (
         <div className={`app-shell${bootState === "fading" ? " app-fade-in" : ""}`}>
@@ -547,6 +583,8 @@ export default function Page() {
               onEndLesson={handleEndLesson}
               micAmplitude={micAmplitude}
               transcribing={transcribing}
+              shakeTrigger={shakeTrigger}
+              onForceReset={handleForceReset}
             />
           ) : (
             <div className="main">
@@ -584,7 +622,9 @@ export default function Page() {
                           isListening={characterState === "listening"}
                           processing={transcribing}
                           onClick={handleTalkClick}
+                          onLongPress={handleForceReset}
                           amplitude={micAmplitude}
+                          shakeTrigger={shakeTrigger}
                         />
                       </div>
                     )}

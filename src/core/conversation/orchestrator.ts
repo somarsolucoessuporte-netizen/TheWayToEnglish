@@ -145,6 +145,14 @@ export class ConversationOrchestrator {
     this.systemPrompt = opts.systemPrompt;
     this.sessionId = opts.sessionId ?? Math.random().toString(36).slice(2);
 
+    // Instrumentation: every CharacterState transition, timestamped —
+    // exactly the "[hh:mm:ss.mmm] idle -> listening" trail a freeze
+    // investigation needs to see where things actually stopped, instead
+    // of guessing from user reports alone.
+    this.stateMachine.subscribe((state, prev) => {
+      console.log(`[state] ${new Date().toISOString().slice(11, 23)} ${prev} -> ${state}`);
+    });
+
     this.stateMachine.subscribe((state) => {
       this.avatar.setState(state);
       // The avatar visually stays "listening" through a batch STT
@@ -286,9 +294,22 @@ export class ConversationOrchestrator {
     return this.busy;
   }
 
-  async startListening(): Promise<void> {
-    if (this.busy || this.listeningStartInFlight) return;
-    if (this.stateMachine.getState() === "listening") return; // already listening, nothing to do
+  /**
+   * Returns false when the click was a no-op (the orchestrator is busy
+   * doing something else, or a start() call is already in flight) instead
+   * of just silently doing nothing — page.tsx uses this to give the
+   * student a visible "not yet" signal (a brief shake on the button)
+   * rather than a click that appears to do absolutely nothing, which is
+   * indistinguishable from a genuinely frozen app.
+   */
+  async startListening(): Promise<boolean> {
+    if (this.busy || this.listeningStartInFlight) {
+      console.log(
+        `[state] click ignorado — busy=${this.busy} listeningStartInFlight=${this.listeningStartInFlight}`
+      );
+      return false;
+    }
+    if (this.stateMachine.getState() === "listening") return true; // already listening, nothing to do
     this.listeningStartInFlight = true;
     this.setTranscribing(false);
     try {
@@ -300,6 +321,7 @@ export class ConversationOrchestrator {
     } finally {
       this.listeningStartInFlight = false;
     }
+    return true;
   }
 
   /**
@@ -465,6 +487,34 @@ export class ConversationOrchestrator {
     this.nudgeLevelsFired.clear();
     this.usedNudgePhrases.length = 0;
     this.stateMachine.dispatch({ type: "RESET" });
+  }
+
+  /**
+   * Safety-net escape hatch for the Falar button's long-press gesture (see
+   * ForceSendButton/page.tsx) — deliberately much lighter than reset():
+   * it does NOT touch the conversation history, lesson, or entries, only
+   * whatever's currently in flight. The premise is "something hung" (a
+   * dead network request, a stuck getUserMedia prompt, an audio element
+   * that stopped firing events) — the network/audio-layer timeouts added
+   * throughout this app should make forceReset() rarely needed in
+   * practice, but it exists as the guaranteed-to-work fallback for
+   * whatever those timeouts didn't anticipate. Safe to call from any
+   * state, any time, including while nothing is actually stuck.
+   */
+  forceReset(): void {
+    console.log("[state] forceReset() — escape hatch acionado");
+    this.speech.cancel();
+    // Prefer the provider's own abort() (see SpeechToTextProvider.abort's
+    // doc comment) — it can tear down an in-flight getUserMedia/upload
+    // that a plain stop() call wouldn't necessarily unstick. Fall back to
+    // stop() for a provider that doesn't implement it.
+    if (this.stt.abort) this.stt.abort();
+    else void this.stt.stop().catch(() => {});
+    this.busy = false;
+    this.listeningStartInFlight = false;
+    this.setTranscribing(false);
+    this.stateMachine.dispatch({ type: "RESET" });
+    this.emitError("Reiniciado — pode tentar novamente.");
   }
 
   /**

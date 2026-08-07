@@ -37,4 +37,17 @@ export interface SpeechToTextProvider {
    * providers without one (e.g. BrowserSTTProvider).
    */
   on(event: STTEvent, cb: (payload: unknown) => void): () => void;
+  /**
+   * Escape hatch: forcibly tears down whatever this provider is doing
+   * right now — regardless of which async step it's stuck in (permission
+   * prompt, getUserMedia, an in-flight upload) — and guarantees "end"
+   * fires so the caller can get back to idle. Used by the Falar button's
+   * long-press reset (see orchestrator.forceReset / ForceSendButton) as a
+   * safety net for a hang that slips past the provider's own internal
+   * timeouts. Optional: a provider with nothing that can meaningfully
+   * hang (e.g. BrowserSTTProvider, whose only async step is the
+   * synchronous-ish native SpeechRecognition.start()) can omit this and
+   * fall back to its own stop().
+   */
+  abort?(): void;
 }

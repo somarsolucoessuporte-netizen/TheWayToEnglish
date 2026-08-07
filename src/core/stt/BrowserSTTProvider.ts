@@ -57,6 +57,15 @@ export class BrowserSTTProvider implements SpeechToTextProvider {
     return () => this.listeners[event].delete(cb);
   }
 
+  /** See SpeechToTextProvider.abort's doc comment. Native
+   * SpeechRecognition.abort() discards any in-progress result immediately
+   * (unlike stop(), which waits for a final result first) and still fires
+   * onend, so "end" reaches the caller the same way stop() would. */
+  abort(): void {
+    console.log("[STT] abort() — reset forçado");
+    this.recognition?.abort();
+  }
+
   private ensureRecognition(): SpeechRecognition | null {
     if (this.recognition) return this.recognition;
 

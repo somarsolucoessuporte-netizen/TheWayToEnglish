@@ -19,6 +19,19 @@ const SAMPLE_INTERVAL_MS = 50;
  * rather than recording forever if the student just keeps talking, or
  * something goes wrong with silence detection. */
 const MAX_RECORDING_MS = 30000;
+/** getUserMedia() has no built-in timeout — on some Android/WebView
+ * combinations a dismissed-without-choosing permission prompt (see
+ * start()'s permission pre-check) or a flaky mic driver can leave the
+ * returned promise pending forever instead of rejecting. Without this
+ * race, that hang propagates all the way up through
+ * orchestrator.startListening() and leaves the Falar button permanently
+ * disabled with zero feedback — exactly the freeze this exists to prevent. */
+const GET_USER_MEDIA_TIMEOUT_MS = 5000;
+/** Same reasoning as the chat/TTS fetch timeouts — without this, a dead
+ * connection while uploading the recording leaves `transcribing` stuck
+ * true forever (see the class doc comment), which is what makes the Falar
+ * button appear to freeze on a bad connection specifically. */
+const STT_FETCH_TIMEOUT_MS = 15000;
 
 /**
  * STT via Groq's Whisper endpoint (server-side proxy at /api/stt — the
@@ -49,6 +62,24 @@ export class WhisperSTTProvider implements SpeechToTextProvider {
   private chunks: Blob[] = [];
   private stopResolve: ((text: string) => void) | null = null;
   private finished = false;
+  /** Rejects the in-flight start() call — set only while start() is
+   * actually awaiting getUserMedia, used by abort() (see its doc comment)
+   * to cancel a hung permission prompt/driver instead of leaving start()'s
+   * promise pending forever. */
+  private startReject: ((err: Error) => void) | null = null;
+  /** AbortController for the in-flight /api/stt upload, if any — abort()
+   * uses this to cancel a hung transcription request. */
+  private uploadController: AbortController | null = null;
+  /** Set only by abort() — lets transcribeAndFinish() tell "I was aborted
+   * mid-flight, abort() already did the cleanup/emit('end') for me" apart
+   * from "I completed (or failed) normally", which also leaves `finished`
+   * true by the time transcribeAndFinish() runs (finishUtterance sets it
+   * before calling transcribeAndFinish). Without this distinction, a
+   * transcribeAndFinish() call resuming after its upload was aborted would
+   * emit a second, spurious "end"/"error" on top of abort()'s already-
+   * correct reset — surfacing a confusing error toast right after the
+   * long-press escape hatch the student just used successfully. */
+  private aborted = false;
 
   private audioCtx: AudioContext | null = null;
   private analyser: AnalyserNode | null = null;
@@ -76,18 +107,53 @@ export class WhisperSTTProvider implements SpeechToTextProvider {
   async start(): Promise<void> {
     this.chunks = [];
     this.finished = false;
+    this.aborted = false;
     this.hasDetectedSpeech = false;
     this.lastLoudAt = 0;
 
+    // If the student already dismissed the permission prompt without
+    // choosing (browsers never re-prompt after that — see the class doc
+    // comment), fail fast with a specific, legible reason instead of
+    // calling getUserMedia and hoping it rejects promptly. Best-effort:
+    // the Permissions API isn't universally supported, so a missing/
+    // failing query just falls through to getUserMedia itself.
+    try {
+      const status = await navigator.permissions?.query?.({ name: "microphone" as PermissionName });
+      if (status?.state === "denied") {
+        throw new Error("PERMISSAO_MICROFONE_NEGADA");
+      }
+    } catch (err) {
+      if ((err as Error).message === "PERMISSAO_MICROFONE_NEGADA") throw err;
+      // Permissions API unavailable/unsupported for "microphone" in this
+      // browser — not an error, just no pre-check available.
+    }
+
     console.log("[STT] iniciando getUserMedia...");
     try {
-      this.stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      this.stream = await new Promise<MediaStream>((resolve, reject) => {
+        this.startReject = reject;
+        const timeoutId = window.setTimeout(() => {
+          reject(new Error("GETUSERMEDIA_TIMEOUT"));
+        }, GET_USER_MEDIA_TIMEOUT_MS);
+        navigator.mediaDevices.getUserMedia({ audio: true }).then(
+          (stream) => {
+            window.clearTimeout(timeoutId);
+            resolve(stream);
+          },
+          (err) => {
+            window.clearTimeout(timeoutId);
+            reject(err);
+          }
+        );
+      });
     } catch (error) {
       const err = error as DOMException;
       console.error("[STT] erro getUserMedia:", error);
       console.error("[STT] nome do erro:", err?.name);
       console.error("[STT] mensagem:", err?.message);
       throw error; // preserved: orchestrator.startListening() catches this and surfaces ERROR state
+    } finally {
+      this.startReject = null;
     }
 
     const recorder = new MediaRecorder(this.stream);
@@ -120,6 +186,50 @@ export class WhisperSTTProvider implements SpeechToTextProvider {
       console.log("[WhisperSTT] manual stop — finishing utterance");
       this.finishUtterance();
     });
+  }
+
+  /**
+   * Escape hatch for the Falar button's long-press reset (see
+   * ForceSendButton / page.tsx) — forcibly tears down whatever this
+   * provider is doing RIGHT NOW, regardless of which async step it's
+   * stuck in, and guarantees "end" fires so the orchestrator can get back
+   * to idle. Safe to call from any state, including before start() has
+   * even resolved (cancels the pending getUserMedia/permission check) or
+   * mid-upload (aborts the /api/stt fetch).
+   */
+  abort(): void {
+    console.log("[WhisperSTT] abort() — reset forçado");
+    if (this.finished) return;
+    this.finished = true;
+    this.aborted = true;
+
+    // Cancels a hung getUserMedia/permission-prompt wait, if start() is
+    // currently in that phase.
+    this.startReject?.(new Error("ABORTED"));
+    this.startReject = null;
+
+    // Cancels a hung /api/stt upload, if transcribeAndFinish() is
+    // currently in that phase.
+    this.uploadController?.abort();
+    this.uploadController = null;
+
+    this.stopSilenceWatch();
+    if (this.maxRecordingTimeoutHandle !== null) {
+      clearTimeout(this.maxRecordingTimeoutHandle);
+      this.maxRecordingTimeoutHandle = null;
+    }
+    if (this.recorder && this.recorder.state !== "inactive") {
+      this.recorder.onstop = null; // don't let a stray onstop fire transcribeAndFinish after abort
+      this.recorder.stop();
+    }
+    this.recorder = null;
+    this.stream?.getTracks().forEach((track) => track.stop());
+    this.stream = null;
+    this.chunks = [];
+
+    this.emit("end", "");
+    this.stopResolve?.("");
+    this.stopResolve = null;
   }
 
   on(event: STTEvent, cb: Listener): () => void {
@@ -240,7 +350,22 @@ export class WhisperSTTProvider implements SpeechToTextProvider {
       form.append("audio", blob, "audio.webm");
       // No "lang" field — let Whisper auto-detect (see class doc comment).
 
-      const res = await fetch("/api/stt", { method: "POST", body: form });
+      const controller = new AbortController();
+      this.uploadController = controller;
+      const timeoutId = window.setTimeout(() => controller.abort(), STT_FETCH_TIMEOUT_MS);
+
+      let res: Response;
+      try {
+        res = await fetch("/api/stt", { method: "POST", body: form, signal: controller.signal });
+      } catch (fetchErr) {
+        if ((fetchErr as Error).name === "AbortError") {
+          throw new Error("STT timeout: /api/stt não respondeu a tempo");
+        }
+        throw fetchErr;
+      } finally {
+        window.clearTimeout(timeoutId);
+        this.uploadController = null;
+      }
       const clientLatencyMs = Math.round(performance.now() - clientStart);
 
       if (!res.ok) {
@@ -261,11 +386,21 @@ export class WhisperSTTProvider implements SpeechToTextProvider {
       }
     } catch (err) {
       console.error("[WhisperSTT] network error", err);
-      this.emit("error", String(err));
+      // Only surface this as a real error if it wasn't abort() itself that
+      // caused the rejection — see `aborted`'s doc comment. abort() has
+      // already reset everything to idle by the time this catch runs; a
+      // second "error" here would just confuse the student right after
+      // their long-press reset worked.
+      if (!this.aborted) this.emit("error", String(err));
     }
 
     this.recorder = null;
     this.stream = null;
+
+    // See `aborted`'s doc comment: abort() already did this exact cleanup
+    // (emit "end", resolve stopResolve) synchronously when it fired —
+    // doing it again here would be a harmless-but-confusing duplicate.
+    if (this.aborted) return;
 
     if (transcript) this.emit("final", { transcript, detectedLanguage });
     this.emit("end", transcript);

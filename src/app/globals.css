@@ -346,6 +346,42 @@ body {
   border-bottom: 1px solid var(--stroke);
 }
 
+/* See ErrorToast.tsx — a fixed overlay so it works the same way on top of
+   both the desktop and mobile layouts. Sits below the safe-area-aware
+   top region on mobile (the floating header/status pills) so it never
+   overlaps either. */
+.error-toast {
+  position: fixed;
+  left: 50%;
+  top: calc(env(safe-area-inset-top, 0px) + 64px);
+  transform: translateX(-50%);
+  z-index: 100;
+  max-width: min(360px, calc(100vw - 32px));
+  padding: 10px 16px;
+  border-radius: 12px;
+  background: rgba(30, 15, 15, 0.92);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 120, 120, 0.35);
+  color: #fff;
+  font-size: 13px;
+  line-height: 1.4;
+  text-align: center;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+  animation: error-toast-in 200ms ease-out;
+  pointer-events: none;
+}
+
+@keyframes error-toast-in {
+  from {
+    opacity: 0;
+    transform: translateX(-50%) translateY(-8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
+}
+
 .lesson-complete-overlay {
   position: absolute;
   inset: 0;
@@ -386,13 +422,19 @@ body {
   margin-bottom: 6px;
 }
 
+/* Same frosted-glass material as .force-send-btn (see below) but with NO
+   fill at all — hierarchy between the two buttons comes from how much
+   background they carry, not from size: Falar is the surface you're
+   meant to press, Dica is a quiet outline sitting next to it. */
 .tips-button {
   flex: none;
   width: 32px;
   height: 32px;
   border-radius: 999px;
-  border: 1px solid var(--stroke);
-  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.28);
+  background: transparent;
+  backdrop-filter: blur(20px) saturate(140%);
+  -webkit-backdrop-filter: blur(20px) saturate(140%);
   cursor: pointer;
   font-size: 16px;
   line-height: 1;
@@ -402,7 +444,13 @@ body {
 }
 
 .tips-button:hover {
-  background: rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.08);
+}
+
+@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+  .tips-button {
+    background: rgba(20, 20, 25, 0.72);
+  }
 }
 
 /* Attention animation: draws the student's eye to the tips button after a
@@ -791,62 +839,89 @@ body {
   color: var(--accent);
 }
 
-/* The single essential action on screen — solid primary treatment (never
-   ghost/outline, unlike every other button here), so it reads as the
-   thing to press, not decoration. idle state pulses slowly to draw the
-   eye ("sua vez de falar"); .force-send-btn--listening and
-   .force-send-btn--processing (below) override the look for the other
-   two states — see ForceSendButton.tsx for which class applies when. */
+/* The single essential action on screen — but a SOLID fill read as too
+   heavy sitting directly on top of the avatar video, so this is frosted
+   glass instead: legibility comes from blur + a scrim behind the whole
+   dock (see .dock-scrim) + a bright border, never from opacity of the
+   fill itself. The inset top highlight is what sells "glass surface"
+   rather than "disabled" — without it, translucent reads as inactive.
+   idle state pulses on the BORDER (box-shadow ring), not the fill, so the
+   glass material itself never changes; .force-send-btn--listening and
+   .force-send-btn--processing (below) swap the tint but keep the same
+   blur/border/highlight construction — see ForceSendButton.tsx for which
+   class applies when. */
 .force-send-btn {
-  background: var(--accent);
-  border: 1px solid var(--accent-soft);
-  color: #06110f;
+  background: rgba(255, 255, 255, 0.16);
+  backdrop-filter: blur(20px) saturate(140%);
+  -webkit-backdrop-filter: blur(20px) saturate(140%);
+  border: 1px solid rgba(255, 255, 255, 0.28);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.35), 0 8px 24px rgba(0, 0, 0, 0.28);
+  color: #fff;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.5);
   min-height: 56px;
   padding: 12px 22px;
-  border-radius: 999px;
+  border-radius: 28px;
   font-weight: 800;
   font-size: 15px;
-  backdrop-filter: blur(8px);
-  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.35);
   transition: background 150ms ease, box-shadow 150ms ease;
   animation: force-send-pulse 2600ms ease-in-out infinite;
 }
 
 .force-send-btn:hover {
-  background: #46bcb2;
+  background: rgba(255, 255, 255, 0.22);
 }
 
 @keyframes force-send-pulse {
   0%,
   100% {
-    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.35), 0 0 0 0 rgba(59, 169, 160, 0.5);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.35), 0 8px 24px rgba(0, 0, 0, 0.28),
+      0 0 0 0 rgba(255, 255, 255, 0.4);
   }
   50% {
-    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.35), 0 0 0 10px rgba(59, 169, 160, 0);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.35), 0 8px 24px rgba(0, 0, 0, 0.28),
+      0 0 0 8px rgba(255, 255, 255, 0);
   }
 }
 
+/* Same glass, red tint — the MATERIAL stays translucent, only the color
+   signals "recording now". Live waveform (see .sound-wave) is the active
+   indicator while this is on, so no idle-style pulse here. */
 .force-send-btn--listening {
-  background: #00c853;
-  border-color: rgba(0, 200, 83, 0.5);
-  animation: none; /* the live waveform is the active indicator now, not the idle pulse */
+  background: rgba(220, 60, 60, 0.22);
+  border-color: rgba(255, 120, 120, 0.5);
+  animation: none;
 }
 
 .force-send-btn--listening:hover {
-  background: #00b84c;
+  background: rgba(220, 60, 60, 0.3);
 }
 
 .force-send-btn--processing {
   background: rgba(255, 255, 255, 0.1);
-  border-color: var(--stroke);
+  border-color: rgba(255, 255, 255, 0.15);
   color: var(--muted);
+  text-shadow: none;
   cursor: not-allowed;
   animation: none;
-  box-shadow: none;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.28);
 }
 
 .force-send-btn--processing:hover {
   background: rgba(255, 255, 255, 0.1);
+}
+
+@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+  /* Without blur, a light translucent fill over a busy video is
+     unreadable — go dark and much more opaque instead as a floor. */
+  .force-send-btn {
+    background: rgba(20, 20, 25, 0.72);
+  }
+  .force-send-btn--listening {
+    background: rgba(120, 20, 20, 0.72);
+  }
+  .force-send-btn--processing {
+    background: rgba(20, 20, 25, 0.72);
+  }
 }
 
 .force-send-spinner {
@@ -866,11 +941,13 @@ body {
 
 /* Recording state of the talk button: an equalizer replaces the label so
    the student gets a live visual confirmation the mic is on — the button
-   itself stays green/clickable to force-send early. Bar height is driven
-   by the mic's real amplitude (see ForceSendButton's inline transform),
-   not a canned animation — this is just the shared base size and the
-   transition that smooths amplitude changes into something that reads as
-   "gradually winding down" rather than jumpy, per-sample jumps. */
+   itself stays clickable to force-send early. White/translucent (not
+   green) to match the frosted-glass red tint (see
+   .force-send-btn--listening) instead of clashing with it. Bar height is
+   driven by the mic's real amplitude (see ForceSendButton's inline
+   transform), not a canned animation — this is just the shared base size
+   and the transition that smooths amplitude changes into something that
+   reads as "gradually winding down" rather than jumpy, per-sample jumps. */
 .listening-indicator {
   display: flex;
   flex-direction: column;
@@ -880,7 +957,8 @@ body {
 
 .listening-label {
   font-size: 11px;
-  color: #00c853;
+  color: #fff;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.5);
 }
 
 .sound-wave {
@@ -894,9 +972,45 @@ body {
   display: block;
   width: 4px;
   height: 24px;
-  background: #00c853;
+  background: #fff;
   border-radius: 2px;
   transition: transform 120ms ease-out;
+}
+
+/* Feedback for a click that landed while the orchestrator was busy (see
+   orchestrator.startListening's return value) — makes "not yet" visually
+   obvious instead of reading as a dead button. prefers-reduced-motion
+   swaps the translateX shake for a border-color flash, since rapid
+   lateral motion is exactly the kind of thing that setting exists to
+   suppress. */
+.force-send-btn--shake {
+  animation: force-send-shake 400ms ease-in-out !important;
+}
+
+@keyframes force-send-shake {
+  10%,
+  90% {
+    transform: translateX(-1px);
+  }
+  20%,
+  80% {
+    transform: translateX(2px);
+  }
+  30%,
+  50%,
+  70% {
+    transform: translateX(-4px);
+  }
+  40%,
+  60% {
+    transform: translateX(4px);
+  }
+}
+
+@keyframes force-send-shake-flash {
+  50% {
+    border-color: rgba(255, 200, 0, 0.8);
+  }
 }
 
 @media (max-width: 980px) {
@@ -922,6 +1036,12 @@ body {
   }
   .force-send-spinner {
     animation-duration: 1500ms !important;
+  }
+  /* Later in the cascade than the bare .force-send-btn rule above, so
+     this wins the specificity tie and the flash still plays even though
+     the idle pulse is suppressed — see .force-send-btn--shake. */
+  .force-send-btn--shake {
+    animation: force-send-shake-flash 400ms ease-in-out !important;
   }
 }
 
@@ -1103,6 +1223,24 @@ body {
    open (see MobileVoiceScreen: not rendered at all then), matching the
    spec's two mockup states exactly and avoiding any overlap with the
    drawer's own bottom-edge input row. */
+/* What actually keeps the frosted Falar/Dica buttons legible — not the
+   buttons' own blur alone, but this gradient sitting behind the whole
+   bottom zone. Reads as a natural video vignette rather than a UI box,
+   which is what gives it contrast independent of whatever the avatar
+   frame happens to be (dark hair, light shirt, a window in the
+   background) — the buttons' blur only has to separate from THIS
+   consistent dark base, never directly from the avatar itself. */
+.dock-scrim {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 5;
+  height: 180px;
+  background: linear-gradient(to top, rgba(0, 0, 0, 0.55) 0%, rgba(0, 0, 0, 0.25) 60%, transparent 100%);
+  pointer-events: none;
+}
+
 .mobile-avatar-controls {
   position: absolute;
   left: 0;

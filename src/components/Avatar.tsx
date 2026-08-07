@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import type { AvatarEngine, AvatarVideoState } from "@/core/avatar-engine/AvatarEngine";
 
 /** Which clip backs each video state — see public/avatar/. Loop policy is
@@ -16,6 +16,16 @@ const VIDEO_CLIPS: { state: AvatarVideoState; src: string; loopsForever: boolean
   { state: "speaking", src: "/avatar/speaking.mp4", loopsForever: false },
   { state: "praise", src: "/avatar/praise.mp4", loopsForever: false },
 ];
+
+/** How close to the clip's own end (seconds remaining) the loop-seam mask
+ * kicks in — see startSpeakingFade's doc comment. Matched to the "últimos
+ * 300ms" spec. */
+const SPEAKING_FADE_WINDOW_SEC = 0.3;
+/** How dark the dip goes — subtle enough to read as a natural breath/blink
+ * rather than a visible flicker, but enough to mask the last-frame/first-
+ * frame mismatch a talking-mouth clip (not authored as a seamless loop)
+ * has at its restart point. */
+const SPEAKING_FADE_OPACITY = 0.85;
 
 /**
  * Five <video> elements stacked in the same frame, all mounted from the
@@ -48,6 +58,23 @@ const VIDEO_CLIPS: { state: AvatarVideoState; src: string; loopsForever: boolean
  * becomes the active "speaking" video does a real duration arrive and
  * cap how many times it's allowed to replay for that segment.
  *
+ * Because the speaking clip is a talking-mouth animation, not something
+ * authored to loop seamlessly, restarting it at frame 0 is visibly
+ * abrupt when the last and first frames don't line up (a genuine
+ * ping-pong reverse-playback loop was considered and rejected — libx264's
+ * B-frames make smooth reverse seeking decode-expensive per step, a real
+ * stutter risk on exactly the lower-end Android/4G hardware this app
+ * targets, and not something verifiable from this environment). Instead,
+ * every restart is masked by a brief opacity dip (see startSpeakingFade/
+ * clearSpeakingFade) — a quick, subtle darkening right before the cut and
+ * a recovery right after, similar to a blink, cheap enough to never risk
+ * jank. This clip's opacity is therefore driven ENTIRELY imperatively
+ * (see updateSpeakingOpacity), never through the React `style` prop the
+ * other 4 clips use for their crossfade — the reveal-word-by-word text
+ * sync re-renders this component very frequently while speaking is
+ * active, and a React-driven opacity would reset mid-fade on every one of
+ * those re-renders instead of completing smoothly.
+ *
  * All 5 videos are muted — both because none of them are supposed to be
  * heard (their own audio tracks are stripped at the source anyway, see
  * public/avatar/ — muted is belt-and-suspenders) and because autoplay
@@ -68,6 +95,11 @@ export function Avatar({ engine }: { engine: AvatarEngine }) {
   // yet) — every real TTS segment start (see the effect below) replaces
   // this with a finite count sized to that segment's actual duration.
   const speakingLoopsRemainingRef = useRef(Infinity);
+  // Base visibility (0 or 1, mirrors "is speaking the active state") the
+  // fade dip multiplies against — see updateSpeakingOpacity's doc comment
+  // for why this can't just be an absolute 0.85/1 value.
+  const speakingBaseOpacityRef = useRef(0);
+  const speakingFadingRef = useRef(false);
 
   useEffect(() => engine.subscribe(setVideoState), [engine]);
 
@@ -76,9 +108,18 @@ export function Avatar({ engine }: { engine: AvatarEngine }) {
   // both off), but it still needs to be free-running in the background
   // from the start for the same crossfade-readiness reason the always-
   // loop clips are: kick it off once here, and handleSpeakingEnded's
-  // Infinity branch keeps it going until a real TTS segment arrives.
+  // Infinity branch keeps it going until a real TTS segment arrives. Also
+  // sets a fixed, short transition for this ONE clip's opacity (see the
+  // component doc comment on why it's driven imperatively, never via
+  // React's style prop) — overrides .avatar-sprite-layer's shared 280ms
+  // crossfade with something snappier so the loop-seam dip actually
+  // resolves within its ~300ms window instead of still animating when
+  // reversed.
   useEffect(() => {
-    void speakingVideoRef.current?.play().catch(() => {});
+    const video = speakingVideoRef.current;
+    if (!video) return;
+    video.style.transition = "opacity 150ms ease";
+    void video.play().catch(() => {});
   }, []);
 
   // Falls back to "idle" for a state whose clip failed to load — see this
@@ -97,6 +138,34 @@ export function Avatar({ engine }: { engine: AvatarEngine }) {
     }
   }, [effectiveState]);
 
+  /** Writes the speaking clip's real, current opacity from its two
+   * independent inputs — see the ref doc comments — instead of an
+   * absolute value, so the fade dip is invisible (0 * 0.85 = 0) whenever
+   * the clip isn't actually the one on screen, and only dips the ACTUALLY
+   * visible layer (1 * 0.85 = 0.85) while it's speaking's turn. */
+  function updateSpeakingOpacity() {
+    const video = speakingVideoRef.current;
+    if (!video) return;
+    const opacity = speakingBaseOpacityRef.current * (speakingFadingRef.current ? SPEAKING_FADE_OPACITY : 1);
+    video.style.opacity = String(opacity);
+  }
+
+  // useLayoutEffect, not useEffect: this runs synchronously right after
+  // the DOM update but BEFORE the browser paints. Since the speaking
+  // clip's opacity has no React `style` prop to give it an initial value
+  // (see the render below), an ordinary useEffect here would leave one
+  // paint where this element has no opacity set at all — defaulting to
+  // fully opaque — flashing its poster image over whatever's actually
+  // active. Running synchronously pre-paint closes that gap.
+  useLayoutEffect(() => {
+    speakingBaseOpacityRef.current = effectiveState === "speaking" ? 1 : 0;
+    // A fade left mid-dip by an interruption (e.g. the student clicked
+    // away right as the tutor started speaking) must not carry into the
+    // next time this clip becomes active.
+    speakingFadingRef.current = false;
+    updateSpeakingOpacity();
+  }, [effectiveState]);
+
   // Resets the speaking clip's manual loop budget back to "free-running"
   // whenever it stops being the active state — otherwise a leftover
   // finite count from the last turn would cap its NEXT background
@@ -104,6 +173,38 @@ export function Avatar({ engine }: { engine: AvatarEngine }) {
   useEffect(() => {
     if (effectiveState !== "speaking") speakingLoopsRemainingRef.current = Infinity;
   }, [effectiveState]);
+
+  // Loop-seam mask (see the component doc comment's "ping-pong rejected"
+  // paragraph): watches the speaking clip's own playback position — not
+  // gated on effectiveState, since the fade must arm even while this clip
+  // is only free-running in the background, so it's already primed by the
+  // time it might actually need to become visible. Dips right before each
+  // restart, restored right after (see the two restart call sites below).
+  useEffect(() => {
+    const video = speakingVideoRef.current;
+    if (!video) return;
+    const onTimeUpdate = () => {
+      if (speakingFadingRef.current) return;
+      if (!Number.isFinite(video.duration)) return;
+      if (video.duration - video.currentTime <= SPEAKING_FADE_WINDOW_SEC) {
+        speakingFadingRef.current = true;
+        updateSpeakingOpacity();
+      }
+    };
+    video.addEventListener("timeupdate", onTimeUpdate);
+    return () => video.removeEventListener("timeupdate", onTimeUpdate);
+  }, []);
+
+  /** Clears the fade dip and restarts playback from frame 0 — the one
+   * sequence every loop restart goes through, called from both
+   * onSpeechAudioDuration's fresh-segment reset and
+   * handleSpeakingEnded's mid-segment loop continuation below. */
+  function restartSpeakingClip(video: HTMLVideoElement) {
+    speakingFadingRef.current = false;
+    updateSpeakingOpacity();
+    video.currentTime = 0;
+    void video.play().catch(() => {});
+  }
 
   useEffect(() => {
     // Fires once per individual TTS audio segment's real start (see
@@ -119,8 +220,7 @@ export function Avatar({ engine }: { engine: AvatarEngine }) {
         durationSec && durationSec > 0 && Number.isFinite(clipSeconds) && clipSeconds > 0
           ? Math.max(1, Math.ceil(durationSec / clipSeconds))
           : 1;
-      video.currentTime = 0;
-      void video.play().catch(() => {});
+      restartSpeakingClip(video);
     });
   }, [engine]);
 
@@ -137,6 +237,8 @@ export function Avatar({ engine }: { engine: AvatarEngine }) {
       if (speakingLoopsRemainingRef.current <= 1) {
         video.pause();
         video.currentTime = 0;
+        speakingFadingRef.current = false;
+        updateSpeakingOpacity();
       }
       speakingLoopsRemainingRef.current = 0;
     });
@@ -146,14 +248,12 @@ export function Avatar({ engine }: { engine: AvatarEngine }) {
     const video = speakingVideoRef.current;
     if (!video) return;
     if (speakingLoopsRemainingRef.current === Infinity) {
-      video.currentTime = 0;
-      void video.play().catch(() => {});
+      restartSpeakingClip(video);
       return;
     }
     speakingLoopsRemainingRef.current -= 1;
     if (speakingLoopsRemainingRef.current > 0) {
-      video.currentTime = 0;
-      void video.play().catch(() => {});
+      restartSpeakingClip(video);
     }
     // Otherwise: budget exhausted — let it sit on this final frame (a
     // real TTS segment's real "end" arriving is what normally cuts this
@@ -175,7 +275,10 @@ export function Avatar({ engine }: { engine: AvatarEngine }) {
           playsInline
           preload="auto"
           className="avatar-sprite-layer"
-          style={{ opacity: effectiveState === state ? 1 : 0 }}
+          // The speaking clip's opacity is set imperatively (see this
+          // component's doc comment) — omitting the style prop for it
+          // here is what keeps React from stomping on that mid-fade.
+          style={state === "speaking" ? undefined : { opacity: effectiveState === state ? 1 : 0 }}
           onError={() => setFailedStates((prev) => new Set(prev).add(state))}
           onEnded={state === "speaking" ? handleSpeakingEnded : undefined}
         />
