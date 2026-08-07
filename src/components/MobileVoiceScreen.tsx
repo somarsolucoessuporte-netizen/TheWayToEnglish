@@ -8,7 +8,7 @@ import type { AvatarEngine } from "@/core/avatar-engine/AvatarEngine";
 import type { CharacterState } from "@/core/character-state-machine/stateMachine";
 import type { ChatEntry } from "@/core/conversation/orchestrator";
 import { Avatar } from "./Avatar";
-import { ChatLog } from "./ChatLog";
+import { ChatLog, revealedText } from "./ChatLog";
 import { ForceSendButton } from "./ForceSendButton";
 import { LessonCompleteCard } from "./LessonCompleteCard";
 import { LessonTimer } from "./LessonTimer";
@@ -186,24 +186,42 @@ export function MobileVoiceScreen({
   }, [entries]);
 
   // Floating caption: last tutor line only, cross-faded 200ms on change —
-  // see the CSS transition on .mobile-caption-float's opacity.
-  const captionText = useMemo(() => {
+  // see the CSS transition on .mobile-caption-float's opacity. Respects
+  // the same pending/reveal state as ChatLog (see orchestrator's
+  // pushPendingTutorEntry/updateReveal): while pending, there's nothing to
+  // caption yet (the avatar is still "thinking"), and once speech starts,
+  // only the words revealed so far show — otherwise the caption would leak
+  // the tutor's full line onto the screen before she's actually said it,
+  // the exact "text before voice" problem this sync exists to fix.
+  const lastTutorEntryIndex = useMemo(() => {
     for (let i = entries.length - 1; i >= 0; i--) {
-      const entry = entries[i];
-      if (entry.role === "tutor") {
-        const { english, portuguese } = entry.response.speech;
-        return [english, portuguese].filter((s) => s.trim()).join(" ");
-      }
+      if (entries[i].role === "tutor") return i;
     }
     return undefined;
   }, [entries]);
 
+  const captionText = useMemo(() => {
+    if (lastTutorEntryIndex === undefined) return undefined;
+    const entry = entries[lastTutorEntryIndex];
+    if (entry.role !== "tutor" || entry.pending) return undefined;
+    const english = revealedText(entry.response.speech.english, entry.reveal?.englishWordsShown);
+    const portuguese = revealedText(entry.response.speech.portuguese, entry.reveal?.portugueseWordsShown);
+    return [english, portuguese].filter((s) => s.trim()).join(" ") || undefined;
+  }, [entries, lastTutorEntryIndex]);
+
+  // Fades in exactly once per tutor entry, the moment its first word
+  // appears — NOT on every subsequent word (captionText itself changes on
+  // every revealed word, which would otherwise flicker the opacity on
+  // every single word instead of fading in smoothly once).
   const [captionVisible, setCaptionVisible] = useState(true);
+  const fadedInForIndexRef = useRef<number | undefined>(undefined);
   useEffect(() => {
+    if (!captionText || fadedInForIndexRef.current === lastTutorEntryIndex) return;
+    fadedInForIndexRef.current = lastTutorEntryIndex;
     setCaptionVisible(false);
     const t = window.setTimeout(() => setCaptionVisible(true), 20);
     return () => window.clearTimeout(t);
-  }, [captionText]);
+  }, [captionText, lastTutorEntryIndex]);
 
   return (
     <div className="mobile-screen">

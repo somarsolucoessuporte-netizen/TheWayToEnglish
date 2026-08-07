@@ -31,6 +31,15 @@ export interface AIOptions {
    * persona escalate (see ATTEMPT-BASED CORRECTION ESCALATION) instead of
    * repeating the identical correction indefinitely. */
   attemptCount?: number;
+  /** Set when this turn is an idle-silence reaction (orchestrator.fireNudge)
+   * rather than a reply to something the student said — see persona.ts's
+   * ACTIVE TUTOR section for how the model should react to each level.
+   * Omitted for every normal turn. */
+  nudge?: "gentle" | "help" | "offer" | "answer";
+  /** Every nudge line already spoken this session (verbatim), so the model
+   * can avoid repeating one — see orchestrator's usedNudgePhrases. Only
+   * meaningful alongside `nudge`, but harmless to send otherwise. */
+  usedNudges?: string[];
 }
 
 export interface AIProvider {

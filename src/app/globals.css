@@ -583,6 +583,44 @@ body {
   border-color: rgba(80, 140, 255, 0.22);
 }
 
+/* Shown in place of the tutor's reply while /api/tts is still loading
+   (see ChatLog's `pending` branch / orchestrator's pushPendingTutorEntry)
+   — text only appears once the audio actually starts. */
+.typing-indicator {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 14px 16px;
+}
+
+.typing-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.55);
+  animation: typing-pulse 1.2s ease-in-out infinite;
+}
+
+.typing-dot:nth-child(2) {
+  animation-delay: 0.15s;
+}
+.typing-dot:nth-child(3) {
+  animation-delay: 0.3s;
+}
+
+@keyframes typing-pulse {
+  0%,
+  80%,
+  100% {
+    transform: scale(0.6);
+    opacity: 0.4;
+  }
+  40% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
 .msg-pt {
   display: block;
   margin-top: 6px;

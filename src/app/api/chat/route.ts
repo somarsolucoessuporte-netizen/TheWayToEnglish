@@ -29,7 +29,24 @@ interface ChatRequestBody {
   currentLessonCode?: string;
   timeWarning?: boolean;
   attemptCount?: number;
+  nudge?: "gentle" | "help" | "offer" | "answer";
+  usedNudges?: string[];
 }
+
+/** Level-specific instruction for a NUDGE EVENT (see ChatRequestBody.nudge
+ * / persona.ts's ACTIVE TUTOR section) — the student has gone quiet for
+ * roughly this long, cumulative idle time since the current question was
+ * asked (see orchestrator's idle clock). 'answer' is the final resolution:
+ * stop waiting and move the lesson forward. */
+const NUDGE_INSTRUCTIONS: Record<NonNullable<ChatRequestBody["nudge"]>, string> = {
+  gentle:
+    "The student has been silent for about 6 seconds. Give a short, warm encouragement in English — they may just need a moment.",
+  help: "The student has been silent for about 14 seconds. Reformulate your last question in Portuguese and give a concrete example to help them get started.",
+  offer:
+    "The student has been silent for about 25 seconds. Offer, in Portuguese, to give them the answer directly so you can practice the pronunciation together.",
+  answer:
+    "The student has been silent for about 40 seconds total now. Stop waiting: give them the answer directly (English, then a Portuguese cue), and ask them to repeat it after you.",
+};
 
 const MAX_NAME_LEN = 80;
 
@@ -84,6 +101,19 @@ export async function POST(req: NextRequest) {
     });
   }
 
+  if (body.nudge) {
+    const usedNudges = Array.isArray(body.usedNudges) ? body.usedNudges.filter((n) => typeof n === "string") : [];
+    hints.push({
+      role: "system",
+      content:
+        `Note: NUDGE EVENT (${body.nudge}). ${NUDGE_INSTRUCTIONS[body.nudge]} ` +
+        (usedNudges.length > 0
+          ? `You have already used these encouragements earlier in this session — do NOT repeat any of ` +
+            `them verbatim, say something different this time: ${usedNudges.map((n) => `"${n}"`).join("; ")}.`
+          : "This is the first nudge this session — no prior encouragement to avoid repeating yet."),
+    });
+  }
+
   const studentName = body.studentName?.slice(0, MAX_NAME_LEN).trim();
   const lesson = body.currentLessonCode ? getLessonByCode(body.currentLessonCode) : undefined;
 
@@ -118,6 +148,8 @@ export async function POST(req: NextRequest) {
         currentLessonCode: body.currentLessonCode,
         timeWarning: body.timeWarning,
         attemptCount: body.attemptCount,
+        nudge: body.nudge,
+        usedNudges: body.usedNudges,
       }
     );
     return NextResponse.json(TutorResponseSchema.parse(response));

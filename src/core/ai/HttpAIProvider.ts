@@ -21,6 +21,8 @@ export class HttpAIProvider implements AIProvider {
         currentLessonCode: opts?.currentLessonCode,
         timeWarning: opts?.timeWarning,
         attemptCount: opts?.attemptCount,
+        nudge: opts?.nudge,
+        usedNudges: opts?.usedNudges,
       }),
     });
 

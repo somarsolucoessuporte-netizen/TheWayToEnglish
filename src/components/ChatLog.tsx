@@ -6,6 +6,17 @@ import { CorrectionCard } from "./CorrectionCard";
 import { MiniCorrectionCard } from "./MiniCorrectionCard";
 import { VisualCard } from "./VisualCard";
 
+/** Slices `text` down to its first `wordsShown` words for the progressive
+ * reveal (see orchestrator's updateReveal) — `undefined` means "not a
+ * progressively-revealed entry at all", which shows everything, so every
+ * entry that doesn't opt into the reveal machinery (scripted announcements,
+ * etc.) renders exactly as it always did. */
+export function revealedText(text: string, wordsShown: number | undefined): string {
+  if (wordsShown === undefined) return text;
+  const words = text.trim().split(/\s+/).filter(Boolean);
+  return words.slice(0, wordsShown).join(" ");
+}
+
 /** `compact` swaps the full CorrectionCard (explanation + pronunciation
  * hint text) for MiniCorrectionCard (just ❌word → ✅word + audio buttons)
  * — used on mobile, where the explanation was already spoken aloud by the
@@ -65,37 +76,57 @@ export function ChatLog({ entries, compact = false }: { entries: ChatEntry[]; co
 
   return (
     <div className="chat-log" ref={logRef}>
-      {entries.map((entry, i) =>
-        entry.role === "user" ? (
-          <div key={i} className={`msg user${praisedUserIndex.has(i) ? " msg-correct" : ""}`}>
-            {entry.text}
-            {praisedUserIndex.has(i) && (
-              <span className="msg-correct-badge" aria-label="Resposta correta">
-                ✓
-              </span>
-            )}
-          </div>
-        ) : (
+      {entries.map((entry, i) => {
+        if (entry.role === "user") {
+          return (
+            <div key={i} className={`msg user${praisedUserIndex.has(i) ? " msg-correct" : ""}`}>
+              {entry.text}
+              {praisedUserIndex.has(i) && (
+                <span className="msg-correct-badge" aria-label="Resposta correta">
+                  ✓
+                </span>
+              )}
+            </div>
+          );
+        }
+
+        // pending: the response has arrived but hasn't started playing
+        // yet — nothing renders except a typing indicator (see
+        // orchestrator's pushPendingTutorEntry) until the audio's real
+        // "start" event flips this and begins the word-by-word reveal.
+        if (entry.pending) {
+          return (
+            <div key={i} className="msg bot typing-indicator" aria-label="Respondendo">
+              <span className="typing-dot" />
+              <span className="typing-dot" />
+              <span className="typing-dot" />
+            </div>
+          );
+        }
+
+        const englishShown = revealedText(entry.response.speech.english, entry.reveal?.englishWordsShown);
+        const portugueseShown = revealedText(entry.response.speech.portuguese, entry.reveal?.portugueseWordsShown);
+
+        return (
           <div key={i} style={{ display: "flex", flexDirection: "column", gap: 8 }}>
             <div className="msg bot">
               {/* Text order mirrors spoken order: normally English-then-
                   Portuguese, but reversed for a correction so the on-screen
                   text doesn't read backwards from what the student just
                   heard (see orchestrator's correction-aware speakParts
-                  ordering). */}
+                  ordering). Each half is only as much of the full line as
+                  has been revealed so far — see revealedText. */}
               {entry.response.correction ? (
                 <>
-                  {entry.response.speech.portuguese && <span className="msg-pt">{entry.response.speech.portuguese}</span>}
-                  {entry.response.speech.english && entry.response.speech.portuguese && <br />}
-                  {entry.response.speech.english}
+                  {portugueseShown && <span className="msg-pt">{portugueseShown}</span>}
+                  {englishShown && portugueseShown && <br />}
+                  {englishShown}
                 </>
               ) : (
                 <>
-                  {entry.response.speech.english}
-                  {entry.response.speech.english && entry.response.speech.portuguese && <br />}
-                  {entry.response.speech.portuguese && (
-                    <span className="msg-pt">{entry.response.speech.portuguese}</span>
-                  )}
+                  {englishShown}
+                  {englishShown && portugueseShown && <br />}
+                  {portugueseShown && <span className="msg-pt">{portugueseShown}</span>}
                 </>
               )}
             </div>
@@ -109,8 +140,8 @@ export function ChatLog({ entries, compact = false }: { entries: ChatEntry[]; co
               <VisualCard visual={entry.response.visual} />
             )}
           </div>
-        )
-      )}
+        );
+      })}
     </div>
   );
 }

@@ -12,6 +12,7 @@ import { ensureAudioContextReady } from "@/core/audio/warmUpAudioContext";
 import { warmUpTts } from "@/core/speech/warmUpTts";
 import { CharacterStateMachine, type CharacterState } from "@/core/character-state-machine/stateMachine";
 import { ConversationOrchestrator, type ChatEntry } from "@/core/conversation/orchestrator";
+import { prefetchGreeting, type PrefetchedGreeting } from "@/core/conversation/greetingPrefetch";
 import { Avatar } from "@/components/Avatar";
 import { ChatLog } from "@/components/ChatLog";
 import { ForceSendButton } from "@/components/ForceSendButton";
@@ -216,9 +217,25 @@ export default function Page() {
   const [bootState, setBootState] = useState<"loading" | "fading" | "ready" | "error" | "timeout">("loading");
   const [bootAssets, setBootAssets] = useState<BootAssets>(INITIAL_BOOT_ASSETS);
 
+  // Per-student greeting prefetch (chat kickoff + its TTS audio), fired in
+  // parallel during boot — see greetingPrefetch.ts and handleStudentPick,
+  // which consumes and clears an entry the moment it's used. A ref, not
+  // state: populating it should never trigger a re-render, and it must
+  // survive independently of the boot gate's own progress (this is
+  // deliberately NOT one of the BootAssets — the app must not wait on 3
+  // extra chat+tts round trips just to become usable; a cache miss just
+  // means startLesson falls back to its normal live call).
+  const greetingCacheRef = useRef<Map<string, PrefetchedGreeting | null>>(new Map());
+
   const runBoot = useCallback(() => {
     setBootState("loading");
     setBootAssets(INITIAL_BOOT_ASSETS);
+    greetingCacheRef.current.clear();
+    for (const student of DEMO_STUDENTS) {
+      void prefetchGreeting(student).then((greeting) => {
+        greetingCacheRef.current.set(student.id, greeting);
+      });
+    }
     let settled = false; // true once either the timeout or Promise.all wins the race
 
     const markDone = (key: keyof BootAssets) => {
@@ -372,10 +389,17 @@ export default function Page() {
     setLessonComplete(false);
     setShowTimeUpNotice(false);
     await new Promise((resolve) => window.setTimeout(resolve, PRE_KICKOFF_DELAY_MS));
+    // Consume (and clear) the cache entry rather than just reading it: a
+    // second visit to the same student later in this page session (e.g.
+    // after "Encerrar" and picking them again) should go through a fresh
+    // live call, not replay an increasingly stale prefetched greeting.
+    const prefetched = greetingCacheRef.current.get(student.id) ?? undefined;
+    greetingCacheRef.current.delete(student.id);
     await orchestrator.startLesson({
       studentName: student.name,
       currentLessonCode: student.currentLesson,
       canDoGoals: lesson?.canDo,
+      prefetched,
     });
   }
 

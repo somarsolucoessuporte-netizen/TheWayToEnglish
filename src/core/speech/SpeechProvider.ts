@@ -35,4 +35,16 @@ export interface SpeechProvider {
    * missing rather than failing.
    */
   speakSlow?(text: string, opts?: SpeechOptions): Promise<void>;
+  /**
+   * Plays an already-fetched audio Blob directly, skipping the network
+   * round trip a normal speak() call would make — used for the boot-time
+   * greeting prefetch (see orchestrator.startLesson / page.tsx's runBoot),
+   * where the audio for the tutor's opening line was already fetched
+   * during the loading screen. Still fires the same "start"/"end" events
+   * as a normal speak() call. Optional: providers without a fetch-based
+   * pipeline (e.g. WebSpeechProvider, which calls the browser's built-in
+   * synthesizer rather than fetching audio) can omit this; callers fall
+   * back to a normal speak() when it's missing.
+   */
+  speakBlob?(blob: Blob): Promise<void>;
 }

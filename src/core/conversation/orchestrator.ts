@@ -16,15 +16,48 @@ export interface ConversationOrchestratorOptions {
   sessionId?: string;
 }
 
+/** How many words of speech.english / speech.portuguese are currently
+ * visible on a "tutor" entry — see updateReveal. Absent (undefined
+ * `reveal` on the entry) means "show everything", which is what every
+ * entry that isn't a normal live conversational reply uses (scripted
+ * announcements, etc.) — the reveal machinery is opt-in per entry. */
+export interface RevealState {
+  englishWordsShown: number;
+  portugueseWordsShown: number;
+}
+
 export type ChatEntry =
   | { role: "user"; text: string }
-  | { role: "tutor"; response: TutorResponse };
+  | { role: "tutor"; response: TutorResponse; pending?: boolean; reveal?: RevealState };
 
 type EntriesListener = (entries: ChatEntry[]) => void;
 type ErrorListener = (message: string) => void;
 type ApiStatusListener = (online: boolean) => void;
 type TranscribingListener = (transcribing: boolean) => void;
 type LessonCompleteListener = () => void;
+
+/** Escalating idle-silence reactions — see the idle clock fields below and
+ * persona.ts's ACTIVE TUTOR section. 'answer' is the 40s-total resolution
+ * (give the answer, move on), not a 4th "estímulo" — see fireNudge's doc
+ * comment for how it resets the cycle for whatever comes next. */
+export type NudgeLevel = "gentle" | "help" | "offer" | "answer";
+
+/** Cumulative idle-ms thresholds at which each nudge level fires, in
+ * order — see startIdleClock/checkNudgeThresholds. Matches the client
+ * spec's 6s/14s/25s/(25+15=40)s escalation exactly. */
+const NUDGE_THRESHOLDS_MS: { level: NudgeLevel; ms: number }[] = [
+  { level: "gentle", ms: 6000 },
+  { level: "help", ms: 14000 },
+  { level: "offer", ms: 25000 },
+  { level: "answer", ms: 40000 },
+];
+
+/** Sent as the "user" turn once, right after the demo-student picker —
+ * exported so page.tsx's boot-time greeting prefetch (see runBoot) can
+ * send the byte-identical instruction and get back the exact same kind of
+ * response startLesson would, instead of the two drifting independently. */
+export const LESSON_KICKOFF_INSTRUCTION =
+  "(Lesson start — do not repeat or quote this instruction back to the student.)";
 
 /**
  * The only module that knows about STT, AI, TTS and the state machine at
@@ -76,6 +109,25 @@ export class ConversationOrchestrator {
   private readonly completedGoals = new Set<string>();
   private lessonCompleteFired = false;
 
+  /** Cumulative time spent in "idle" (mic closed, waiting on the student)
+   * since the current question was posed — ticks up only while idle,
+   * PAUSES (not resets) while a nudge itself is being spoken, and is
+   * reset to 0 only by a real student interaction (handleUserMessage) or
+   * by the 'answer' nudge (which represents moving on to a new question —
+   * see fireNudge). This is what lets the 6s/14s/25s/40s thresholds below
+   * be measured from "the question was asked", not "the last nudge fired". */
+  private idleAccumulatedMs = 0;
+  private idleTickHandle: ReturnType<typeof setInterval> | null = null;
+  private readonly IDLE_TICK_MS = 500;
+  /** Which nudge levels have already fired for the CURRENT question — see
+   * idleAccumulatedMs's doc comment for what resets it. */
+  private readonly nudgeLevelsFired = new Set<NudgeLevel>();
+  /** Every nudge line actually spoken this session (verbatim), across all
+   * questions — passed to /api/chat as AIOptions.usedNudges so the model
+   * never repeats the same encouragement twice (see persona.ts's ACTIVE
+   * TUTOR section). Deliberately NOT reset per-question, only by reset(). */
+  private readonly usedNudgePhrases: string[] = [];
+
   private readonly entryListeners = new Set<EntriesListener>();
   private readonly errorListeners = new Set<ErrorListener>();
   private readonly apiStatusListeners = new Set<ApiStatusListener>();
@@ -98,6 +150,11 @@ export class ConversationOrchestrator {
       // but the moment the state machine actually leaves "listening" for
       // any reason, that gap is over one way or another.
       if (state !== "listening") this.setTranscribing(false);
+      // Active-tutor idle nudges (see NUDGE_THRESHOLDS_MS): the clock only
+      // ever runs while genuinely idle — never during listening, thinking,
+      // speaking, or the praise/correction transients.
+      if (state === "idle") this.startIdleClock();
+      else this.stopIdleClock();
     });
 
     // Dispatches SPEECH_START on the provider's real "playing" DOM event
@@ -249,23 +306,35 @@ export class ConversationOrchestrator {
    * actual lesson content is resolved server-side from the code (see
    * app/api/chat/route.ts + app-config/curriculum) — the persona's
    * "YOU LEAD THE SESSION" instruction does the rest.
+   *
+   * `prefetched`, if given, is a {response, audioBlob} pair for this exact
+   * student+lesson already fetched during the boot loading screen (see
+   * page.tsx's runBoot) — when present, this skips both the /api/chat call
+   * AND the /api/tts fetch entirely and speaks instantly from the cached
+   * blob, instead of paying for either round trip after the student has
+   * already clicked and is waiting. Falls back to the normal live call
+   * transparently if there's no prefetch (cache miss, or it hasn't
+   * resolved yet) — see runTurn's prefetchedResponse param.
    */
   async startLesson(opts: {
     studentName: string;
     currentLessonCode: string;
     canDoGoals?: string[];
+    prefetched?: { response: TutorResponse; audioBlob?: Blob };
   }): Promise<void> {
     this.studentName = opts.studentName;
     this.currentLessonCode = opts.currentLessonCode;
     this.lessonGoals = opts.canDoGoals ?? [];
     this.completedGoals.clear();
     this.lessonCompleteFired = false;
-    const kickoff = "(Lesson start — do not repeat or quote this instruction back to the student.)";
+    this.idleAccumulatedMs = 0;
+    this.nudgeLevelsFired.clear();
     this.stateMachine.dispatch({ type: "STOP_LISTENING" }); // idle -> thinking
-    await this.handleUserMessage(kickoff, undefined, { silent: true });
-    // handleUserMessage ends back on "idle" once the tutor's opening line
-    // finishes speaking. The mic stays closed until the student clicks
-    // Falar — no auto-listen here or anywhere else in this class.
+    this.history.push({ role: "user", content: LESSON_KICKOFF_INSTRUCTION });
+    await this.runTurn({ prefetchedResponse: opts.prefetched?.response, prefetchedAudioBlob: opts.prefetched?.audioBlob });
+    // runTurn ends back on "idle" once the tutor's opening line finishes
+    // speaking. The mic stays closed until the student clicks Falar — no
+    // auto-listen here or anywhere else in this class.
   }
 
   /**
@@ -352,6 +421,7 @@ export class ConversationOrchestrator {
    */
   reset(): void {
     this.speech.cancel();
+    this.stopIdleClock();
     this.history = [];
     this.entries = [];
     for (const cb of this.entryListeners) cb(this.entries);
@@ -364,6 +434,9 @@ export class ConversationOrchestrator {
     this.lessonGoals = [];
     this.completedGoals.clear();
     this.lessonCompleteFired = false;
+    this.idleAccumulatedMs = 0;
+    this.nudgeLevelsFired.clear();
+    this.usedNudgePhrases.length = 0;
     this.stateMachine.dispatch({ type: "RESET" });
   }
 
@@ -410,25 +483,124 @@ export class ConversationOrchestrator {
     }
   }
 
-  private async handleUserMessage(
-    text: string,
-    detectedLanguage?: string,
-    opts: { silent?: boolean } = {}
-  ): Promise<void> {
-    this.busy = true;
-    if (!opts.silent) this.pushEntry({ role: "user", text });
+  private async handleUserMessage(text: string, detectedLanguage?: string): Promise<void> {
+    this.pushEntry({ role: "user", text });
     this.history.push({ role: "user", content: text });
+    // A real student turn always supersedes whatever nudge escalation was
+    // in progress for the previous question — see idleAccumulatedMs's doc
+    // comment. The idle clock is already stopped by now (STOP_LISTENING
+    // was dispatched, synchronously, by every caller before this runs).
+    this.idleAccumulatedMs = 0;
+    this.nudgeLevelsFired.clear();
+    await this.runTurn({ detectedLanguage });
+  }
 
+  /**
+   * Fires one escalating idle-silence reaction (see NUDGE_THRESHOLDS_MS
+   * and persona.ts's ACTIVE TUTOR section) — called only from
+   * checkNudgeThresholds, never directly. Sends a `nudge` marker instead
+   * of a fake student message (see AIOptions.nudge): the model sees the
+   * SAME conversation it already had, plus a system note that the student
+   * has gone quiet, and reacts as itself — not as if the student said
+   * something. 'answer' additionally resets the idle clock once it's
+   * done, since giving the answer and moving on is exactly what turns
+   * this into a fresh question with its own idle budget.
+   */
+  private async fireNudge(level: NudgeLevel): Promise<void> {
+    if (this.busy) return; // idle clock only runs while genuinely idle; defensive only
+    this.stateMachine.dispatch({ type: "STOP_LISTENING" }); // idle -> thinking
+    await this.runTurn({ nudge: level });
+    if (level === "answer") {
+      this.idleAccumulatedMs = 0;
+      this.nudgeLevelsFired.clear();
+    }
+  }
+
+  /** Ticks idleAccumulatedMs while (and only while) the character state is
+   * "idle" — started/stopped from the constructor's stateMachine.subscribe
+   * hook. Restarting on every idle entry (rather than one persistent
+   * interval) keeps this trivially correct: there is never a tick in
+   * flight while any non-idle state is active. */
+  private startIdleClock(): void {
+    this.stopIdleClock();
+    this.idleTickHandle = setInterval(() => {
+      this.idleAccumulatedMs += this.IDLE_TICK_MS;
+      void this.checkNudgeThresholds();
+    }, this.IDLE_TICK_MS);
+  }
+
+  private stopIdleClock(): void {
+    if (this.idleTickHandle !== null) {
+      clearInterval(this.idleTickHandle);
+      this.idleTickHandle = null;
+    }
+  }
+
+  /** Fires at most one nudge level per tick, highest threshold crossed
+   * first — checking from the top down means a single slow tick (e.g. the
+   * tab was backgrounded) that jumps straight past an earlier threshold
+   * doesn't fire two nudges back to back, just the furthest one reached. */
+  private async checkNudgeThresholds(): Promise<void> {
+    const ms = this.idleAccumulatedMs;
+    for (let i = NUDGE_THRESHOLDS_MS.length - 1; i >= 0; i--) {
+      const { level, ms: threshold } = NUDGE_THRESHOLDS_MS[i];
+      if (ms >= threshold && !this.nudgeLevelsFired.has(level)) {
+        this.nudgeLevelsFired.add(level);
+        await this.fireNudge(level);
+        return;
+      }
+    }
+  }
+
+  /**
+   * Shared "ask the AI, display, and speak the reply" turn — used both by
+   * real student messages (handleUserMessage) and by idle nudges
+   * (fireNudge), which differ only in what accompanies the request:
+   * nothing new was said, vs. an internal nudge marker (see AIOptions).
+   *
+   * `prefetchedResponse`/`prefetchedAudioBlob` (startLesson only) skip the
+   * /api/chat call and/or the first part's /api/tts fetch respectively
+   * when a boot-time greeting prefetch (see page.tsx's runBoot) already
+   * has them ready — see speakOnePartWithReveal for how the blob is used.
+   */
+  private async runTurn(opts: {
+    detectedLanguage?: string;
+    nudge?: NudgeLevel;
+    prefetchedResponse?: TutorResponse;
+    prefetchedAudioBlob?: Blob;
+  } = {}): Promise<void> {
+    this.busy = true;
     try {
-      const messages: Message[] = [{ role: "system", content: this.systemPrompt }, ...this.history];
-      const response = await this.ai.send(messages, {
-        sessionId: this.sessionId,
-        detectedLanguage,
-        studentName: this.studentName,
-        currentLessonCode: this.currentLessonCode,
-        timeWarning: this.timeWarningActive,
-        attemptCount: this.correctionAttemptCount,
-      });
+      let response: TutorResponse;
+      // Marks "the reply is ready to be spoken" — for a live call this is
+      // the moment /api/chat responds; for a boot-time prefetch it's
+      // effectively now, since there's nothing left to wait for. Passed
+      // through to speakOnePartWithReveal so it can log the actual
+      // requirement-(f) number: time from here to the audio's real "start".
+      let readyAt: number;
+      if (opts.prefetchedResponse) {
+        response = opts.prefetchedResponse;
+        readyAt = performance.now();
+        console.log("[latency] usando saudação pré-carregada do splash — sem espera de /api/chat");
+      } else {
+        const messages: Message[] = [{ role: "system", content: this.systemPrompt }, ...this.history];
+        const chatRequestStart = performance.now();
+        response = await this.ai.send(messages, {
+          sessionId: this.sessionId,
+          detectedLanguage: opts.detectedLanguage,
+          studentName: this.studentName,
+          currentLessonCode: this.currentLessonCode,
+          timeWarning: this.timeWarningActive,
+          attemptCount: this.correctionAttemptCount,
+          nudge: opts.nudge,
+          usedNudges: this.usedNudgePhrases,
+        });
+        readyAt = performance.now();
+        console.log(
+          `[latency] /api/chat respondeu em ${Math.round(readyAt - chatRequestStart)}ms` +
+            (opts.nudge ? ` (nudge: ${opts.nudge})` : "")
+        );
+      }
       this.setApiStatus(true);
       this.updateCorrectionAttemptTracking(response);
       this.updateGoalProgress(response);
@@ -437,7 +609,12 @@ export class ConversationOrchestrator {
         role: "assistant",
         content: [response.speech.english, response.speech.portuguese].filter((s) => s.trim()).join(" / "),
       });
-      this.pushEntry({ role: "tutor", response });
+      if (opts.nudge) {
+        const spoken = [response.speech.english, response.speech.portuguese].filter((s) => s.trim()).join(" ");
+        if (spoken) this.usedNudgePhrases.push(spoken);
+      }
+
+      const entryIndex = this.pushPendingTutorEntry(response);
 
       // Praise plays out BEFORE speaking, not after: a short chord plus the
       // avatar's praise pose for ~1.5s, then normal speech resumes — the
@@ -456,14 +633,18 @@ export class ConversationOrchestrator {
       const englishPart = { text: response.speech.english, lang: "en-US" };
       const portuguesePart = { text: response.speech.portuguese, lang: "pt-BR" };
       const correction = response.correction;
-      await this.speakParts(
+      await this.speakPartsWithReveal(
         correction ? [portuguesePart, englishPart] : [englishPart, portuguesePart],
-        correction ? { after: () => this.runPronunciationDrill(correction.corrected) } : {}
+        entryIndex,
+        response,
+        correction ? { after: () => this.runPronunciationDrill(correction.corrected) } : {},
+        opts.prefetchedAudioBlob,
+        readyAt
       );
-      // speakParts has already brought the state machine back to idle by
-      // the time it resolves — correction now overlays on top of that idle
-      // state and reverts back to it on its own after ~1.5s. Praise already
-      // happened above, before speaking.
+      // speakPartsWithReveal has already brought the state machine back to
+      // idle by the time it resolves — correction now overlays on top of
+      // that idle state and reverts back to it on its own after ~1.5s.
+      // Praise already happened above, before speaking.
       if (correction) this.stateMachine.dispatch({ type: "CORRECTION" });
     } catch (err) {
       this.setApiStatus(false);
@@ -475,6 +656,41 @@ export class ConversationOrchestrator {
     // Mic stays closed once the tutor's done — push-to-talk only. The
     // student clicks Falar (see ForceSendButton's onClick in page.tsx)
     // when they're ready to answer; nothing here reopens it for them.
+  }
+
+  /** Appends a placeholder "tutor" entry with the real response data
+   * attached but `pending: true` — the UI (see ChatLog) renders this as a
+   * typing indicator instead of text, so nothing appears on screen until
+   * speech actually starts (see speakOnePartWithReveal's "start" handler,
+   * which is what first flips pending to false via updateReveal). */
+  private pushPendingTutorEntry(response: TutorResponse): number {
+    this.entries = [
+      ...this.entries,
+      { role: "tutor", response, pending: true, reveal: { englishWordsShown: 0, portugueseWordsShown: 0 } },
+    ];
+    for (const cb of this.entryListeners) cb(this.entries);
+    return this.entries.length - 1;
+  }
+
+  private replaceEntry(index: number, entry: ChatEntry): void {
+    if (index < 0 || index >= this.entries.length) return;
+    this.entries = this.entries.map((e, i) => (i === index ? entry : e));
+    for (const cb of this.entryListeners) cb(this.entries);
+  }
+
+  /** Merges a new word count for one language half of a tutor entry's
+   * text into its reveal state, leaving the other half's progress alone —
+   * called repeatedly (once per revealed word) by speakOnePartWithReveal's
+   * "start" handler. Always clears `pending`, since the very first call
+   * only ever happens once audio is genuinely playing. */
+  private updateReveal(index: number, response: TutorResponse, isEnglish: boolean, wordsShown: number): void {
+    const current = this.entries[index];
+    if (!current || current.role !== "tutor") return;
+    const prevReveal = current.reveal ?? { englishWordsShown: 0, portugueseWordsShown: 0 };
+    const reveal: RevealState = isEnglish
+      ? { ...prevReveal, englishWordsShown: wordsShown }
+      : { ...prevReveal, portugueseWordsShown: wordsShown };
+    this.replaceEntry(index, { role: "tutor", response, pending: false, reveal });
   }
 
   /**
@@ -525,6 +741,127 @@ export class ConversationOrchestrator {
     }
     if (opts.after) await opts.after();
     this.stateMachine.dispatch({ type: "SPEECH_END" });
+  }
+
+  /**
+   * Same job as speakParts, plus progressively revealing the chat entry at
+   * `entryIndex` word by word as each part's audio actually plays — see
+   * TEXT/VOICE SYNC in the class-level notes and speakOnePartWithReveal.
+   * Used by runTurn for real conversational replies; forceAnnounce's fixed
+   * scripted lines still go through the plain speakParts above (their text
+   * is pushed in full up front, not worth the reveal machinery).
+   */
+  private async speakPartsWithReveal(
+    parts: { text: string; lang: string }[],
+    entryIndex: number,
+    response: TutorResponse,
+    opts: { after?: () => Promise<void> } = {},
+    prefetchedAudioBlob?: Blob,
+    readyAt?: number
+  ): Promise<void> {
+    const nonEmpty = parts.filter((p) => p.text.trim().length > 0);
+    if (nonEmpty.length === 0 && !opts.after) {
+      this.replaceEntry(entryIndex, { role: "tutor", response });
+      return;
+    }
+
+    for (let i = 0; i < nonEmpty.length; i++) {
+      // The prefetched blob (if any) only ever corresponds to the FIRST
+      // part of a fresh greeting — see startLesson. Same for readyAt: only
+      // the very first part's "start" is the number requirement (f) cares
+      // about — the moment the student first hears anything at all.
+      await this.speakOnePartWithReveal(
+        nonEmpty[i],
+        entryIndex,
+        response,
+        i === 0 ? prefetchedAudioBlob : undefined,
+        i === 0 ? readyAt : undefined
+      );
+    }
+    if (opts.after) await opts.after();
+    // Final safety net: whatever the per-part reveal timers left showing,
+    // the full text (and no more pending/typing state) must be visible
+    // now that speaking is genuinely over.
+    this.replaceEntry(entryIndex, { role: "tutor", response });
+    this.stateMachine.dispatch({ type: "SPEECH_END" });
+  }
+
+  /**
+   * Speaks a single part while revealing entryIndex's text for that
+   * language, word by word, timed against the ACTUAL audio duration —
+   * not a fixed guess. The moment the provider's "start" event fires
+   * (audio genuinely audible — see OpenAITTSProvider), this reads the
+   * real <audio> element's `duration` (available almost immediately,
+   * since the provider fetches the whole MP3 before ever creating the
+   * element — no streaming-duration uncertainty) and reveals one word
+   * every `duration / wordCount`, exactly matching the spec's "não
+   * precisa ser perfeito, só precisa parecer que ela está falando aquilo
+   * naquele momento" — this doesn't need frame-accurate lip sync, just a
+   * reveal that finishes roughly when the audio does. providers without a
+   * real <audio> element (getAudioElement missing, e.g. WebSpeechProvider)
+   * fall back to a flat per-word estimate instead of failing.
+   *
+   * The `finally` block is what makes requirement (d) — "full text visible
+   * once the audio ends" — actually robust: whatever the interval's
+   * progress was, this force-completes the reveal the instant speak()'s
+   * promise resolves (which only happens on the provider's own "end"/
+   * "error"), so a reveal that undershoots (slow ticks, a duration
+   * estimate that ran long) never leaves trailing unrevealed words once
+   * playback has genuinely stopped.
+   */
+  private async speakOnePartWithReveal(
+    part: { text: string; lang: string },
+    entryIndex: number,
+    response: TutorResponse,
+    prefetchedAudioBlob?: Blob,
+    readyAt?: number
+  ): Promise<void> {
+    const words = part.text.trim().split(/\s+/).filter(Boolean);
+    const isEnglish = part.lang.startsWith("en");
+
+    let revealTimer: ReturnType<typeof setInterval> | null = null;
+    const stopTimer = () => {
+      if (revealTimer !== null) {
+        clearInterval(revealTimer);
+        revealTimer = null;
+      }
+    };
+
+    const unsubscribeStart = this.speech.on("start", () => {
+      unsubscribeStart(); // one-shot — only this part's own "start" matters here
+      if (readyAt !== undefined) {
+        // Requirement (f): real, measured time from /api/chat's response
+        // to the audio actually being audible — not an estimate.
+        console.log(`[latency] resposta pronta -> áudio 'start': ${Math.round(performance.now() - readyAt)}ms`);
+      }
+      const audio = this.speech.getAudioElement?.();
+      const durationMs =
+        audio && Number.isFinite(audio.duration) && audio.duration > 0
+          ? audio.duration * 1000
+          : words.length * 280; // rough fallback for a provider with no real <audio> element
+      const intervalMs = Math.max(60, durationMs / words.length);
+
+      let shown = 0;
+      const tick = () => {
+        shown = Math.min(words.length, shown + 1);
+        this.updateReveal(entryIndex, response, isEnglish, shown);
+        if (shown >= words.length) stopTimer();
+      };
+      tick(); // first word appears the instant audio starts, not one interval later
+      revealTimer = setInterval(tick, intervalMs);
+    });
+
+    try {
+      if (prefetchedAudioBlob && this.speech.speakBlob) {
+        await this.speech.speakBlob(prefetchedAudioBlob);
+      } else {
+        await this.speech.speak(part.text, { lang: part.lang });
+      }
+    } finally {
+      unsubscribeStart(); // in case "start" never fired at all (e.g. an immediate error)
+      stopTimer();
+      this.updateReveal(entryIndex, response, isEnglish, words.length);
+    }
   }
 
   /**

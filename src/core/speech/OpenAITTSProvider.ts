@@ -38,8 +38,6 @@ export class OpenAITTSProvider implements SpeechProvider {
   }
 
   private async speakAtSpeed(text: string, speed: number): Promise<void> {
-    this.cancel();
-
     try {
       const response = await fetch("/api/tts", {
         method: "POST",
@@ -49,53 +47,7 @@ export class OpenAITTSProvider implements SpeechProvider {
       if (!response.ok) throw new Error(`TTS HTTP ${response.status}`);
 
       const arrayBuffer = await response.arrayBuffer();
-      const blob = new Blob([arrayBuffer], { type: "audio/mpeg" });
-      const url = URL.createObjectURL(blob);
-      console.log("[TTS] blob criado:", url);
-      const audio = new Audio(url);
-      console.log("[TTS] audio criado:", audio);
-      this.audio = audio;
-      this.currentUrl = url;
-
-      await new Promise<void>((resolve) => {
-        // Wrapping resolve so cancel() can also settle this promise (and
-        // clear the ref) if it interrupts before "ended"/"error" ever fire.
-        const finish = () => {
-          this.pendingResolve = null;
-          resolve();
-        };
-        this.pendingResolve = finish;
-
-        // "playing" fires when the browser actually has audible frames
-        // ready to render — NOT "play" (fires as soon as .play() lifts
-        // the element out of paused state, which can happen before enough
-        // of a freshly-fetched MP3 blob is decoded) and NOT
-        // "canplay"/"loadeddata" (fire even earlier, before playback has
-        // been requested at all). The avatar's mouth animation is gated on
-        // this "start" event (see orchestrator's constructor) specifically
-        // so it can never start moving before sound is actually audible.
-        audio.onplaying = () => {
-          this.speaking = true;
-          this.emit("start");
-        };
-        audio.onended = () => {
-          this.speaking = false;
-          this.emit("end");
-          this.revokeCurrentUrl();
-          finish();
-        };
-        audio.onerror = (event) => {
-          console.error("[TTS] erro audio:", event);
-          this.speaking = false;
-          this.emit("error", event);
-          this.revokeCurrentUrl();
-          finish();
-        };
-        void audio.play().catch((err) => {
-          this.emit("error", err);
-          finish();
-        });
-      });
+      await this.playBlob(new Blob([arrayBuffer], { type: "audio/mpeg" }));
     } catch (err) {
       // Explicit, not silent: log here AND rethrow so the orchestrator's
       // existing error handling (ERROR state, error toast) actually fires
@@ -106,6 +58,72 @@ export class OpenAITTSProvider implements SpeechProvider {
       this.emit("error", err);
       throw err;
     }
+  }
+
+  /** See SpeechProvider.speakBlob — plays an already-fetched MP3 blob
+   * (e.g. from a boot-time greeting prefetch) with no network round trip. */
+  async speakBlob(blob: Blob): Promise<void> {
+    try {
+      await this.playBlob(blob);
+    } catch (err) {
+      console.error("[OpenAI TTS] erro (blob pré-carregado):", err);
+      this.emit("error", err);
+      throw err;
+    }
+  }
+
+  /** Shared by speakAtSpeed (fresh /api/tts fetch) and speakBlob (already
+   * have the audio) — everything from "here's a Blob" onward is identical
+   * either way: create the <audio> element, wire the same "playing"/
+   * "ended"/"error" handlers, play it. */
+  private async playBlob(blob: Blob): Promise<void> {
+    this.cancel();
+    const url = URL.createObjectURL(blob);
+    console.log("[TTS] blob criado:", url);
+    const audio = new Audio(url);
+    console.log("[TTS] audio criado:", audio);
+    this.audio = audio;
+    this.currentUrl = url;
+
+    await new Promise<void>((resolve) => {
+      // Wrapping resolve so cancel() can also settle this promise (and
+      // clear the ref) if it interrupts before "ended"/"error" ever fire.
+      const finish = () => {
+        this.pendingResolve = null;
+        resolve();
+      };
+      this.pendingResolve = finish;
+
+      // "playing" fires when the browser actually has audible frames
+      // ready to render — NOT "play" (fires as soon as .play() lifts
+      // the element out of paused state, which can happen before enough
+      // of a freshly-fetched MP3 blob is decoded) and NOT
+      // "canplay"/"loadeddata" (fire even earlier, before playback has
+      // been requested at all). The avatar's mouth animation is gated on
+      // this "start" event (see orchestrator's constructor) specifically
+      // so it can never start moving before sound is actually audible.
+      audio.onplaying = () => {
+        this.speaking = true;
+        this.emit("start");
+      };
+      audio.onended = () => {
+        this.speaking = false;
+        this.emit("end");
+        this.revokeCurrentUrl();
+        finish();
+      };
+      audio.onerror = (event) => {
+        console.error("[TTS] erro audio:", event);
+        this.speaking = false;
+        this.emit("error", event);
+        this.revokeCurrentUrl();
+        finish();
+      };
+      void audio.play().catch((err) => {
+        this.emit("error", err);
+        finish();
+      });
+    });
   }
 
   cancel(): void {
