@@ -28,6 +28,7 @@ interface ChatRequestBody {
   studentName?: string;
   currentLessonCode?: string;
   timeWarning?: boolean;
+  attemptCount?: number;
 }
 
 const MAX_NAME_LEN = 80;
@@ -73,6 +74,16 @@ export async function POST(req: NextRequest) {
     });
   }
 
+  if (typeof body.attemptCount === "number" && body.attemptCount > 0) {
+    hints.push({
+      role: "system",
+      content:
+        `Note: the student has already failed the current pronunciation/correction target ` +
+        `${body.attemptCount} time(s) before this message — this is attempt number ` +
+        `${body.attemptCount + 1}. Follow ATTEMPT-BASED CORRECTION ESCALATION.`,
+    });
+  }
+
   const studentName = body.studentName?.slice(0, MAX_NAME_LEN).trim();
   const lesson = body.currentLessonCode ? getLessonByCode(body.currentLessonCode) : undefined;
 
@@ -106,6 +117,7 @@ export async function POST(req: NextRequest) {
         studentName,
         currentLessonCode: body.currentLessonCode,
         timeWarning: body.timeWarning,
+        attemptCount: body.attemptCount,
       }
     );
     return NextResponse.json(TutorResponseSchema.parse(response));

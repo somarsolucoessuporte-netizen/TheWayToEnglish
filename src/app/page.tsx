@@ -18,8 +18,10 @@ import { ForceSendButton } from "@/components/ForceSendButton";
 import { LessonCompleteCard } from "@/components/LessonCompleteCard";
 import { LessonTimer } from "@/components/LessonTimer";
 import { LoadingScreen } from "@/components/LoadingScreen";
+import { MobileVoiceScreen } from "@/components/MobileVoiceScreen";
 import { StatusPills } from "@/components/StatusPills";
 import { TipsPanel, type TipsAttention } from "@/components/TipsPanel";
+import { useIsMobile } from "@/components/useIsMobile";
 
 /** Lessons without an explicit durationMinutes (shouldn't happen with the
  * current curriculum data, but a demo prototype's JSON is hand-edited) get
@@ -209,6 +211,19 @@ export default function Page() {
     return undefined;
   }, [entries]);
 
+  // Mobile's video-style caption (see MobileVoiceScreen) shows only the
+  // tutor's most recent line, not the full log.
+  const lastTutorResponse = useMemo(() => {
+    for (let i = entries.length - 1; i >= 0; i--) {
+      const entry = entries[i];
+      if (entry.role === "tutor") return entry.response;
+    }
+    return undefined;
+  }, [entries]);
+
+  const isMobile = useIsMobile();
+  const [chatOpen, setChatOpen] = useState(false);
+
   // Tips-button attention animation: only counts idle time that comes right
   // after the tutor finishes speaking (never while listening/thinking/
   // speaking) — resets the moment characterState leaves "idle", and the
@@ -319,93 +334,122 @@ export default function Page() {
             <StatusPills connected={connected} stateLabel={stateLabel} />
           </header>
 
-          <div className="main">
-            <section className="stage">
-              <Avatar engine={avatarEngine} />
+          {isMobile ? (
+            <MobileVoiceScreen
+              avatarEngine={avatarEngine}
+              started={started}
+              characterState={characterState}
+              demoStudents={DEMO_STUDENTS}
+              onStudentPick={handleStudentPick}
+              onTalkClick={handleTalkClick}
+              totalSeconds={totalSeconds}
+              remainingSeconds={remainingSeconds}
+              lastTutorResponse={lastTutorResponse}
+              entries={entries}
+              currentLesson={currentLesson}
+              currentHint={currentHint}
+              tipsAttention={tipsAttention}
+              onTipsBlinkEnd={() => setTipsAttention("expanded")}
+              inputValue={inputValue}
+              onInputChange={(e) => {
+                setInputValue(e.target.value);
+                resetTipsAttention();
+              }}
+              onSubmit={handleSubmit}
+              chatOpen={chatOpen}
+              onChatOpenChange={setChatOpen}
+              lessonComplete={lessonComplete}
+              onEndLesson={handleEndLesson}
+            />
+          ) : (
+            <div className="main">
+              <section className="stage">
+                <Avatar engine={avatarEngine} />
 
-              {!started && (
-                <div className="intro-overlay">
-                  <div className="intro-card">
-                    <div className="intro-title">{branding.copy.demoLoginTitle}</div>
-                    <div className="unit-list">
-                      {DEMO_STUDENTS.map((student) => (
-                        <button
-                          key={student.id}
-                          type="button"
-                          className="btn btn-ghost unit-btn"
-                          onClick={() => handleStudentPick(student)}
-                        >
-                          {student.name}
-                        </button>
-                      ))}
+                {!started && (
+                  <div className="intro-overlay">
+                    <div className="intro-card">
+                      <div className="intro-title">{branding.copy.demoLoginTitle}</div>
+                      <div className="unit-list">
+                        {DEMO_STUDENTS.map((student) => (
+                          <button
+                            key={student.id}
+                            type="button"
+                            className="btn btn-ghost unit-btn"
+                            onClick={() => handleStudentPick(student)}
+                          >
+                            {student.name}
+                          </button>
+                        ))}
+                      </div>
                     </div>
                   </div>
+                )}
+
+                {started && (
+                  <div className="avatar-ui">
+                    <div className="avatar-state">{stateLabel}</div>
+                    {characterState !== "speaking" && (
+                      <div className="avatar-actions">
+                        <ForceSendButton
+                          label={branding.copy.forceSendButton}
+                          listeningLabel={branding.copy.forceSendWhileListening}
+                          isListening={characterState === "listening"}
+                          onClick={handleTalkClick}
+                        />
+                      </div>
+                    )}
+                  </div>
+                )}
+              </section>
+
+              <section className="chat">
+                <div className="chat-header">
+                  <div>
+                    <div className="chat-title">{branding.copy.chatTitle}</div>
+                    <div className="chat-subtitle">{branding.copy.chatSubtitle}</div>
+                  </div>
+                  <TipsPanel
+                    hint={currentHint}
+                    lesson={currentLesson}
+                    attention={tipsAttention}
+                    onBlinkEnd={() => setTipsAttention("expanded")}
+                  />
                 </div>
-              )}
 
-              {started && (
-                <div className="avatar-ui">
-                  <div className="avatar-state">{stateLabel}</div>
-                  {characterState !== "speaking" && (
-                    <div className="avatar-actions">
-                      <ForceSendButton
-                        label={branding.copy.forceSendButton}
-                        listeningLabel={branding.copy.forceSendWhileListening}
-                        isListening={characterState === "listening"}
-                        onClick={handleTalkClick}
-                      />
-                    </div>
-                  )}
-                </div>
-              )}
-            </section>
+                {started && <LessonTimer totalSeconds={totalSeconds} remainingSeconds={remainingSeconds} />}
 
-            <section className="chat">
-              <div className="chat-header">
-                <div>
-                  <div className="chat-title">{branding.copy.chatTitle}</div>
-                  <div className="chat-subtitle">{branding.copy.chatSubtitle}</div>
-                </div>
-                <TipsPanel
-                  hint={currentHint}
-                  lesson={currentLesson}
-                  attention={tipsAttention}
-                  onBlinkEnd={() => setTipsAttention("expanded")}
-                />
-              </div>
+                <ChatLog entries={entries} />
 
-              {started && <LessonTimer totalSeconds={totalSeconds} remainingSeconds={remainingSeconds} />}
+                {lessonComplete && currentLesson && (
+                  <LessonCompleteCard
+                    lessonCode={currentLesson.lessonCode}
+                    lessonTitle={currentLesson.title}
+                    durationMinutes={currentLesson.durationMinutes}
+                    onClose={handleEndLesson}
+                  />
+                )}
 
-              <ChatLog entries={entries} />
+                <form className="chat-form" onSubmit={handleSubmit}>
+                  <input
+                    className="chat-input"
+                    placeholder={branding.copy.chatPlaceholder}
+                    value={inputValue}
+                    onChange={(e) => {
+                      setInputValue(e.target.value);
+                      resetTipsAttention();
+                    }}
+                    autoComplete="off"
+                  />
+                  <button className="btn btn-primary" type="submit">
+                    Enviar
+                  </button>
+                </form>
 
-              {lessonComplete && currentLesson && (
-                <LessonCompleteCard
-                  lessonCode={currentLesson.lessonCode}
-                  lessonTitle={currentLesson.title}
-                  durationMinutes={currentLesson.durationMinutes}
-                  onClose={handleEndLesson}
-                />
-              )}
-
-              <form className="chat-form" onSubmit={handleSubmit}>
-                <input
-                  className="chat-input"
-                  placeholder={branding.copy.chatPlaceholder}
-                  value={inputValue}
-                  onChange={(e) => {
-                    setInputValue(e.target.value);
-                    resetTipsAttention();
-                  }}
-                  autoComplete="off"
-                />
-                <button className="btn btn-primary" type="submit">
-                  Enviar
-                </button>
-              </form>
-
-              <footer className="footer">{branding.copy.footer}</footer>
-            </section>
-          </div>
+                <footer className="footer">{branding.copy.footer}</footer>
+              </section>
+            </div>
+          )}
         </div>
       )}
     </main>

@@ -20,6 +20,7 @@ export class HttpAIProvider implements AIProvider {
         studentName: opts?.studentName,
         currentLessonCode: opts?.currentLessonCode,
         timeWarning: opts?.timeWarning,
+        attemptCount: opts?.attemptCount,
       }),
     });
 

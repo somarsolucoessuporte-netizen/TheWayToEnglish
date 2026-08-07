@@ -1,17 +1,10 @@
 "use client";
 
-import { speechProvider } from "@/app-config/providers";
 import type { TutorResponse } from "@/core/ai/TutorResponse";
+import { pronunciationHandlers } from "./pronunciationPlayback";
 
 export function CorrectionCard({ correction }: { correction: NonNullable<TutorResponse["correction"]> }) {
-  const speakNormal = () => void speechProvider.speak(correction.corrected, { lang: "en-US" });
-  // Falls back to normal speed if the active SpeechProvider has no real
-  // speed control (speakSlow is optional — see SpeechProvider.ts) rather
-  // than silently doing nothing on click.
-  const speakSlow = () =>
-    void (speechProvider.speakSlow
-      ? speechProvider.speakSlow(correction.corrected, { lang: "en-US" })
-      : speechProvider.speak(correction.corrected, { lang: "en-US" }));
+  const { speakNormal, speakSlow } = pronunciationHandlers(correction.corrected);
 
   return (
     <div className="correction-card">

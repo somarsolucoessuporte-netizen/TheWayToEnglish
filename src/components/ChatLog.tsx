@@ -35,10 +35,23 @@ export function ChatLog({ entries }: { entries: ChatEntry[] }) {
   // set it stays there for the entry's lifetime (entries are never
   // reordered), so the flash animation fires exactly once and the
   // checkmark stays permanent, per spec.
+  //
+  // Requires correction to be absent, not just praise to be true: praise
+  // and correction can both come back set on the same TutorResponse (the
+  // model praising effort on a turn that still contains a language
+  // mistake), and showing a green "you got it right" checkmark right next
+  // to an error card is a contradictory signal — the student can't tell if
+  // they were right or wrong. A turn with a correction is never a "you got
+  // it right" turn for checkmark purposes, regardless of the praise flag.
   const praisedUserIndex = useMemo(() => {
     const praised = new Set<number>();
     entries.forEach((entry, i) => {
-      if (entry.role === "tutor" && entry.response.praise && entries[i - 1]?.role === "user") {
+      if (
+        entry.role === "tutor" &&
+        entry.response.praise &&
+        !entry.response.correction &&
+        entries[i - 1]?.role === "user"
+      ) {
         praised.add(i - 1);
       }
     });

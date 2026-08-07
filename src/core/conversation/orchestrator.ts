@@ -54,6 +54,15 @@ export class ConversationOrchestrator {
   /** Set once by announceTimeWarning() and carried on every subsequent
    * ai.send() call for the rest of the session — see AIOptions.timeWarning. */
   private timeWarningActive = false;
+  /** The correction target (TutorResponse.correction.corrected, normalized)
+   * the student is currently being drilled on, and how many consecutive
+   * turns before the CURRENT one have already failed it — see
+   * AIOptions.attemptCount and persona.ts's ATTEMPT-BASED CORRECTION
+   * ESCALATION. Both reset to undefined/0 the moment a turn comes back
+   * with no correction (success, or the conversation moved on) or with a
+   * DIFFERENT correction target (a fresh, unrelated mistake). */
+  private pendingCorrectionWord: string | undefined;
+  private correctionAttemptCount = 0;
 
   private readonly entryListeners = new Set<EntriesListener>();
   private readonly errorListeners = new Set<ErrorListener>();
@@ -322,7 +331,33 @@ export class ConversationOrchestrator {
     this.studentName = undefined;
     this.currentLessonCode = undefined;
     this.timeWarningActive = false;
+    this.pendingCorrectionWord = undefined;
+    this.correctionAttemptCount = 0;
     this.stateMachine.dispatch({ type: "RESET" });
+  }
+
+  /**
+   * Updates the consecutive-attempt tracking used for AIOptions.attemptCount
+   * (see the fields' doc comments) from the response that just arrived —
+   * called right after every ai.send(), so the count sent on the NEXT call
+   * reflects everything up to and including this turn. Same target word
+   * (case/whitespace-insensitive) as last time -> increment; a different
+   * target, or no correction at all -> reset (fresh mistake, or the
+   * student moved past it).
+   */
+  private updateCorrectionAttemptTracking(response: TutorResponse): void {
+    if (!response.correction) {
+      this.pendingCorrectionWord = undefined;
+      this.correctionAttemptCount = 0;
+      return;
+    }
+    const word = response.correction.corrected.trim().toLowerCase();
+    if (word && word === this.pendingCorrectionWord) {
+      this.correctionAttemptCount += 1;
+    } else {
+      this.pendingCorrectionWord = word;
+      this.correctionAttemptCount = 1;
+    }
   }
 
   private async handleUserMessage(
@@ -342,8 +377,10 @@ export class ConversationOrchestrator {
         studentName: this.studentName,
         currentLessonCode: this.currentLessonCode,
         timeWarning: this.timeWarningActive,
+        attemptCount: this.correctionAttemptCount,
       });
       this.setApiStatus(true);
+      this.updateCorrectionAttemptTracking(response);
 
       this.history.push({
         role: "assistant",

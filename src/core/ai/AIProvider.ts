@@ -24,6 +24,13 @@ export interface AIOptions {
    * rest of the session from then on — tells the tutor to actively steer
    * the conversation toward wrapping up instead of starting new ground. */
   timeWarning?: boolean;
+  /** How many consecutive times, before this message, the student has
+   * already failed the SAME correction target (see orchestrator's
+   * pendingCorrectionWord/correctionAttemptCount tracking) — 0 for a fresh
+   * mistake or when the last turn had no correction at all. Lets the
+   * persona escalate (see ATTEMPT-BASED CORRECTION ESCALATION) instead of
+   * repeating the identical correction indefinitely. */
+  attemptCount?: number;
 }
 
 export interface AIProvider {

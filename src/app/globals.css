@@ -778,6 +778,228 @@ body {
   }
 }
 
+@media (max-width: 767px) {
+  .topbar {
+    padding: 8px 12px;
+  }
+  .brand-text .subtitle {
+    display: none;
+  }
+  .brand-text .title {
+    font-size: 14px;
+  }
+  .status {
+    gap: 6px;
+  }
+  .pill {
+    font-size: 11px;
+    padding: 6px 8px;
+  }
+}
+
+/* Voice-first mobile layout (<768px — see components/useIsMobile.ts,
+   which decides in JS whether MobileVoiceScreen or the desktop .main
+   layout renders at all, so these rules never have to fight the desktop
+   ones via a CSS breakpoint). The avatar dominates the screen; the full
+   chat history and text input live behind the "💬 Conversa" bottom sheet
+   instead of always being visible — reading is the fallback path here,
+   not the primary one. */
+.mobile-screen {
+  position: relative;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.mobile-top-bar {
+  position: relative;
+  z-index: 6;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 10px 0;
+}
+
+.mobile-top-bar .lesson-timer {
+  flex: 1;
+  padding: 0;
+  border-bottom: none;
+  background: none;
+}
+
+.mobile-top-bar-spacer {
+  flex: 1;
+}
+
+.mobile-chat-toggle {
+  flex: none;
+  border: 1px solid var(--stroke);
+  background: rgba(0, 0, 0, 0.45);
+  backdrop-filter: blur(8px);
+  color: var(--text);
+  border-radius: 999px;
+  padding: 8px 14px;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.mobile-avatar-wrap {
+  position: relative;
+  flex: 0 0 65vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.mobile-avatar-wrap .avatar-frame {
+  max-width: 78vw;
+  height: 100%;
+  max-height: 100%;
+  width: auto;
+  aspect-ratio: 242 / 382;
+}
+
+.mobile-login {
+  position: absolute;
+  inset: 0;
+  z-index: 5;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  padding: 18px;
+  background: linear-gradient(rgba(0, 0, 0, 0), rgba(0, 0, 0, 0.6) 70%);
+}
+
+.mobile-below-avatar {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+  padding: 16px 18px 24px;
+  overflow-y: auto;
+}
+
+.mobile-caption {
+  margin: 0;
+  max-width: 34ch;
+  text-align: center;
+  font-size: 15px;
+  line-height: 1.4;
+  color: var(--muted);
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.mobile-talk-wrap {
+  margin-top: auto;
+  width: 100%;
+  display: flex;
+  justify-content: center;
+}
+
+.mobile-talk-wrap .force-send-btn {
+  min-height: 64px;
+  min-width: 220px;
+  font-size: 17px;
+  border-radius: 999px;
+}
+
+.mini-correction {
+  width: 100%;
+  max-width: 340px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 10px 14px;
+  border-radius: 14px;
+  border: 1px solid rgba(224, 169, 74, 0.4);
+  background: rgba(224, 169, 74, 0.08);
+  font-size: 13px;
+}
+
+.mini-correction-words {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.mini-correction-wrong {
+  color: rgba(255, 255, 255, 0.6);
+  text-decoration: line-through;
+}
+
+.mini-correction-right {
+  font-weight: 700;
+  color: var(--text);
+}
+
+.mini-correction-arrow {
+  color: var(--muted);
+}
+
+.mini-correction-buttons {
+  display: flex;
+  gap: 6px;
+  flex: none;
+}
+
+.mobile-sheet-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 30;
+  background: rgba(0, 0, 0, 0.55);
+  display: flex;
+  align-items: flex-end;
+}
+
+.mobile-sheet {
+  width: 100%;
+  max-height: 85vh;
+  display: flex;
+  flex-direction: column;
+  background: #10151c;
+  border: 1px solid var(--stroke);
+  border-bottom: none;
+  border-radius: 20px 20px 0 0;
+  animation: mobile-sheet-up 250ms ease-out;
+}
+
+@keyframes mobile-sheet-up {
+  from {
+    transform: translateY(100%);
+  }
+  to {
+    transform: translateY(0);
+  }
+}
+
+.mobile-sheet .chat-header {
+  border-radius: 20px 20px 0 0;
+}
+
+.mobile-sheet-close {
+  flex: none;
+  width: 28px;
+  height: 28px;
+  border-radius: 999px;
+  border: 1px solid var(--stroke);
+  background: rgba(255, 255, 255, 0.06);
+  color: var(--text);
+  cursor: pointer;
+  font-size: 18px;
+  line-height: 1;
+}
+
 .intro-overlay {
   position: absolute;
   inset: 0;
