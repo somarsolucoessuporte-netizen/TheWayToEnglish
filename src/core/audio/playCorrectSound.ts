@@ -19,16 +19,16 @@ export function playCorrectSound(): void {
     gain.connect(ctx.destination);
     osc.frequency.value = freq;
     osc.type = "sine";
-    gain.gain.setValueAtTime(0.3, startTime);
+    gain.gain.setValueAtTime(0.25, startTime);
     gain.gain.exponentialRampToValueAtTime(0.001, startTime + duration);
     osc.start(startTime);
     osc.stop(startTime + duration);
   };
 
   const now = ctx.currentTime;
-  playTone(523, now, 0.15); // C5
-  playTone(659, now + 0.15, 0.2); // E5
-  playTone(784, now + 0.3, 0.25); // G5
+  playTone(523, now, 0.12); // C5
+  playTone(659, now + 0.13, 0.15); // E5
+  playTone(784, now + 0.28, 0.2); // G5
 
   // Release the context once the chord has finished — leaving it open
   // would leak one AudioContext per praise turn.

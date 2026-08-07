@@ -8,6 +8,7 @@
   --accent-soft: rgba(59, 169, 160, 0.35);
   --good: #31d158;
   --warn: #e0a94a;
+  --bubble-student: rgba(0, 0, 0, 0.22);
 }
 
 * {
@@ -532,22 +533,22 @@ body {
 }
 
 .msg-correct {
-  animation: correct-answer 1.5s ease-out 1;
+  animation: correct-flash 1.2s ease-out forwards;
 }
 
-@keyframes correct-answer {
+@keyframes correct-flash {
   0% {
-    background: inherit;
+    background: var(--bubble-student);
   }
-  30% {
-    background: rgba(0, 200, 83, 0.3);
+  25% {
+    background: rgba(0, 200, 83, 0.35);
     border-color: #00c853;
   }
-  70% {
+  75% {
     background: rgba(0, 200, 83, 0.15);
   }
   100% {
-    background: inherit;
+    background: var(--bubble-student);
   }
 }
 
