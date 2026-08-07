@@ -233,13 +233,15 @@ export default function Page() {
     }, BOOT_TIMEOUT_MS);
 
     (async () => {
-      const [, , ttsOk, , chatOk] = await Promise.all([
+      const [, , , , chatOk] = await Promise.all([
         preloadAvatarImage().then(() => markDone("avatarImage")),
         preloadAvatarVideo().then(() => markDone("avatarVideo")),
-        warmUpTts().then((ok) => {
-          markDone("ttsWarm");
-          return ok;
-        }),
+        // Best-effort: still drives the progress bar and status text, but
+        // a failed pre-warm (missing API key, provider briefly down)
+        // degrades to a per-turn voice error instead of blocking the
+        // whole app from ever loading — /api/chat below is the only hard
+        // gate, since without it there's no lesson at all.
+        warmUpTts().then(() => markDone("ttsWarm")),
         ensureAudioContextReady().then((ctx) => {
           // If this invocation was already cancelled (timeout fired, or a
           // React StrictMode dev double-invoke tore it down) by the time
@@ -262,7 +264,7 @@ export default function Page() {
       if (settled) return; // the 8s timeout already fired and took over
       settled = true;
       window.clearTimeout(timeoutId);
-      if (!chatOk || !ttsOk) {
+      if (!chatOk) {
         setBootState("error");
         return;
       }
