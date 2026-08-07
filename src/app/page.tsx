@@ -8,7 +8,8 @@ import { getLessonByCode, type CurriculumLesson } from "@/app-config/curriculum"
 import { aiProvider, speechProvider, sttProvider } from "@/app-config/providers";
 import { AvatarEngine } from "@/core/avatar-engine/AvatarEngine";
 import { preloadAllAvatarVideos } from "@/core/avatar-engine/preloadAvatarAssets";
-import { ensureAudioContextReady } from "@/core/audio/warmUpAudioContext";
+import { ensureAudioContextReady, unlockAudioForIOS } from "@/core/audio/warmUpAudioContext";
+import { isIOS } from "@/core/utils/platform";
 import { warmUpTts } from "@/core/speech/warmUpTts";
 import { CharacterStateMachine, type CharacterState } from "@/core/character-state-machine/stateMachine";
 import { ConversationOrchestrator, type ChatEntry } from "@/core/conversation/orchestrator";
@@ -230,13 +231,16 @@ export default function Page() {
     setTipsAttention("normal");
   }
 
-  // Boot gate: the avatar and chat never mount until ALL FOUR of the 5
-  // avatar clips playable-through (see preloadAllAvatarVideos), a real
-  // /api/tts warm-up call (pre-empting the serverless cold start so the
-  // tutor's first spoken line isn't the one that pays for it), a ready
-  // AudioContext, and /api/chat answering 200 — mounting earlier is what
-  // used to make the avatar and audio try to start against half-loaded
-  // assets or a cold API. "fading" is a brief transitional state: the
+  // Boot gate: the avatar and chat never mount until a real /api/tts
+  // warm-up call (pre-empting the serverless cold start so the tutor's
+  // first spoken line isn't the one that pays for it), a ready
+  // AudioContext, and /api/chat answering 200 have all settled — mounting
+  // earlier is what used to make the avatar and audio try to start
+  // against a cold API. The 5 avatar clips preload independently in the
+  // background (see runBoot) and are deliberately NOT part of this gate:
+  // iOS Safari never signals video readiness without a user gesture, so
+  // waiting on it here used to hang every iPhone student on this screen
+  // until the timeout. "fading" is a brief transitional state: the
   // loading screen fades out while the just-mounted app fades in underneath it (see
   // .loading-screen-fadeout / .app-fade-in in globals.css). "timeout"
   // fires if boot is still incomplete after BOOT_TIMEOUT_MS — distinct
@@ -265,21 +269,36 @@ export default function Page() {
       });
     }
     let settled = false; // true once either the timeout or Promise.all wins the race
+    // Mirrors bootAssets without waiting on a render, so the timeout
+    // handler below can log exactly which asset(s) never settled — see
+    // "[splash] pendentes" below.
+    const assetsSoFar: BootAssets = { ...INITIAL_BOOT_ASSETS };
 
     const markDone = (key: keyof BootAssets) => {
       if (settled) return; // a step finishing after timeout has nothing left to update
+      assetsSoFar[key] = true;
       setBootAssets((prev) => ({ ...prev, [key]: true }));
     };
 
     const timeoutId = window.setTimeout(() => {
       if (settled) return;
       settled = true;
+      const pending = (Object.keys(assetsSoFar) as (keyof BootAssets)[]).filter((key) => !assetsSoFar[key]);
+      console.log("[splash] pendentes:", pending);
       setBootState("timeout");
     }, BOOT_TIMEOUT_MS);
 
+    // Avatar video preload runs in the background, independent of the
+    // release gate below — iOS Safari never fires a video's readiness
+    // signal without a prior user gesture (see preloadAvatarAssets.ts), so
+    // waiting on it here would hang every iPhone on this screen until the
+    // timeout above. Each clip's own `poster` attribute (see Avatar.tsx)
+    // already shows a static frame for the gap between mount and its real
+    // data arriving — nothing else needs to wait on this.
+    void preloadAllAvatarVideos().then(() => markDone("avatarVideos"));
+
     (async () => {
-      const [, , , chatOk] = await Promise.all([
-        preloadAllAvatarVideos().then(() => markDone("avatarVideos")),
+      const [, , chatOk] = await Promise.all([
         // Best-effort: still drives the progress bar and status text, but
         // a failed pre-warm (missing API key, provider briefly down)
         // degrades to a per-turn voice error instead of blocking the
@@ -327,18 +346,18 @@ export default function Page() {
   const bootDoneCount = Object.values(bootAssets).filter(Boolean).length;
   const bootProgressPct = Math.round((bootDoneCount / BOOT_STEPS_TOTAL) * 100);
   // Staged status text: which group of steps is still outstanding, in the
-  // order the student sees them settle — avatar assets first, then voice
-  // (TTS warm-up + AudioContext), then the chat connection. Once every
-  // flag is true this naturally lands on "Tudo pronto!", covering the
-  // brief "fading" state too without needing a separate branch for it.
-  const bootStatusText =
-    !bootAssets.avatarVideos
-      ? branding.copy.bootLoadingAvatar
-      : !(bootAssets.ttsWarm && bootAssets.audioCtx)
-        ? branding.copy.bootLoadingVoice
-        : !bootAssets.chatHealth
-          ? branding.copy.bootConnecting
-          : branding.copy.bootReady;
+  // order the student sees them settle — voice (TTS warm-up +
+  // AudioContext) first, then the chat connection. avatarVideos is
+  // deliberately NOT part of this sequence: it's a background, best-effort
+  // preload (see runBoot) that can legitimately never finish on iOS Safari
+  // without hanging the status text on it. Once every remaining flag is
+  // true this naturally lands on "Tudo pronto!", covering the brief
+  // "fading" state too without needing a separate branch for it.
+  const bootStatusText = !(bootAssets.ttsWarm && bootAssets.audioCtx)
+    ? branding.copy.bootLoadingVoice
+    : !bootAssets.chatHealth
+      ? branding.copy.bootConnecting
+      : branding.copy.bootReady;
 
   // Tracks the current turn's 3-level hint ladder (see TutorResponse.hints
   // / persona.ts's HINTS LADDER section) — real-time, tied to whatever the
@@ -453,6 +472,22 @@ export default function Page() {
       const warmUp = new SpeechSynthesisUtterance(" ");
       warmUp.volume = 0;
       window.speechSynthesis.speak(warmUp);
+    }
+    // iOS Safari requires a user gesture to resume an AudioContext and to
+    // play audio/video with sound — this click is that gesture. MUST run
+    // synchronously here, before the PRE_KICKOFF_DELAY_MS await below: one
+    // microtask tick later and iOS no longer considers it gesture-
+    // triggered, and the tutor's opening line (which plays after that
+    // await, inside orchestrator.startLesson) would silently fail to play.
+    // Also nudges the 5 avatar <video> elements — muted autoplay is
+    // already exempt from this policy so they should be playing on their
+    // own, but a stalled one (e.g. still mid-preload) costs nothing to
+    // nudge here too.
+    if (isIOS()) {
+      unlockAudioForIOS(warmAudioCtxRef.current);
+      document.querySelectorAll<HTMLVideoElement>(".avatar-sprite-layer").forEach((video) => {
+        void video.play().catch(() => {});
+      });
     }
     const lesson = getLessonByCode(student.currentLesson);
     const seconds = (lesson?.durationMinutes ?? DEFAULT_LESSON_DURATION_MIN) * 60;

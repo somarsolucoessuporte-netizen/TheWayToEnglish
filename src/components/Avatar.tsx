@@ -2,6 +2,7 @@
 
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import type { AvatarEngine, AvatarVideoState } from "@/core/avatar-engine/AvatarEngine";
+import { isIOS } from "@/core/utils/platform";
 
 /** Which clip backs each video state — see public/avatar/. Loop policy is
  * handled per-state below, not declared here: idle/listening/thinking
@@ -86,6 +87,11 @@ const SPEAKING_FADE_OPACITY = 0.85;
  * never a blank/broken video.
  */
 export function Avatar({ engine }: { engine: AvatarEngine }) {
+  // Computed once per mount, not per clip: iOS Safari won't buffer past
+  // the response headers without a user gesture regardless of this hint,
+  // so asking for "auto" there just wastes bandwidth guessing — see
+  // preloadAvatarAssets.ts for the same reasoning.
+  const [videoPreload] = useState<"auto" | "metadata">(() => (isIOS() ? "metadata" : "auto"));
   const [videoState, setVideoState] = useState<AvatarVideoState>(engine.getVideoState());
   const [failedStates, setFailedStates] = useState<ReadonlySet<AvatarVideoState>>(new Set());
   const praiseVideoRef = useRef<HTMLVideoElement>(null);
@@ -273,7 +279,7 @@ export function Avatar({ engine }: { engine: AvatarEngine }) {
           autoPlay={loopsForever} // speaking/praise are started/reset imperatively, not on mount
           muted
           playsInline
-          preload="auto"
+          preload={videoPreload}
           className="avatar-sprite-layer"
           // The speaking clip's opacity is set imperatively (see this
           // component's doc comment) — omitting the style prop for it
