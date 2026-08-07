@@ -38,6 +38,15 @@ type LessonCompleteListener = () => void;
 type AmplitudeListener = (rms: number) => void;
 type AwaitingRepeatListener = () => void;
 
+/** Per-call timeout bounds for the pronunciation drill's own short
+ * speak() calls — see speakDrillPart. Deliberately much shorter than
+ * OpenAITTSProvider's general-purpose 15s fetch / 10s playback-start
+ * timeouts, which are sized for a full reply, not "Africa" or "Now you
+ * try.". Slow speech genuinely takes a little longer to fetch/synthesize
+ * than normal speed, hence the gap between the two. */
+const DRILL_SLOW_TIMEOUT_MS = 8000;
+const DRILL_NORMAL_TIMEOUT_MS = 6000;
+
 /** Escalating idle-silence reactions — see the idle clock fields below and
  * persona.ts's ACTIVE TUTOR section. 'answer' is the 40s-total resolution
  * (give the answer, move on), not a 4th "estímulo" — see fireNudge's doc
@@ -969,43 +978,100 @@ export class ConversationOrchestrator {
   }
 
   /**
+   * Speaks one pronunciation-drill part, bounded to `timeoutMs` —
+   * independent of OpenAITTSProvider's own general-purpose 15s fetch /
+   * 10s playback-start timeouts (sized for a full reply, wildly excessive
+   * for a single short word — 3 of those back to back is where the
+   * Falar-button-freeze investigation's ~75s worst case came from). NEVER
+   * throws: a failed or slow part is logged and skipped rather than
+   * taking the rest of the drill (or `busy`) down with it. On timeout,
+   * actively cancels the stuck call (this.speech.cancel(), which resolves
+   * its pending promise — see OpenAITTSProvider.cancel/playBlob) instead
+   * of just abandoning it, so it can't still start playing later and
+   * overlap with whatever the drill moves on to next.
+   */
+  private async speakDrillPart(text: string, timeoutMs: number, slow: boolean): Promise<void> {
+    const speakFn = slow && this.speech.speakSlow ? this.speech.speakSlow.bind(this.speech) : this.speech.speak.bind(this.speech);
+    let timedOut = false;
+    let timer!: ReturnType<typeof setTimeout>;
+    const speakPromise: Promise<void> = speakFn(text, { lang: "en-US" }).catch((err) => {
+      // Still within the race (see below): let Promise.race see this
+      // rejection so the outer catch logs it. Once the timeout has
+      // already won, this is just the abandoned call settling late —
+      // swallow it here instead of leaving an unhandled rejection.
+      if (timedOut) {
+        console.warn(`[drill] "${text}" falhou após o timeout já ter liberado a vez:`, err);
+        return;
+      }
+      throw err;
+    });
+    const timeoutPromise = new Promise<void>((resolve) => {
+      timer = setTimeout(() => {
+        timedOut = true;
+        console.warn(`[drill] "${text}" não respondeu em ${timeoutMs}ms — cancelando e pulando`);
+        this.speech.cancel();
+        resolve();
+      }, timeoutMs);
+    });
+    try {
+      await Promise.race([speakPromise, timeoutPromise]);
+    } catch (err) {
+      console.warn(`[drill] "${text}" falhou, pulando:`, err);
+    } finally {
+      // Load-bearing: without this, a speak() that wins the race (settles
+      // well under timeoutMs) leaves its timer armed — it would still
+      // fire later and cancel() whatever's playing by then, which could
+      // be an entirely different, unrelated turn.
+      clearTimeout(timer);
+    }
+  }
+
+  /**
    * Automatic "hear it, repeat it" pronunciation model that follows a
-   * correction's spoken explanation: the corrected word/phrase at normal
-   * speed, a beat of silence, the same word again at 0.65x speed (real TTS
-   * speed control via SpeechProvider.speakSlow — see OpenAITTSProvider —
-   * not a pitch-shifted playback hack), another beat, then the cue to try
-   * it themselves. Called as speakParts' `after` step so it runs inside
-   * the same SPEECH_START/END span as the correction's explanation — the
-   * avatar stays "speaking" throughout instead of dropping to idle
-   * mid-drill.
+   * correction's spoken explanation: the corrected word/phrase at SLOW
+   * speed (real TTS speed control via SpeechProvider.speakSlow — see
+   * OpenAITTSProvider — not a pitch-shifted playback hack), a beat of
+   * silence, then the cue to try it themselves. Only 2 /api/tts calls, not
+   * 3 — the normal-speed pass was cut (see the Falar-button-freeze
+   * investigation): a student who just got something wrong needs to hear
+   * it slow, not fast first, and 3 short calls back to back is what
+   * turned this drill into a ~75s worst-case freeze. The 🔊/🐢 buttons on
+   * the correction card (see CorrectionCard/MiniCorrectionCard) are still
+   * there for the student to replay either speed as many times as they
+   * want, at their own pace. Called as speakPartsWithReveal's `after`
+   * step so it runs inside the same SPEECH_START/END span as the
+   * correction's explanation — the avatar stays "speaking" throughout
+   * instead of dropping to idle mid-drill.
+   *
+   * Never throws (speakDrillPart already catches its own failures/
+   * timeouts) — the try/catch here is defense in depth only, so a truly
+   * unexpected error (e.g. a listener callback below throwing) can't
+   * propagate up and skip speakPartsWithReveal's own cleanup
+   * (replaceEntry + SPEECH_END). `busy` itself is NOT touched here — it's
+   * already guaranteed to clear via runTurn's own try/finally around this
+   * entire call chain (see setBusy); duplicating that here would risk
+   * flipping it false before speakPartsWithReveal's post-drill cleanup
+   * has actually run.
    */
   private async runPronunciationDrill(word: string): Promise<void> {
     const trimmed = word.trim();
     if (!trimmed) return;
-    // DIAGNOSTIC LOGGING (temporary — see the Falar-button-freeze
-    // investigation): every stage of this 3-part sequence, so a hung
-    // speak() call shows up as the last "... start" with no matching
-    // "... end" instead of the whole thing just going silent. "[speakParts]"
-    // is this drill's own label, not the class's separate speakParts()
-    // method (a different, unrelated call path for the English/Portuguese
-    // reply itself) — kept as literally requested for easy grepping.
-    console.log("[speakParts] início");
-    console.log("[speakParts] parte 1 start");
-    await this.speech.speak(trimmed, { lang: "en-US" });
-    console.log("[speakParts] parte 1 end");
-    console.log("[speakParts] pausa 800ms");
-    await sleep(800);
-    console.log("[speakParts] parte 2 start");
-    if (this.speech.speakSlow) await this.speech.speakSlow(trimmed, { lang: "en-US" });
-    else await this.speech.speak(trimmed, { lang: "en-US" });
-    console.log("[speakParts] parte 2 end");
-    console.log("[speakParts] pausa 500ms");
-    await sleep(500);
-    console.log("[speakParts] parte 3 start");
-    await this.speech.speak("Now you try.", { lang: "en-US" });
-    console.log("[speakParts] parte 3 end");
-    console.log("[speakParts] concluído, busy →", this.busy);
-    for (const cb of this.awaitingRepeatListeners) cb();
+    console.log("[speakParts] início (drill: devagar -> pausa -> now you try)");
+    try {
+      console.log("[speakParts] parte 1 (devagar) start");
+      await this.speakDrillPart(trimmed, DRILL_SLOW_TIMEOUT_MS, true);
+      console.log("[speakParts] parte 1 (devagar) end");
+      console.log("[speakParts] pausa 600ms");
+      await sleep(600);
+      console.log("[speakParts] parte 2 (now you try) start");
+      await this.speakDrillPart("Now you try.", DRILL_NORMAL_TIMEOUT_MS, false);
+      console.log("[speakParts] parte 2 (now you try) end");
+      for (const cb of this.awaitingRepeatListeners) cb();
+    } catch (err) {
+      console.warn("[drill] erro inesperado no drill:", err);
+    } finally {
+      console.log("[speakParts] concluído, busy →", this.busy);
+    }
   }
 
   private pushEntry(entry: ChatEntry): void {
