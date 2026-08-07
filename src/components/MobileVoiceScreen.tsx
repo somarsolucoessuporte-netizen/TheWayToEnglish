@@ -1,18 +1,24 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { forwardRef, useEffect, useImperativeHandle, useMemo, useRef, useState } from "react";
 import { branding } from "@/app-config/branding";
 import type { CurriculumLesson } from "@/app-config/curriculum";
 import type { DemoStudent } from "@/app-config/demo-students";
 import type { AvatarEngine } from "@/core/avatar-engine/AvatarEngine";
-import type { CharacterState } from "@/core/character-state-machine/stateMachine";
 import type { ChatEntry } from "@/core/conversation/orchestrator";
 import { Avatar } from "./Avatar";
 import { ChatLog } from "./ChatLog";
-import { ForceSendButton } from "./ForceSendButton";
 import { LessonCompleteCard } from "./LessonCompleteCard";
 import { LessonTimer } from "./LessonTimer";
 import { TipsPanel, type TipsAttention } from "./TipsPanel";
+
+/** Imperative handle so page.tsx's single page-level Falar button (see
+ * .force-send-btn-dock in globals.css) can still close this screen's
+ * drawer on click, even though the button itself no longer lives inside
+ * this component — see the module doc comment. */
+export interface MobileVoiceScreenHandle {
+  closeDrawer: () => void;
+}
 
 /** Must match --caption-line-height in globals.css — used to compute the
  * 3-line height budget when measuring real line wraps for caption
@@ -94,59 +100,53 @@ interface DragState {
  * the tutor while she talks) stays the primary view. Desktop keeps the
  * original side-by-side layout untouched (see page.tsx).
  */
-export function MobileVoiceScreen({
-  avatarEngine,
-  started,
-  characterState,
-  demoStudents,
-  onStudentPick,
-  onTalkClick,
-  totalSeconds,
-  remainingSeconds,
-  showTimeUpNotice,
-  entries,
-  currentLesson,
-  currentHints,
-  hintLevel,
-  onHintReveal,
-  tipsAttention,
-  onTipsBlinkEnd,
-  inputValue,
-  onInputChange,
-  onSubmit,
-  lessonComplete,
-  onEndLesson,
-  micAmplitude,
-  transcribing,
-  shakeTrigger,
-  onForceReset,
-}: {
-  avatarEngine: AvatarEngine;
-  started: boolean;
-  characterState: CharacterState;
-  demoStudents: readonly DemoStudent[];
-  onStudentPick: (student: DemoStudent) => void;
-  onTalkClick: () => void;
-  totalSeconds: number;
-  remainingSeconds: number;
-  showTimeUpNotice: boolean;
-  entries: ChatEntry[];
-  currentLesson: CurriculumLesson | undefined;
-  currentHints: string[] | undefined;
-  hintLevel: number;
-  onHintReveal: () => void;
-  tipsAttention: TipsAttention;
-  onTipsBlinkEnd: () => void;
-  inputValue: string;
-  onInputChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
-  onSubmit: (e: React.FormEvent) => void;
-  lessonComplete: boolean;
-  onEndLesson: () => void;
-  micAmplitude: number;
-  transcribing: boolean;
-  shakeTrigger: number;
-  onForceReset: () => void;
-}) {
+export const MobileVoiceScreen = forwardRef<
+  MobileVoiceScreenHandle,
+  {
+    avatarEngine: AvatarEngine;
+    started: boolean;
+    demoStudents: readonly DemoStudent[];
+    onStudentPick: (student: DemoStudent) => void;
+    totalSeconds: number;
+    remainingSeconds: number;
+    showTimeUpNotice: boolean;
+    entries: ChatEntry[];
+    currentLesson: CurriculumLesson | undefined;
+    currentHints: string[] | undefined;
+    hintLevel: number;
+    onHintReveal: () => void;
+    tipsAttention: TipsAttention;
+    onTipsBlinkEnd: () => void;
+    inputValue: string;
+    onInputChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
+    onSubmit: (e: React.FormEvent) => void;
+    lessonComplete: boolean;
+    onEndLesson: () => void;
+  }
+>(function MobileVoiceScreen(
+  {
+    avatarEngine,
+    started,
+    demoStudents,
+    onStudentPick,
+    totalSeconds,
+    remainingSeconds,
+    showTimeUpNotice,
+    entries,
+    currentLesson,
+    currentHints,
+    hintLevel,
+    onHintReveal,
+    tipsAttention,
+    onTipsBlinkEnd,
+    inputValue,
+    onInputChange,
+    onSubmit,
+    lessonComplete,
+    onEndLesson,
+  },
+  ref
+) {
   const [drawerOpen, setDrawerOpen] = useState(false);
   const drawerRef = useRef<HTMLDivElement>(null);
   const dragRef = useRef<DragState | null>(null);
@@ -174,14 +174,11 @@ export function MobileVoiceScreen({
     setDrawerTransform(100, true);
   }
 
-  function handleTalkClick() {
-    // "Fecha sozinha quando: o aluno clica em Falar" — the button is only
-    // rendered while the drawer is closed (see the floating controls
-    // below), so this mainly guards a mid-fade edge case, but costs
-    // nothing to call unconditionally.
-    closeDrawer();
-    onTalkClick();
-  }
+  // "Fecha sozinha quando: o aluno clica em Falar" — the Falar button
+  // itself now lives at the page level (see page.tsx's force-send-btn-
+  // dock), not inside this component, so it reaches this via the
+  // imperative handle instead of a prop call.
+  useImperativeHandle(ref, () => ({ closeDrawer }));
 
   function handleHandlePointerDown(e: React.PointerEvent) {
     const el = drawerRef.current;
@@ -388,20 +385,14 @@ export function MobileVoiceScreen({
               shown; textContent is written to it imperatively. */}
           <div ref={measureRef} className="mobile-caption-measure" aria-hidden="true" />
 
-          {!drawerOpen && <div className="dock-scrim" />}
+          {/* Always rendered now, even while the drawer is open — the
+              Falar button (see page.tsx) stays visible on top of the
+              drawer too, and needs this behind it for contrast the same
+              way it always has. */}
+          <div className="dock-scrim" />
 
           {!drawerOpen && (
             <div className="mobile-avatar-controls">
-              <ForceSendButton
-                label={branding.copy.forceSendButton}
-                listeningLabel={branding.copy.forceSendWhileListening}
-                isListening={characterState === "listening"}
-                processing={transcribing}
-                onClick={handleTalkClick}
-                onLongPress={onForceReset}
-                amplitude={micAmplitude}
-                shakeTrigger={shakeTrigger}
-              />
               <TipsPanel
                 hints={currentHints}
                 hintLevel={hintLevel}
@@ -469,4 +460,4 @@ export function MobileVoiceScreen({
       )}
     </div>
   );
-}
+});

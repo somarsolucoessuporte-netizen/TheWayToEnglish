@@ -385,7 +385,9 @@ body {
 .lesson-complete-overlay {
   position: absolute;
   inset: 0;
-  z-index: 10;
+  /* Above .force-send-btn-dock's z-index: 40 — a completion modal must
+     win over the floating Falar button, not sit underneath it. */
+  z-index: 50;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -613,7 +615,11 @@ body {
 }
 
 .chat-log {
-  padding: 14px;
+  /* Extra bottom padding so the last message never ends up hidden behind
+     the floating Falar button (see .force-send-btn-dock) once scrolled to
+     the end — applies here rather than on .chat-form/.mobile-drawer-
+     content since THIS is the part that actually scrolls. */
+  padding: 14px 14px 100px;
   overflow: auto;
   flex: 1;
   display: flex;
@@ -785,6 +791,10 @@ body {
   display: flex;
   gap: 10px;
   padding: 14px;
+  /* Clears the floating Falar button's footprint (see .force-send-btn-dock
+     — 64px tall, 24px offset from the viewport bottom) so it sits above
+     the button, never underneath it. */
+  margin-bottom: 90px;
   border-top: 1px solid var(--stroke);
 }
 
@@ -850,6 +860,33 @@ body {
    .force-send-btn--processing (below) swap the tint but keep the same
    blur/border/highlight construction — see ForceSendButton.tsx for which
    class applies when. */
+/* Fixed, full-width strip pinned to the viewport bottom — NOT the button
+   itself, which instead centers inside it via flexbox. Centering the
+   button this way (instead of the more obvious `left: 50%; transform:
+   translateX(-50%)` on .force-send-btn directly) is deliberate: the shake
+   feedback below (.force-send-btn--shake) animates the button's own
+   `transform`, and a CSS animation's keyframe values REPLACE the
+   element's transform rather than composing with it — a translateX(-50%)
+   centering transform would get clobbered by the shake's translateX(-4px)
+   for the animation's duration, visibly yanking the button to one side.
+   pointer-events: none on the strip (re-enabled on the button itself)
+   keeps the empty space on either side from swallowing clicks meant for
+   whatever's rendered underneath. */
+.force-send-btn-dock {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: calc(24px + env(safe-area-inset-bottom, 0px));
+  z-index: 40;
+  display: flex;
+  justify-content: center;
+  pointer-events: none;
+}
+
+.force-send-btn-dock .force-send-btn {
+  pointer-events: auto;
+}
+
 .force-send-btn {
   background: rgba(255, 255, 255, 0.16);
   backdrop-filter: blur(20px) saturate(140%);
@@ -858,13 +895,41 @@ body {
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.35), 0 8px 24px rgba(0, 0, 0, 0.28);
   color: #fff;
   text-shadow: 0 1px 3px rgba(0, 0, 0, 0.5);
-  min-height: 56px;
-  padding: 12px 22px;
-  border-radius: 28px;
+  min-height: 64px;
+  padding: 12px 26px;
+  border-radius: 999px;
   font-weight: 800;
   font-size: 15px;
-  transition: background 150ms ease, box-shadow 150ms ease;
+  transition: background 150ms ease, box-shadow 150ms ease, opacity 200ms ease;
   animation: force-send-pulse 2600ms ease-in-out infinite;
+}
+
+/* Speaking: the button never leaves the DOM (see page.tsx) — only fades
+   out and stops accepting clicks — so the dock strip's layout never
+   jumps, and it's instantly back the moment the tutor stops talking. */
+.force-send-btn--hidden {
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* Border pulse cueing "it's your turn" right after the "hear it, repeat
+   it" drill's "Now you try." line (see orchestrator's onAwaitingRepeat) —
+   a distinct color from the idle glass pulse so it reads as a fresh
+   prompt, not just the button's normal resting animation. */
+.force-send-btn--awaiting-repeat {
+  animation: force-send-awaiting-repeat 1000ms ease-in-out infinite;
+}
+
+@keyframes force-send-awaiting-repeat {
+  0%,
+  100% {
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.35), 0 8px 24px rgba(0, 0, 0, 0.28),
+      0 0 0 0 rgba(120, 200, 255, 0.55);
+  }
+  50% {
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.35), 0 8px 24px rgba(0, 0, 0, 0.28),
+      0 0 0 10px rgba(120, 200, 255, 0);
+  }
 }
 
 .force-send-btn:hover {
@@ -1043,6 +1108,10 @@ body {
   .force-send-btn--shake {
     animation: force-send-shake-flash 400ms ease-in-out !important;
   }
+  .force-send-btn--awaiting-repeat {
+    animation: none !important;
+    border-color: rgba(120, 200, 255, 0.8) !important;
+  }
 }
 
 @media (max-width: 767px) {
@@ -1219,10 +1288,11 @@ body {
   white-space: normal;
 }
 
-/* Falar + tips, floating over the avatar — hidden while the drawer is
-   open (see MobileVoiceScreen: not rendered at all then), matching the
-   spec's two mockup states exactly and avoiding any overlap with the
-   drawer's own bottom-edge input row. */
+/* Tips button, floating over the avatar — hidden while the drawer is open
+   (see MobileVoiceScreen), since the drawer itself covers this area. The
+   Falar button is NOT here anymore (see .force-send-btn-dock in
+   page.tsx) — it stays visible and rendered even while the drawer is
+   open, since it must always be reachable. */
 /* What actually keeps the frosted Falar/Dica buttons legible — not the
    buttons' own blur alone, but this gradient sitting behind the whole
    bottom zone. Reads as a natural video vignette rather than a UI box,
@@ -1241,6 +1311,10 @@ body {
   pointer-events: none;
 }
 
+/* Tips only now — the Falar button used to live here too, but it's now a
+   single page-level .force-send-btn-dock instance (see page.tsx) so it
+   can float above the drawer as well, not just this fullscreen avatar
+   view. */
 .mobile-avatar-controls {
   position: absolute;
   left: 0;
@@ -1249,16 +1323,9 @@ body {
   z-index: 6;
   display: flex;
   align-items: center;
-  justify-content: center;
+  justify-content: flex-end;
   gap: 10px;
   padding: 10px 14px calc(env(safe-area-inset-bottom, 0px) + 14px);
-}
-
-.mobile-avatar-controls .force-send-btn {
-  min-height: 56px;
-  min-width: 160px;
-  font-size: 16px;
-  border-radius: 999px;
 }
 
 .mobile-drawer {
@@ -1299,6 +1366,11 @@ body {
   min-height: 0;
   display: flex;
   flex-direction: column;
+  /* Same reasoning as .chat-form's margin-bottom: the floating Falar
+     button now stays visible even while the drawer is open (see
+     page.tsx), so its footprint has to be cleared here too or it would
+     sit on top of the input row/footer credit. */
+  padding-bottom: 100px;
 }
 
 /* Reuses .chat-log (flex:1, overflow:auto — see the shared rule above)
@@ -1332,9 +1404,6 @@ body {
   text-align: center;
 }
 
-.mobile-screen .lesson-complete-overlay {
-  z-index: 50;
-}
 
 .mini-correction {
   width: 100%;

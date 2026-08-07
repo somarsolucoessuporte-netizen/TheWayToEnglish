@@ -21,7 +21,7 @@ import { ForceSendButton } from "@/components/ForceSendButton";
 import { LessonCompleteCard } from "@/components/LessonCompleteCard";
 import { LessonTimer } from "@/components/LessonTimer";
 import { LoadingScreen } from "@/components/LoadingScreen";
-import { MobileVoiceScreen } from "@/components/MobileVoiceScreen";
+import { MobileVoiceScreen, type MobileVoiceScreenHandle } from "@/components/MobileVoiceScreen";
 import { StatusPills } from "@/components/StatusPills";
 import { TipsPanel, type TipsAttention } from "@/components/TipsPanel";
 import { useIsMobile } from "@/components/useIsMobile";
@@ -151,6 +151,18 @@ export default function Page() {
   // Bumped every time a Falar click was silently ignored (orchestrator
   // busy) — see ForceSendButton's shakeTrigger prop.
   const [shakeTrigger, setShakeTrigger] = useState(0);
+  // Pulses the Falar button's border for a few seconds right after the
+  // "hear it, repeat it" drill's "Now you try." cue (see
+  // orchestrator.onAwaitingRepeat) — see ForceSendButton's awaitingRepeat
+  // prop. A ref (not just a bare timeout in the listener) is what lets a
+  // second cue landing mid-pulse restart the same 3s window cleanly.
+  const [awaitingRepeat, setAwaitingRepeat] = useState(false);
+  const awaitingRepeatTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  // Mobile's Falar button click needs to close the drawer first (see
+  // MobileVoiceScreen) — the button itself is now a single page-level
+  // instance (see .force-send-btn-dock below) shared by both layouts, so
+  // this imperative handle is how it reaches into the mobile-only drawer.
+  const mobileVoiceScreenRef = useRef<MobileVoiceScreenHandle>(null);
 
   // Holds the AudioContext created by runBoot's audioCtx step (see below)
   // for the page's lifetime — some platforms have real first-AudioContext
@@ -437,6 +449,11 @@ export default function Page() {
       avatarEngine.setTranscribing(value); // see AvatarEngine.getVideoState's transcribing override
     });
     const unsubAmplitude = orchestrator.onAmplitude(setMicAmplitude);
+    const unsubAwaitingRepeat = orchestrator.onAwaitingRepeat(() => {
+      setAwaitingRepeat(true);
+      if (awaitingRepeatTimeoutRef.current !== null) clearTimeout(awaitingRepeatTimeoutRef.current);
+      awaitingRepeatTimeoutRef.current = setTimeout(() => setAwaitingRepeat(false), 3000);
+    });
 
     return () => {
       unsubEntries();
@@ -445,9 +462,18 @@ export default function Page() {
       unsubApiStatus();
       unsubTranscribing();
       unsubAmplitude();
+      unsubAwaitingRepeat();
       if (toastTimeoutRef.current !== null) clearTimeout(toastTimeoutRef.current);
+      if (awaitingRepeatTimeoutRef.current !== null) clearTimeout(awaitingRepeatTimeoutRef.current);
     };
   }, [orchestrator, avatarEngine]);
+
+  // Clears early the moment the student actually acts (or the tutor moves
+  // on) rather than always riding out the full 3s — e.g. clicking Falar
+  // itself already makes the pulse redundant.
+  useEffect(() => {
+    if (characterState !== "idle") setAwaitingRepeat(false);
+  }, [characterState]);
 
   // Resets the sound-wave bars to flat the instant listening stops — the
   // WhisperSTTProvider VAD interval that was driving micAmplitude is
@@ -529,6 +555,15 @@ export default function Page() {
     }
   }
 
+  // The single page-level Falar button's onClick (see .force-send-btn-dock
+  // below) — on mobile, closes the drawer first ("fecha sozinha quando o
+  // aluno clica em Falar"), same behavior the button always had when it
+  // used to live inside MobileVoiceScreen itself.
+  function handleGlobalTalkClick() {
+    mobileVoiceScreenRef.current?.closeDrawer();
+    void handleTalkClick();
+  }
+
   // Long-press escape hatch (see ForceSendButton / orchestrator.forceReset's
   // doc comments) — a safety net the student can reach for themselves if
   // the Falar button ever does get stuck despite the timeouts throughout
@@ -592,12 +627,11 @@ export default function Page() {
 
           {isMobile ? (
             <MobileVoiceScreen
+              ref={mobileVoiceScreenRef}
               avatarEngine={avatarEngine}
               started={started}
-              characterState={characterState}
               demoStudents={DEMO_STUDENTS}
               onStudentPick={handleStudentPick}
-              onTalkClick={handleTalkClick}
               totalSeconds={totalSeconds}
               remainingSeconds={remainingSeconds}
               showTimeUpNotice={showTimeUpNotice}
@@ -616,10 +650,6 @@ export default function Page() {
               onSubmit={handleSubmit}
               lessonComplete={lessonComplete}
               onEndLesson={handleEndLesson}
-              micAmplitude={micAmplitude}
-              transcribing={transcribing}
-              shakeTrigger={shakeTrigger}
-              onForceReset={handleForceReset}
             />
           ) : (
             <div className="main">
@@ -646,23 +676,13 @@ export default function Page() {
                   </div>
                 )}
 
+                {/* The Falar button itself is no longer here — see
+                    .force-send-btn-dock below, a single page-level
+                    instance shared with the mobile layout so it can float
+                    above everything, not just this avatar frame. */}
                 {started && (
                   <div className="avatar-ui">
                     <div className="avatar-state">{stateLabel}</div>
-                    {characterState !== "speaking" && (
-                      <div className="avatar-actions">
-                        <ForceSendButton
-                          label={branding.copy.forceSendButton}
-                          listeningLabel={branding.copy.forceSendWhileListening}
-                          isListening={characterState === "listening"}
-                          processing={transcribing}
-                          onClick={handleTalkClick}
-                          onLongPress={handleForceReset}
-                          amplitude={micAmplitude}
-                          shakeTrigger={shakeTrigger}
-                        />
-                      </div>
-                    )}
                   </div>
                 )}
               </section>
@@ -719,6 +739,33 @@ export default function Page() {
               </section>
             </div>
           )}
+        </div>
+      )}
+
+      {/* Single page-level instance shared by both layouts — deliberately
+          NOT nested inside .app-shell/.stage/.chat/.mobile-screen: several
+          of those ancestors use backdrop-filter or transform, either of
+          which would silently make this element's `position: fixed`
+          anchor to THAT ancestor's box instead of the real viewport (see
+          .force-send-btn-dock's own doc comment in globals.css for the
+          shake-animation reason it's a wrapper, not a prop, on the button
+          itself). Rendered here, as a direct child of <main> (which has
+          neither), it stays truly fixed to the viewport bottom no matter
+          which layout or scroll state is underneath it. */}
+      {started && (
+        <div className="force-send-btn-dock">
+          <ForceSendButton
+            label={branding.copy.forceSendButton}
+            listeningLabel={branding.copy.forceSendWhileListening}
+            isListening={characterState === "listening"}
+            processing={transcribing}
+            hidden={characterState === "speaking"}
+            awaitingRepeat={awaitingRepeat}
+            onClick={handleGlobalTalkClick}
+            onLongPress={handleForceReset}
+            amplitude={micAmplitude}
+            shakeTrigger={shakeTrigger}
+          />
         </div>
       )}
     </main>

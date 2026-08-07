@@ -36,6 +36,7 @@ type ApiStatusListener = (online: boolean) => void;
 type TranscribingListener = (transcribing: boolean) => void;
 type LessonCompleteListener = () => void;
 type AmplitudeListener = (rms: number) => void;
+type AwaitingRepeatListener = () => void;
 
 /** Escalating idle-silence reactions — see the idle clock fields below and
  * persona.ts's ACTIVE TUTOR section. 'answer' is the 40s-total resolution
@@ -135,6 +136,7 @@ export class ConversationOrchestrator {
   private readonly transcribingListeners = new Set<TranscribingListener>();
   private readonly lessonCompleteListeners = new Set<LessonCompleteListener>();
   private readonly amplitudeListeners = new Set<AmplitudeListener>();
+  private readonly awaitingRepeatListeners = new Set<AwaitingRepeatListener>();
 
   constructor(opts: ConversationOrchestratorOptions) {
     this.speech = opts.speech;
@@ -275,6 +277,16 @@ export class ConversationOrchestrator {
   onAmplitude(cb: AmplitudeListener): () => void {
     this.amplitudeListeners.add(cb);
     return () => this.amplitudeListeners.delete(cb);
+  }
+
+  /** Fires the instant the "hear it, repeat it" drill's "Now you try."
+   * cue (see runPronunciationDrill) finishes playing — the Falar button's
+   * UI pulses its border for a few seconds afterward so the student
+   * notices it's their turn to attempt the word, instead of the cue
+   * landing on a button that looks identical to every other idle moment. */
+  onAwaitingRepeat(cb: AwaitingRepeatListener): () => void {
+    this.awaitingRepeatListeners.add(cb);
+    return () => this.awaitingRepeatListeners.delete(cb);
   }
 
   /** Fires exactly once per lesson, the moment every can-do goal has been
@@ -961,6 +973,7 @@ export class ConversationOrchestrator {
     else await this.speech.speak(trimmed, { lang: "en-US" });
     await sleep(500);
     await this.speech.speak("Now you try.", { lang: "en-US" });
+    for (const cb of this.awaitingRepeatListeners) cb();
   }
 
   private pushEntry(entry: ChatEntry): void {

@@ -52,12 +52,26 @@ const LONG_PRESS_MS = 1500;
  *                  suppresses it — wired to orchestrator.forceReset() as
  *                  a safety net the student can reach for themselves if
  *                  the button ever does genuinely get stuck.
+ *
+ * Two more, both purely visual (see globals.css's .force-send-btn-dock —
+ * this button is now a single page-level floating instance, always
+ * mounted while a lesson is running, never conditionally unmounted):
+ *   hidden         — fades out and stops accepting clicks (opacity 0,
+ *                    pointer-events none) instead of unmounting, so the
+ *                    dock's layout never jumps — used while the tutor is
+ *                    actively speaking, when force-sending makes no sense.
+ *   awaitingRepeat — pulses the border for a few seconds right after the
+ *                    "hear it, repeat it" drill's "Now you try." cue (see
+ *                    orchestrator.onAwaitingRepeat), so the student
+ *                    notices it's their turn.
  */
 export function ForceSendButton({
   label,
   listeningLabel,
   isListening,
   processing = false,
+  hidden = false,
+  awaitingRepeat = false,
   onClick,
   onLongPress,
   amplitude = 0,
@@ -67,6 +81,8 @@ export function ForceSendButton({
   listeningLabel: string;
   isListening: boolean;
   processing?: boolean;
+  hidden?: boolean;
+  awaitingRepeat?: boolean;
   onClick: () => void;
   onLongPress?: () => void;
   amplitude?: number;
@@ -76,6 +92,8 @@ export function ForceSendButton({
   const scale = MIN_SCALE + amplitudeNorm * (1 - MIN_SCALE);
 
   const stateClass = processing ? " force-send-btn--processing" : isListening ? " force-send-btn--listening" : "";
+  const hiddenClass = hidden ? " force-send-btn--hidden" : "";
+  const awaitingRepeatClass = awaitingRepeat && !hidden ? " force-send-btn--awaiting-repeat" : "";
 
   const longPressTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const longPressFiredRef = useRef(false);
@@ -134,13 +152,13 @@ export function ForceSendButton({
   return (
     <button
       type="button"
-      className={`btn force-send-btn${stateClass}${shaking ? " force-send-btn--shake" : ""}`}
+      className={`btn force-send-btn${stateClass}${hiddenClass}${awaitingRepeatClass}${shaking ? " force-send-btn--shake" : ""}`}
       onClick={handleClick}
       onPointerDown={handlePointerDown}
       onPointerUp={handlePointerUpOrLeave}
       onPointerLeave={handlePointerUpOrLeave}
       onPointerCancel={handlePointerUpOrLeave}
-      disabled={processing}
+      disabled={processing || hidden}
     >
       {processing ? (
         <span className="listening-indicator">
