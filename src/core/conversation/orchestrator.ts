@@ -78,6 +78,21 @@ export class ConversationOrchestrator {
   private history: Message[] = [];
   private entries: ChatEntry[] = [];
   private busy = false;
+
+  /**
+   * DIAGNOSTIC LOGGING (temporary — see the Falar-button-freeze
+   * investigation): every write to `busy` goes through here instead of a
+   * bare assignment, so the console shows exactly when it flips and which
+   * call site did it. stack[2] (not [1]) is the actual caller — [0] is the
+   * literal "Error" line, [1] is this method's own frame. Every existing
+   * `this.busy = X` call site below has been changed to `this.setBusy(X)`
+   * — no other behavior change.
+   */
+  private setBusy(value: boolean): void {
+    this.busy = value;
+    console.log(`[orchestrator] busy → ${value}`, new Error().stack?.split("\n")[2]?.trim());
+  }
+
   private studentName: string | undefined;
   private currentLessonCode: string | undefined;
   /** Guards against overlapping start() calls — e.g. a double-click on the
@@ -460,7 +475,7 @@ export class ConversationOrchestrator {
     parts: { text: string; lang: string }[],
     opts: { praiseFirst?: boolean } = {}
   ): Promise<void> {
-    this.busy = true;
+    this.setBusy(true);
     try {
       if (this.stateMachine.getState() === "listening") {
         await this.stt.stop().catch(() => {});
@@ -470,7 +485,7 @@ export class ConversationOrchestrator {
       if (opts.praiseFirst) await this.enterPraiseBeforeSpeaking();
       await this.speakParts(parts);
     } finally {
-      this.busy = false;
+      this.setBusy(false);
     }
   }
 
@@ -486,7 +501,7 @@ export class ConversationOrchestrator {
     this.history = [];
     this.entries = [];
     for (const cb of this.entryListeners) cb(this.entries);
-    this.busy = false;
+    this.setBusy(false);
     this.studentName = undefined;
     this.currentLessonCode = undefined;
     this.timeWarningActive = false;
@@ -522,7 +537,7 @@ export class ConversationOrchestrator {
     // stop() for a provider that doesn't implement it.
     if (this.stt.abort) this.stt.abort();
     else void this.stt.stop().catch(() => {});
-    this.busy = false;
+    this.setBusy(false);
     this.listeningStartInFlight = false;
     this.setTranscribing(false);
     this.stateMachine.dispatch({ type: "RESET" });
@@ -658,7 +673,7 @@ export class ConversationOrchestrator {
     prefetchedResponse?: TutorResponse;
     prefetchedAudioBlob?: Blob;
   } = {}): Promise<void> {
-    this.busy = true;
+    this.setBusy(true);
     try {
       let response: TutorResponse;
       // Marks "the reply is ready to be spoken" — for a live call this is
@@ -740,7 +755,7 @@ export class ConversationOrchestrator {
       this.emitError(errorMessage(err));
       this.stateMachine.dispatch({ type: "ERROR" });
     } finally {
-      this.busy = false;
+      this.setBusy(false);
     }
     // Mic stays closed once the tutor's done — push-to-talk only. The
     // student clicks Falar (see ForceSendButton's onClick in page.tsx)
@@ -967,12 +982,29 @@ export class ConversationOrchestrator {
   private async runPronunciationDrill(word: string): Promise<void> {
     const trimmed = word.trim();
     if (!trimmed) return;
+    // DIAGNOSTIC LOGGING (temporary — see the Falar-button-freeze
+    // investigation): every stage of this 3-part sequence, so a hung
+    // speak() call shows up as the last "... start" with no matching
+    // "... end" instead of the whole thing just going silent. "[speakParts]"
+    // is this drill's own label, not the class's separate speakParts()
+    // method (a different, unrelated call path for the English/Portuguese
+    // reply itself) — kept as literally requested for easy grepping.
+    console.log("[speakParts] início");
+    console.log("[speakParts] parte 1 start");
     await this.speech.speak(trimmed, { lang: "en-US" });
+    console.log("[speakParts] parte 1 end");
+    console.log("[speakParts] pausa 800ms");
     await sleep(800);
+    console.log("[speakParts] parte 2 start");
     if (this.speech.speakSlow) await this.speech.speakSlow(trimmed, { lang: "en-US" });
     else await this.speech.speak(trimmed, { lang: "en-US" });
+    console.log("[speakParts] parte 2 end");
+    console.log("[speakParts] pausa 500ms");
     await sleep(500);
+    console.log("[speakParts] parte 3 start");
     await this.speech.speak("Now you try.", { lang: "en-US" });
+    console.log("[speakParts] parte 3 end");
+    console.log("[speakParts] concluído, busy →", this.busy);
     for (const cb of this.awaitingRepeatListeners) cb();
   }
 

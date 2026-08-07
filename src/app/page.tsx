@@ -603,7 +603,16 @@ export default function Page() {
       // A shake makes that "not yet" visible instead of the click just
       // silently doing nothing, which reads identically to a frozen app.
       const started = await orchestrator.startListening();
-      if (!started) setShakeTrigger((n) => n + 1);
+      if (!started) {
+        // DIAGNOSTIC LOGGING (temporary — see the Falar-button-freeze
+        // investigation): the exact state the click bounced off of.
+        console.log("[mic] bloqueado, estado:", {
+          busy: orchestrator.isBusy(),
+          characterState,
+          isListening,
+        });
+        setShakeTrigger((n) => n + 1);
+      }
     }
   }
 
