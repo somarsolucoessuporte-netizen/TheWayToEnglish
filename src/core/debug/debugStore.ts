@@ -17,7 +17,12 @@
  * unconditional anyway because there's no meaningful cost to skip.
  */
 
-export type DebugStatus = "pending" | "ok" | "error";
+/** "info" is for a step that's neither pending nor a pass/fail — it never
+ * gates anything and never counts as an error, it just reports a fact
+ * (e.g. AudioContext's real initial state on iOS, which is ALWAYS
+ * "suspended" before a user gesture — see checkAudioContextState — and
+ * showing that as ✗ would misread a normal platform quirk as a bug). */
+export type DebugStatus = "pending" | "ok" | "error" | "info";
 
 export interface DebugStep {
   id: string;

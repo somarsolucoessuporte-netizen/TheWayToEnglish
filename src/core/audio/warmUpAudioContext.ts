@@ -1,43 +1,32 @@
-/**
- * Creates and immediately suspends an AudioContext so the browser's audio
- * subsystem has already spun up (driver/hardware init on some platforms
- * carries real first-time latency) before the app actually needs one — for
- * the STT VAD's analyser (see WhisperSTTProvider). Call once at app mount
- * and hold onto the returned context for the page's lifetime;
- * letting it get garbage-collected can undo the warm-up on some browsers.
- * Returns null if AudioContext isn't available at all (SSR, unsupported
- * browser) rather than throwing.
- */
-export function warmUpAudioContext(): AudioContext | null {
-  if (typeof window === "undefined") return null;
-  const AudioContextCtor =
-    window.AudioContext ?? (window as unknown as { webkitAudioContext?: typeof AudioContext }).webkitAudioContext;
-  if (!AudioContextCtor) return null;
-
-  const ctx = new AudioContextCtor();
-  void ctx.suspend();
-  return ctx;
+function getAudioContextCtor(): typeof AudioContext | undefined {
+  if (typeof window === "undefined") return undefined;
+  return window.AudioContext ?? (window as unknown as { webkitAudioContext?: typeof AudioContext }).webkitAudioContext;
 }
 
 /**
- * Boot-gate variant of warmUpAudioContext: creates the context and
- * resolves only once it's actually suspended, not just constructed — so
- * the loading screen's "voice ready" step (see app/page.tsx's runBoot)
- * reflects real readiness rather than a synchronous call that returned
- * before the browser's audio subsystem finished spinning up. Resolves
- * with null if AudioContext isn't available at all, same as
- * warmUpAudioContext.
+ * Purely informational — see components/DebugPanel.tsx and page.tsx's
+ * runBoot. Used to be a hard boot-gate step (waiting for a fresh
+ * AudioContext to report "suspended" — the ONLY state it can ever report
+ * before a real user gesture resumes one), which is exactly why the
+ * splash used to hang forever on every iPhone: iOS Safari never resumes a
+ * context on its own, and nobody's touched anything yet during boot. Now
+ * this just creates a throwaway context long enough to read its real
+ * initial state for the debug panel, then closes it — nothing in the app
+ * depends on this specific instance surviving. WhisperSTTProvider and
+ * playCorrectSound each create their own AudioContext when actually
+ * needed (mic recording, a praise sound), independent of this one.
  */
-export async function ensureAudioContextReady(): Promise<AudioContext | null> {
-  const ctx = warmUpAudioContext();
-  if (!ctx) return null;
+export function checkAudioContextState(): string {
+  const Ctor = getAudioContextCtor();
+  if (!Ctor) return "indisponível neste navegador";
   try {
-    await ctx.suspend();
-  } catch {
-    // Already suspended, or suspend() rejected because of the state it's
-    // already in — either way the context itself exists and is usable.
+    const ctx = new Ctor();
+    const state = ctx.state;
+    void ctx.close();
+    return state;
+  } catch (err) {
+    return `verificação falhou: ${err instanceof Error ? err.message : String(err)}`;
   }
-  return ctx;
 }
 
 /**
@@ -60,19 +49,26 @@ const SILENT_WAV_BYTES = new Uint8Array([
  * turns with no gesture behind them at all. MUST be called synchronously
  * inside a real click handler, before any `await` in that handler — one
  * microtask tick is enough for iOS to stop considering it gesture-
- * triggered. Unlocks both tracks WebKit gates separately: the AudioContext
- * (resume + a silent buffer played through it) and plain <audio> elements
- * (a silent WAV blob's play/pause).
+ * triggered. Unlocks both tracks WebKit gates separately: a throwaway
+ * AudioContext (resume + a silent buffer played through it, then closed —
+ * this instance isn't shared with the rest of the app, see
+ * checkAudioContextState's doc comment) and plain <audio> elements (a
+ * silent WAV blob's play/pause).
  */
-export function unlockAudioForIOS(ctx: AudioContext | null): void {
-  if (ctx) {
-    void ctx.resume();
+export function unlockAudioForIOS(): void {
+  const Ctor = getAudioContextCtor();
+  if (Ctor) {
     try {
+      const ctx = new Ctor();
+      void ctx.resume();
       const buffer = ctx.createBuffer(1, 1, 22050);
       const source = ctx.createBufferSource();
       source.buffer = buffer;
       source.connect(ctx.destination);
       source.start(0);
+      // Its only job was to run through resume()+start() once, inside this
+      // gesture — nothing downstream needs it to stick around.
+      window.setTimeout(() => void ctx.close(), 1000);
     } catch {
       // Best-effort — a failure here just means the first real TTS turn
       // pays for the unlock instead of it happening ahead of time.

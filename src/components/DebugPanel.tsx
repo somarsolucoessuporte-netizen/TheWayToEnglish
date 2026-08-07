@@ -8,6 +8,7 @@ const STATUS_ICON: Record<DebugStep["status"], string> = {
   ok: "✓",
   pending: "⏳",
   error: "✗",
+  info: "i",
 };
 
 function buildFullLogText(steps: DebugStep[], lines: string[]): string {

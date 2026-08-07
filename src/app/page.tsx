@@ -8,7 +8,7 @@ import { getLessonByCode, type CurriculumLesson } from "@/app-config/curriculum"
 import { aiProvider, speechProvider, sttProvider } from "@/app-config/providers";
 import { AvatarEngine } from "@/core/avatar-engine/AvatarEngine";
 import { preloadAllAvatarVideos } from "@/core/avatar-engine/preloadAvatarAssets";
-import { ensureAudioContextReady, unlockAudioForIOS } from "@/core/audio/warmUpAudioContext";
+import { checkAudioContextState, unlockAudioForIOS } from "@/core/audio/warmUpAudioContext";
 import { isIOS } from "@/core/utils/platform";
 import { warmUpTts } from "@/core/speech/warmUpTts";
 import { debugLog, describeError, initGlobalErrorCapture, isDebugEnabled, setDebugStep } from "@/core/debug/debugStore";
@@ -105,24 +105,32 @@ async function checkApiHealth(timeoutMs: number): Promise<boolean> {
   }
 }
 
-/** The four things the boot gate waits on, in parallel, before releasing
- * the app — see runBoot. Each flag flips true independently as its own
- * step settles, driving both the progress bar and the staged status text.
+/** The things the boot gate waits on, in parallel, before releasing the
+ * app — see runBoot. Each flag flips true independently as its own step
+ * settles, driving both the progress bar and the staged status text.
  * avatarVideos covers all 5 avatar clips together (see
  * preloadAllAvatarVideos) — they're preloaded as one batch, not tracked
  * individually, since the app has nothing meaningful to show for "3 of 5
- * ready" beyond the single "Carregando a professora..." status line. */
+ * ready" beyond the single "Carregando a professora..." status line.
+ *
+ * AudioContext is deliberately NOT one of these — a confirmed iPhone
+ * diagnosis (via the ?debug=1 panel) showed it's a permanent deadlock as
+ * a boot gate: iOS Safari only ever reports a freshly-created context as
+ * "suspended" until a real user gesture resumes ONE, and nothing has been
+ * touched yet during boot. Waiting on it hung the splash forever on every
+ * iPhone. It isn't needed for anything else either — WhisperSTTProvider
+ * and playCorrectSound each create their own AudioContext when actually
+ * needed — so it's reported purely informationally on the debug panel
+ * (see checkAudioContextState) instead of gating anything. */
 interface BootAssets {
   avatarVideos: boolean;
   ttsWarm: boolean;
-  audioCtx: boolean;
   chatHealth: boolean;
 }
 
 const INITIAL_BOOT_ASSETS: BootAssets = {
   avatarVideos: false,
   ttsWarm: false,
-  audioCtx: false,
   chatHealth: false,
 };
 
@@ -207,19 +215,6 @@ export default function Page() {
   // this imperative handle is how it reaches into the mobile-only drawer.
   const mobileVoiceScreenRef = useRef<MobileVoiceScreenHandle>(null);
 
-  // Holds the AudioContext created by runBoot's audioCtx step (see below)
-  // for the page's lifetime — some platforms have real first-AudioContext
-  // latency (driver/hardware init), so warming it up once at boot means
-  // the very first TTS playback of the session doesn't pay for it. Held in
-  // a ref (not used directly) so it isn't garbage-collected, which can
-  // undo the warm-up.
-  const warmAudioCtxRef = useRef<AudioContext | null>(null);
-  useEffect(() => {
-    return () => {
-      void warmAudioCtxRef.current?.close();
-      warmAudioCtxRef.current = null;
-    };
-  }, []);
 
   // Single-step demo login: picks a canned student profile (name + where
   // they are in the course) in place of real authentication. See
@@ -360,11 +355,21 @@ export default function Page() {
       setDebugStep(`video:${state}`, `${state}.mp4`, status === "ok" ? "ok" : "error", detail ?? "");
     }).then(() => markDone("avatarVideos"));
 
+    // Purely informational (see BootAssets's doc comment on why this is
+    // NOT part of the gate below) — fire-and-forget, never awaited, never
+    // blocks anything. "suspended" on iOS before any gesture is the
+    // expected, normal result, not a failure — see the "info" DebugStatus.
+    setDebugStep(
+      "audio-ctx",
+      "AudioContext",
+      "info",
+      `${checkAudioContextState()} (normal no iOS até um gesto real)`
+    );
+
     (async () => {
       const ttsStartedAt = performance.now();
       setDebugStep("api-tts", "/api/tts", "pending", "aguardando...");
-      setDebugStep("audio-ctx", "AudioContext", "pending", "criando...");
-      const [, , chatOk] = await Promise.all([
+      const [, chatOk] = await Promise.all([
         // Best-effort: still drives the progress bar and status text, but
         // a failed pre-warm (missing API key, provider briefly down)
         // degrades to a per-turn voice error instead of blocking the
@@ -374,20 +379,6 @@ export default function Page() {
           const ms = Math.round(performance.now() - ttsStartedAt);
           setDebugStep("api-tts", "/api/tts", ok ? "ok" : "error", `${ok ? "200" : "falhou"} em ${ms}ms`);
           markDone("ttsWarm");
-        }),
-        ensureAudioContextReady().then((ctx) => {
-          // If this invocation was already cancelled (timeout fired, or a
-          // React StrictMode dev double-invoke tore it down) by the time
-          // this resolves, don't let an abandoned context overwrite
-          // whatever the live invocation is holding — close it instead of
-          // leaking it.
-          if (settled) {
-            void ctx?.close();
-            return;
-          }
-          warmAudioCtxRef.current = ctx;
-          setDebugStep("audio-ctx", "AudioContext", ctx ? "ok" : "error", ctx ? `state: ${ctx.state}` : "indisponível");
-          markDone("audioCtx");
         }),
         checkApiHealth(HEALTH_CHECK_TIMEOUT_MS).then((ok) => {
           setConnected(ok);
@@ -417,14 +408,16 @@ export default function Page() {
   const bootDoneCount = Object.values(bootAssets).filter(Boolean).length;
   const bootProgressPct = Math.round((bootDoneCount / BOOT_STEPS_TOTAL) * 100);
   // Staged status text: which group of steps is still outstanding, in the
-  // order the student sees them settle — voice (TTS warm-up +
-  // AudioContext) first, then the chat connection. avatarVideos is
-  // deliberately NOT part of this sequence: it's a background, best-effort
-  // preload (see runBoot) that can legitimately never finish on iOS Safari
-  // without hanging the status text on it. Once every remaining flag is
-  // true this naturally lands on "Tudo pronto!", covering the brief
-  // "fading" state too without needing a separate branch for it.
-  const bootStatusText = !(bootAssets.ttsWarm && bootAssets.audioCtx)
+  // order the student sees them settle — voice (TTS warm-up) first, then
+  // the chat connection. avatarVideos is deliberately NOT part of this
+  // sequence: it's a background, best-effort preload (see runBoot) that
+  // can legitimately never finish on iOS Safari without hanging the
+  // status text on it — same reasoning as AudioContext no longer being
+  // one of these flags at all (see BootAssets's doc comment). Once every
+  // remaining flag is true this naturally lands on "Tudo pronto!",
+  // covering the brief "fading" state too without needing a separate
+  // branch for it.
+  const bootStatusText = !bootAssets.ttsWarm
     ? branding.copy.bootLoadingVoice
     : !bootAssets.chatHealth
       ? branding.copy.bootConnecting
@@ -569,7 +562,7 @@ export default function Page() {
     // own, but a stalled one (e.g. still mid-preload) costs nothing to
     // nudge here too.
     if (isIOS()) {
-      unlockAudioForIOS(warmAudioCtxRef.current);
+      unlockAudioForIOS();
       document.querySelectorAll<HTMLVideoElement>(".avatar-sprite-layer").forEach((video) => {
         void video.play().catch((err) => debugLog(`gesture play() falhou (${video.src}): ${describeError(err)}`));
       });
