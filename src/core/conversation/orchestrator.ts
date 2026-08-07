@@ -87,17 +87,12 @@ export class ConversationOrchestrator {
       if (state !== "listening") this.setTranscribing(false);
     });
 
-    // Rebinds the avatar's amplitude source to whichever <audio> element
-    // is currently playing, THEN dispatches SPEECH_START — this "start"
-    // event is the provider's real "playing" DOM event (see
-    // OpenAITTSProvider), i.e. audio the student can actually hear, not
-    // the moment speak() was called or the /api/tts fetch kicked off. The
-    // avatar must never start its mouth animation before that: with the
-    // audio element still unbound (or bound to the previous, now-silent
-    // turn's element) the animation loop would fall back to a synthetic
-    // talking rhythm completely disconnected from real sound — most
-    // visible on the very first turn, before any audio element has ever
-    // been bound at all.
+    // Dispatches SPEECH_START on the provider's real "playing" DOM event
+    // (see OpenAITTSProvider) — i.e. audio the student can actually hear,
+    // not the moment speak() was called or the /api/tts fetch kicked off.
+    // This is what the Avatar component's video play/pause is ultimately
+    // driven by (via avatar.setState — see the stateMachine.subscribe
+    // hook above): the video must never start before real audio does.
     //
     // A reply's speech can be spoken as multiple sequential speak() calls
     // (English part, then Portuguese part, or a correction's pronunciation
@@ -106,11 +101,12 @@ export class ConversationOrchestrator {
     // not repeated-flicker: CharacterStateMachine only defines a
     // SPEECH_START transition FROM "thinking" — by the second part the
     // state machine is already "speaking", so the same dispatch is a
-    // silent no-op. speakParts is still the sole authority for
-    // SPEECH_END, dispatched once after every part (and any drill) is
-    // done, not per-call — that part hasn't changed.
+    // silent no-op, and the avatar's video keeps looping uninterrupted
+    // instead of restarting between parts. speakParts is still the sole
+    // authority for SPEECH_END, dispatched once after every part (and any
+    // drill) is done, not per-call — that's what lets the video play
+    // through an entire multi-part turn and stop only at its true end.
     this.speech.on("start", () => {
-      this.avatar.onAudioElement(this.speech.getAudioElement?.() ?? null);
       this.stateMachine.dispatch({ type: "SPEECH_START" });
     });
 

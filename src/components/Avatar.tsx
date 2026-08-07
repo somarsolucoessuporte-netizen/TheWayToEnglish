@@ -2,45 +2,68 @@
 
 import { useEffect, useRef, useState } from "react";
 import type { AvatarEngine } from "@/core/avatar-engine/AvatarEngine";
-import { ALL_SPRITE_KEYS, frameFor, type SpriteKey } from "@/core/avatar-engine/spriteMap";
-
-const FRAMES = ALL_SPRITE_KEYS.map(frameFor);
+import type { CharacterState } from "@/core/character-state-machine/stateMachine";
 
 /**
- * All 9 sprites mount once, here, and never unmount — only their opacity
- * changes. Mounting/unmounting <img> on every state change is what caused
- * the visible flash/decode-delay on each pose's first appearance; with all
- * 9 always in the DOM, the browser has already decoded every frame by the
- * time it's asked to become visible.
+ * Two elements stacked in the same frame, crossfading via opacity:
+ * idle.png (a real frame extracted from speaking.mp4 itself — see
+ * public/avatar/_old_sprites/ for the retired 9-sprite PNG system this
+ * replaced) for every non-speaking state, and the looping speaking video
+ * while "speaking". Because idle.png comes from the video itself, the
+ * 150ms crossfade (see .avatar-sprite-layer) has no lighting/framing/scale
+ * mismatch to hide — unlike the old sprite set, which was assembled from
+ * different rows of a source grid with visible micro-differences between
+ * frames.
+ *
+ * Play/pause is driven ONLY by the "speaking" CharacterState, which is
+ * itself driven only by real SpeechProvider "start"/"end" audio events —
+ * never a timer or an estimated duration (see orchestrator's
+ * speech.on("start", ...) handler and speakParts). That state already
+ * spans an entire multi-part turn (a bilingual reply's English+Portuguese
+ * parts, or a correction's full "hear it, repeat it" pronunciation drill)
+ * as ONE continuous "speaking" stretch — speakParts dispatches SPEECH_END
+ * only once, after every part is done — so the video is never restarted
+ * mid-turn, only at the true start and true end of one.
  */
 export function Avatar({ engine }: { engine: AvatarEngine }) {
-  const [activeKey, setActiveKey] = useState<SpriteKey>(engine.getCurrentKey());
-  const frameRef = useRef<HTMLDivElement>(null);
+  const [state, setState] = useState<CharacterState>(engine.getCurrentState());
+  const videoRef = useRef<HTMLVideoElement>(null);
+
+  useEffect(() => engine.subscribe(setState), [engine]);
+
+  const isSpeaking = state === "speaking";
 
   useEffect(() => {
-    const unsubscribe = engine.subscribe((key, transition) => {
-      const el = frameRef.current;
-      if (el) {
-        el.style.setProperty("--crossfade-ms", `${transition.durationMs}ms`);
-        el.style.setProperty("--crossfade-ease", transition.easing);
-      }
-      setActiveKey(key);
-    });
-    return unsubscribe;
-  }, [engine]);
+    const video = videoRef.current;
+    if (!video) return;
+    if (isSpeaking) {
+      video.currentTime = 0;
+      void video.play().catch(() => {});
+    } else {
+      video.pause();
+      video.currentTime = 0;
+    }
+  }, [isSpeaking]);
 
   return (
-    <div className="avatar-frame" ref={frameRef}>
-      {FRAMES.map((frame) => (
-        <img
-          key={frame.key}
-          src={frame.src}
-          alt=""
-          draggable={false}
-          className="avatar-sprite-layer"
-          style={{ opacity: frame.key === activeKey ? 1 : 0 }}
-        />
-      ))}
+    <div className="avatar-frame">
+      <img
+        src="/avatar/idle.png"
+        alt=""
+        draggable={false}
+        className="avatar-sprite-layer"
+        style={{ opacity: isSpeaking ? 0 : 1 }}
+      />
+      <video
+        ref={videoRef}
+        src="/avatar/speaking.mp4"
+        loop
+        muted
+        playsInline
+        preload="auto"
+        className="avatar-sprite-layer"
+        style={{ opacity: isSpeaking ? 1 : 0 }}
+      />
     </div>
   );
 }

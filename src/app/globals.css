@@ -235,10 +235,12 @@ body {
   object-fit: cover;
   object-position: top;
   image-rendering: auto;
-  /* AvatarEngine sets --crossfade-ms/--crossfade-ease on .avatar-frame per
-     transition: 250ms ease-in-out for state changes, 60ms linear for the
-     mouth while speaking — a 200ms ease on the mouth reads as blurry. */
-  transition: opacity var(--crossfade-ms, 250ms) var(--crossfade-ease, ease-in-out);
+  /* idle.png is a frame extracted from speaking.mp4 itself (see
+     public/avatar/_old_sprites/ for the retired 9-sprite set this
+     replaced, which needed a longer/eased crossfade to hide mismatches
+     between separately-generated frames) — same lighting, framing and
+     scale, so a short linear fade is enough to hide the switch. */
+  transition: opacity 150ms linear;
 }
 
 .avatar-ui {

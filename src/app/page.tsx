@@ -7,7 +7,7 @@ import { DEMO_STUDENTS, type DemoStudent } from "@/app-config/demo-students";
 import { getLessonByCode, type CurriculumLesson } from "@/app-config/curriculum";
 import { aiProvider, speechProvider, sttProvider } from "@/app-config/providers";
 import { AvatarEngine } from "@/core/avatar-engine/AvatarEngine";
-import { preloadAvatarSprites } from "@/core/avatar-engine/preloadSprites";
+import { preloadAvatarAssets } from "@/core/avatar-engine/preloadAvatarAssets";
 import { warmUpAudioContext } from "@/core/audio/warmUpAudioContext";
 import { waitForVoices } from "@/core/speech/waitForVoices";
 import { CharacterStateMachine, type CharacterState } from "@/core/character-state-machine/stateMachine";
@@ -159,13 +159,14 @@ export default function Page() {
     setTipsAttention("normal");
   }
 
-  // Boot gate: the avatar and chat never mount until the 9 sprites are
-  // decoded, speechSynthesis has voices (or 2s passed), and /api/chat has
-  // answered — mounting them earlier is what used to make the avatar and
-  // audio try to start against half-loaded assets or a cold API. "fading"
-  // is a brief transitional state: the loading screen fades out while the
-  // just-mounted app fades in underneath it (see .loading-screen-fadeout /
-  // .app-fade-in in globals.css).
+  // Boot gate: the avatar and chat never mount until idle.png is decoded,
+  // speaking.mp4 can play through, speechSynthesis has voices (or 2s
+  // passed), and /api/chat has answered — mounting them earlier is what
+  // used to make the avatar and audio try to start against half-loaded
+  // assets or a cold API. "fading" is a brief transitional state: the
+  // loading screen fades out while the just-mounted app fades in
+  // underneath it (see .loading-screen-fadeout / .app-fade-in in
+  // globals.css).
   const [bootState, setBootState] = useState<"loading" | "fading" | "ready" | "error">("loading");
 
   const runBoot = useCallback(() => {
@@ -174,7 +175,7 @@ export default function Page() {
 
     (async () => {
       const [, , healthOk] = await Promise.all([
-        preloadAvatarSprites(),
+        preloadAvatarAssets(),
         waitForVoices(2000),
         checkApiHealth(HEALTH_CHECK_TIMEOUT_MS).then((ok) => {
           if (!cancelled) setConnected(ok);
