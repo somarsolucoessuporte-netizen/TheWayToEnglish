@@ -656,6 +656,27 @@ export default function Page() {
   const stateLabel =
     transcribing && characterState === "listening" ? branding.copy.stateTranscribing : STATE_LABELS[characterState];
 
+  // The Falar button itself — one element, wrapped differently per layout
+  // below (mobile: .force-send-btn-dock, fixed to the whole viewport,
+  // since the avatar fills the whole screen there; desktop:
+  // .stage-falar-dock, absolute inside .stage, since desktop's avatar
+  // only occupies the left column and a viewport-centered button would
+  // sit visibly off-center from it — see each CSS rule's own comment).
+  const falarButton = started && (
+    <ForceSendButton
+      label={branding.copy.forceSendButton}
+      listeningLabel={branding.copy.forceSendWhileListening}
+      isListening={characterState === "listening"}
+      processing={transcribing}
+      hidden={characterState === "speaking"}
+      awaitingRepeat={awaitingRepeat}
+      onClick={handleGlobalTalkClick}
+      onLongPress={handleForceReset}
+      amplitude={micAmplitude}
+      shakeTrigger={shakeTrigger}
+    />
+  );
+
   return (
     <main style={{ height: "100dvh", display: "flex", flexDirection: "column" }} onClick={resetTipsAttention}>
       {bootState !== "ready" && (
@@ -744,15 +765,18 @@ export default function Page() {
                   </div>
                 )}
 
-                {/* The Falar button itself is no longer here — see
-                    .force-send-btn-dock below, a single page-level
-                    instance shared with the mobile layout so it can float
-                    above everything, not just this avatar frame. */}
                 {started && (
                   <div className="avatar-ui">
                     <div className="avatar-state">{stateLabel}</div>
                   </div>
                 )}
+
+                {/* Absolute within .stage (not the page-level fixed dock
+                    mobile uses below) — desktop's avatar only occupies
+                    this left column, not the full viewport, so centering
+                    on the window would visibly miss it. See
+                    .stage-falar-dock in globals.css. */}
+                {falarButton && <div className="stage-falar-dock">{falarButton}</div>}
               </section>
 
               <section className="chat">
@@ -810,32 +834,20 @@ export default function Page() {
         </div>
       )}
 
-      {/* Single page-level instance shared by both layouts — deliberately
-          NOT nested inside .app-shell/.stage/.chat/.mobile-screen: several
-          of those ancestors use backdrop-filter or transform, either of
-          which would silently make this element's `position: fixed`
-          anchor to THAT ancestor's box instead of the real viewport (see
-          .force-send-btn-dock's own doc comment in globals.css for the
-          shake-animation reason it's a wrapper, not a prop, on the button
-          itself). Rendered here, as a direct child of <main> (which has
-          neither), it stays truly fixed to the viewport bottom no matter
-          which layout or scroll state is underneath it. */}
-      {started && (
-        <div className="force-send-btn-dock">
-          <ForceSendButton
-            label={branding.copy.forceSendButton}
-            listeningLabel={branding.copy.forceSendWhileListening}
-            isListening={characterState === "listening"}
-            processing={transcribing}
-            hidden={characterState === "speaking"}
-            awaitingRepeat={awaitingRepeat}
-            onClick={handleGlobalTalkClick}
-            onLongPress={handleForceReset}
-            amplitude={micAmplitude}
-            shakeTrigger={shakeTrigger}
-          />
-        </div>
-      )}
+      {/* Mobile only — the avatar fills the entire viewport there (see
+          MobileVoiceScreen), so centering this on the whole window is
+          correct. Desktop's own copy lives inside .stage above instead
+          (.stage-falar-dock), since desktop's avatar is only the left
+          column, not the full window — see that render's comment.
+          Deliberately NOT nested inside .app-shell/.mobile-screen: both
+          use backdrop-filter/transform, either of which would silently
+          make this element's `position: fixed` anchor to THAT ancestor's
+          box instead of the real viewport (see .force-send-btn-dock's own
+          doc comment in globals.css for the shake-animation reason it's a
+          wrapper, not a prop, on the button itself). Rendered here, as a
+          direct child of <main> (which has neither), it stays truly fixed
+          to the viewport bottom regardless of scroll state underneath. */}
+      {isMobile && falarButton && <div className="force-send-btn-dock">{falarButton}</div>}
     </main>
   );
 }

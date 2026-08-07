@@ -887,6 +887,29 @@ body {
   pointer-events: auto;
 }
 
+/* Desktop-only counterpart to .force-send-btn-dock above (see page.tsx:
+   rendered inside .stage there, this one only, not both) — desktop's
+   avatar is just the left column of a 2-column grid (see .main), not the
+   full viewport, so a viewport-centered fixed dock sits visibly off-
+   center from it. position: absolute anchors to .stage's own `position:
+   relative` (see the shared .stage, .chat rule) instead of the viewport.
+   Same wrapper-not-prop centering trick as .force-send-btn-dock, for the
+   same shake-transform reason. */
+.stage-falar-dock {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 24px;
+  z-index: 40;
+  display: flex;
+  justify-content: center;
+  pointer-events: none;
+}
+
+.stage-falar-dock .force-send-btn {
+  pointer-events: auto;
+}
+
 .force-send-btn {
   background: rgba(255, 255, 255, 0.16);
   backdrop-filter: blur(20px) saturate(140%);
