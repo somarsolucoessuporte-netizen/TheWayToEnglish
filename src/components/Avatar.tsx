@@ -3,6 +3,17 @@
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import type { AvatarEngine, AvatarVideoState } from "@/core/avatar-engine/AvatarEngine";
 import { isIOS } from "@/core/utils/platform";
+import { debugLog, describeError } from "@/core/debug/debugStore";
+
+/** Shared by every `<video>.play().catch(...)` in this file — a rejected
+ * play() (e.g. NotAllowedError, still possible on iOS if the page-level
+ * media unlock — see warmUpAudioContext's unlockAudioForIOS — hasn't run
+ * yet) used to be silently swallowed, which is exactly the kind of thing
+ * that reads as "frozen" with zero clue why. Now it's at least visible on
+ * the ?debug=1 panel. */
+function logPlayFailure(clip: string, err: unknown): void {
+  debugLog(`${clip}.play() falhou: ${describeError(err)}`);
+}
 
 /** Which clip backs each video state — see public/avatar/. Loop policy is
  * handled per-state below, not declared here: idle/listening/thinking
@@ -125,7 +136,7 @@ export function Avatar({ engine }: { engine: AvatarEngine }) {
     const video = speakingVideoRef.current;
     if (!video) return;
     video.style.transition = "opacity 150ms ease";
-    void video.play().catch(() => {});
+    void video.play().catch((err) => logPlayFailure("speaking", err));
   }, []);
 
   // Falls back to "idle" for a state whose clip failed to load — see this
@@ -138,7 +149,7 @@ export function Avatar({ engine }: { engine: AvatarEngine }) {
     if (!video) return;
     if (effectiveState === "praise") {
       video.currentTime = 0;
-      void video.play().catch(() => {});
+      void video.play().catch((err) => logPlayFailure("praise", err));
     } else {
       video.pause();
     }
@@ -209,7 +220,7 @@ export function Avatar({ engine }: { engine: AvatarEngine }) {
     speakingFadingRef.current = false;
     updateSpeakingOpacity();
     video.currentTime = 0;
-    void video.play().catch(() => {});
+    void video.play().catch((err) => logPlayFailure("speaking", err));
   }
 
   useEffect(() => {

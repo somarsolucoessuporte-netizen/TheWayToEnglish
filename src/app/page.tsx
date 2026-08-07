@@ -11,6 +11,8 @@ import { preloadAllAvatarVideos } from "@/core/avatar-engine/preloadAvatarAssets
 import { ensureAudioContextReady, unlockAudioForIOS } from "@/core/audio/warmUpAudioContext";
 import { isIOS } from "@/core/utils/platform";
 import { warmUpTts } from "@/core/speech/warmUpTts";
+import { debugLog, describeError, initGlobalErrorCapture, isDebugEnabled, setDebugStep } from "@/core/debug/debugStore";
+import { DebugPanel } from "@/components/DebugPanel";
 import { CharacterStateMachine, type CharacterState } from "@/core/character-state-machine/stateMachine";
 import { ConversationOrchestrator, type ChatEntry } from "@/core/conversation/orchestrator";
 import { prefetchGreeting, type PrefetchedGreeting } from "@/core/conversation/greetingPrefetch";
@@ -60,16 +62,43 @@ const BOOT_TIMEOUT_MS = 8000;
  * visually settled. */
 const PRE_KICKOFF_DELAY_MS = 500;
 
+/** Debug-panel-only check (see core/debug/debugStore) — never part of the
+ * boot gate itself, just informational: confirms the static fallback
+ * frame every avatar <video poster> depends on (see Avatar.tsx) actually
+ * loads on this device/connection. */
+function checkPosterImage(): void {
+  const startedAt = performance.now();
+  setDebugStep("poster", "poster.jpg", "pending", "carregando...");
+  const img = new Image();
+  img.onload = () => {
+    const ms = Math.round(performance.now() - startedAt);
+    setDebugStep("poster", "poster.jpg", "ok", `carregado em ${ms}ms`);
+  };
+  img.onerror = () => {
+    setDebugStep("poster", "poster.jpg", "error", "falhou ao carregar");
+  };
+  img.src = "/avatar/poster.jpg";
+}
+
 /** GET /api/chat as a lightweight readiness probe — same endpoint the app
  * already used for the "Conectado"/"Sem conexão" pill, just with a hard
- * timeout so a stalled request can't hang the loading screen forever. */
+ * timeout so a stalled request can't hang the loading screen forever.
+ * Reports timing/status to the debug panel's checklist (see
+ * core/debug/debugStore) unconditionally — cheap either way, and means
+ * the log already has this by the time anyone adds ?debug=1. */
 async function checkApiHealth(timeoutMs: number): Promise<boolean> {
   const controller = new AbortController();
   const timer = window.setTimeout(() => controller.abort(), timeoutMs);
+  const startedAt = performance.now();
+  setDebugStep("api-chat", "/api/chat", "pending", "aguardando...");
   try {
     const res = await fetch("/api/chat", { signal: controller.signal });
+    const ms = Math.round(performance.now() - startedAt);
+    setDebugStep("api-chat", "/api/chat", res.ok ? "ok" : "error", `${res.status} em ${ms}ms`);
     return res.ok;
-  } catch {
+  } catch (err) {
+    const ms = Math.round(performance.now() - startedAt);
+    setDebugStep("api-chat", "/api/chat", "error", `${describeError(err)} após ${ms}ms`);
     return false;
   } finally {
     window.clearTimeout(timer);
@@ -130,6 +159,20 @@ export default function Page() {
       }),
     [avatarEngine, stateMachine]
   );
+
+  // On-screen diagnostics (see components/DebugPanel.tsx) for ?debug=1 —
+  // starts false (matching what the server would render, which is
+  // nothing) and flips in the mount effect below, never during the
+  // initial render itself, so hydration never has to reconcile a
+  // client-only value against server output. Global error capture (see
+  // initGlobalErrorCapture) starts unconditionally on mount regardless of
+  // this flag — it's nearly free, and means errors before the panel is
+  // ever looked at are already in the log the moment someone checks.
+  const [debugEnabled, setDebugEnabled] = useState(false);
+  useEffect(() => {
+    initGlobalErrorCapture();
+    setDebugEnabled(isDebugEnabled());
+  }, []);
 
   const [entries, setEntries] = useState<ChatEntry[]>([]);
   const [characterState, setCharacterState] = useState<CharacterState>("idle");
@@ -300,23 +343,38 @@ export default function Page() {
       setBootState("timeout");
     }, BOOT_TIMEOUT_MS);
 
+    checkPosterImage();
+
     // Avatar video preload runs in the background, independent of the
     // release gate below — iOS Safari never fires a video's readiness
     // signal without a prior user gesture (see preloadAvatarAssets.ts), so
     // waiting on it here would hang every iPhone on this screen until the
     // timeout above. Each clip's own `poster` attribute (see Avatar.tsx)
     // already shows a static frame for the gap between mount and its real
-    // data arriving — nothing else needs to wait on this.
-    void preloadAllAvatarVideos().then(() => markDone("avatarVideos"));
+    // data arriving — nothing else needs to wait on this. onStatus reports
+    // each clip individually to the debug panel's checklist.
+    for (const state of ["idle", "listening", "thinking", "speaking", "praise"] as const) {
+      setDebugStep(`video:${state}`, `${state}.mp4`, "pending", "aguardando...");
+    }
+    void preloadAllAvatarVideos(6000, (state, status, detail) => {
+      setDebugStep(`video:${state}`, `${state}.mp4`, status === "ok" ? "ok" : "error", detail ?? "");
+    }).then(() => markDone("avatarVideos"));
 
     (async () => {
+      const ttsStartedAt = performance.now();
+      setDebugStep("api-tts", "/api/tts", "pending", "aguardando...");
+      setDebugStep("audio-ctx", "AudioContext", "pending", "criando...");
       const [, , chatOk] = await Promise.all([
         // Best-effort: still drives the progress bar and status text, but
         // a failed pre-warm (missing API key, provider briefly down)
         // degrades to a per-turn voice error instead of blocking the
         // whole app from ever loading — /api/chat below is the only hard
         // gate, since without it there's no lesson at all.
-        warmUpTts().then(() => markDone("ttsWarm")),
+        warmUpTts().then((ok) => {
+          const ms = Math.round(performance.now() - ttsStartedAt);
+          setDebugStep("api-tts", "/api/tts", ok ? "ok" : "error", `${ok ? "200" : "falhou"} em ${ms}ms`);
+          markDone("ttsWarm");
+        }),
         ensureAudioContextReady().then((ctx) => {
           // If this invocation was already cancelled (timeout fired, or a
           // React StrictMode dev double-invoke tore it down) by the time
@@ -328,6 +386,7 @@ export default function Page() {
             return;
           }
           warmAudioCtxRef.current = ctx;
+          setDebugStep("audio-ctx", "AudioContext", ctx ? "ok" : "error", ctx ? `state: ${ctx.state}` : "indisponível");
           markDone("audioCtx");
         }),
         checkApiHealth(HEALTH_CHECK_TIMEOUT_MS).then((ok) => {
@@ -512,7 +571,7 @@ export default function Page() {
     if (isIOS()) {
       unlockAudioForIOS(warmAudioCtxRef.current);
       document.querySelectorAll<HTMLVideoElement>(".avatar-sprite-layer").forEach((video) => {
-        void video.play().catch(() => {});
+        void video.play().catch((err) => debugLog(`gesture play() falhou (${video.src}): ${describeError(err)}`));
       });
     }
     const lesson = getLessonByCode(student.currentLesson);
@@ -606,6 +665,12 @@ export default function Page() {
       )}
 
       <ErrorToast message={toastMessage} />
+
+      {/* Deliberately OUTSIDE every bootState-gated block below — a
+          "timeout"/"error" boot is exactly when this diagnostic is
+          needed most, so it must not disappear behind (or get replaced
+          by) LoadingScreen's own retry UI. See components/DebugPanel.tsx. */}
+      {debugEnabled && <DebugPanel />}
 
       {(bootState === "fading" || bootState === "ready") && (
         <div className={`app-shell${bootState === "fading" ? " app-fade-in" : ""}`}>

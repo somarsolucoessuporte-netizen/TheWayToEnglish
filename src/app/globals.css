@@ -1487,3 +1487,81 @@ body {
   text-align: left;
   width: 100%;
 }
+
+/* On-screen diagnostics for the iOS splash-freeze investigation (see
+   components/DebugPanel.tsx and core/debug/debugStore.ts) — enabled with
+   ?debug=1 in the URL. z-index 1000 is deliberately above EVERYTHING else
+   in this file (LoadingScreen, force-send-btn-dock, lesson-complete-
+   overlay) since a student reporting a real freeze needs the diagnostics
+   visible no matter what state the app is stuck in. A bottom SHEET, not a
+   literal small corner box — the checklist + full userAgent + captured
+   errors need real width to stay legible at 14px on an iPhone. */
+.debug-panel {
+  position: fixed;
+  left: 8px;
+  right: 8px;
+  bottom: calc(8px + env(safe-area-inset-bottom, 0px));
+  max-height: 45vh;
+  z-index: 1000;
+  display: flex;
+  flex-direction: column;
+  background: rgba(0, 0, 0, 0.88);
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  border-radius: 10px;
+  box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.5);
+  overflow: hidden;
+}
+
+.debug-panel-header {
+  flex: none;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 8px 10px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+  color: #fff;
+  font-weight: 700;
+  font-size: 14px;
+}
+
+.debug-panel-copy {
+  background: rgba(255, 255, 255, 0.15);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  color: #fff;
+  padding: 5px 10px;
+  border-radius: 6px;
+  font-size: 12px;
+  cursor: pointer;
+  flex: none;
+}
+
+.debug-panel-copy:hover {
+  background: rgba(255, 255, 255, 0.24);
+}
+
+.debug-panel-body {
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  padding: 8px 10px 10px;
+}
+
+.debug-panel-row {
+  color: #fff;
+  font-size: 14px;
+  font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+  white-space: pre-wrap;
+  word-break: break-word;
+  line-height: 1.5;
+  padding: 1px 0;
+}
+
+.debug-panel-muted {
+  color: rgba(255, 255, 255, 0.5);
+}
+
+.debug-panel-sep {
+  height: 1px;
+  background: rgba(255, 255, 255, 0.2);
+  margin: 6px 0;
+}
