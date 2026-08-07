@@ -7,9 +7,9 @@ import { DEMO_STUDENTS, type DemoStudent } from "@/app-config/demo-students";
 import { getLessonByCode, type CurriculumLesson } from "@/app-config/curriculum";
 import { aiProvider, speechProvider, sttProvider } from "@/app-config/providers";
 import { AvatarEngine } from "@/core/avatar-engine/AvatarEngine";
-import { preloadAvatarAssets } from "@/core/avatar-engine/preloadAvatarAssets";
-import { warmUpAudioContext } from "@/core/audio/warmUpAudioContext";
-import { waitForVoices } from "@/core/speech/waitForVoices";
+import { preloadAvatarImage, preloadAvatarVideo } from "@/core/avatar-engine/preloadAvatarAssets";
+import { ensureAudioContextReady } from "@/core/audio/warmUpAudioContext";
+import { warmUpTts } from "@/core/speech/warmUpTts";
 import { CharacterStateMachine, type CharacterState } from "@/core/character-state-machine/stateMachine";
 import { ConversationOrchestrator, type ChatEntry } from "@/core/conversation/orchestrator";
 import { Avatar } from "@/components/Avatar";
@@ -41,6 +41,10 @@ const HEALTH_CHECK_TIMEOUT_MS = 5000;
  * it) take — must match .loading-screen's transition and .app-fade-in's
  * animation duration in globals.css. */
 const BOOT_FADE_MS = 400;
+/** Safety net: if the five boot steps below haven't ALL settled by this
+ * point, stop waiting and show the "connection is slow, retry?" screen
+ * instead of leaving the student staring at a progress bar forever. */
+const BOOT_TIMEOUT_MS = 8000;
 /** Small buffer after the demo-student click, before the tutor's opening
  * line starts — gives the avatar's just-mounted <img> elements a beat to
  * finish painting (they're already preloaded/decoded by the boot gate, but
@@ -64,6 +68,27 @@ async function checkApiHealth(timeoutMs: number): Promise<boolean> {
     window.clearTimeout(timer);
   }
 }
+
+/** The five things the boot gate waits on, in parallel, before releasing
+ * the app — see runBoot. Each flag flips true independently as its own
+ * step settles, driving both the progress bar and the staged status text. */
+interface BootAssets {
+  avatarImage: boolean;
+  avatarVideo: boolean;
+  ttsWarm: boolean;
+  audioCtx: boolean;
+  chatHealth: boolean;
+}
+
+const INITIAL_BOOT_ASSETS: BootAssets = {
+  avatarImage: false,
+  avatarVideo: false,
+  ttsWarm: false,
+  audioCtx: false,
+  chatHealth: false,
+};
+
+const BOOT_STEPS_TOTAL = Object.keys(INITIAL_BOOT_ASSETS).length;
 
 const STATE_LABELS: Record<CharacterState, string> = {
   idle: branding.copy.stateIdle,
@@ -97,14 +122,14 @@ export default function Page() {
   const [connected, setConnected] = useState<boolean | null>(null);
   const [inputValue, setInputValue] = useState("");
 
-  // Spins up the browser's audio subsystem once, as early as possible —
-  // some platforms have real first-AudioContext latency (driver/hardware
-  // init), and without this the very first TTS playback of the session
-  // would be the one to pay for it. Held in a ref (not used directly) so
-  // it isn't garbage-collected, which can undo the warm-up.
+  // Holds the AudioContext created by runBoot's audioCtx step (see below)
+  // for the page's lifetime — some platforms have real first-AudioContext
+  // latency (driver/hardware init), so warming it up once at boot means
+  // the very first TTS playback of the session doesn't pay for it. Held in
+  // a ref (not used directly) so it isn't garbage-collected, which can
+  // undo the warm-up.
   const warmAudioCtxRef = useRef<AudioContext | null>(null);
   useEffect(() => {
-    warmAudioCtxRef.current = warmUpAudioContext();
     return () => {
       void warmAudioCtxRef.current?.close();
       warmAudioCtxRef.current = null;
@@ -176,46 +201,98 @@ export default function Page() {
     setTipsAttention("normal");
   }
 
-  // Boot gate: the avatar and chat never mount until idle.png is decoded,
-  // speaking.mp4 can play through, speechSynthesis has voices (or 2s
-  // passed), and /api/chat has answered — mounting them earlier is what
-  // used to make the avatar and audio try to start against half-loaded
-  // assets or a cold API. "fading" is a brief transitional state: the
-  // loading screen fades out while the just-mounted app fades in
-  // underneath it (see .loading-screen-fadeout / .app-fade-in in
-  // globals.css).
-  const [bootState, setBootState] = useState<"loading" | "fading" | "ready" | "error">("loading");
+  // Boot gate: the avatar and chat never mount until ALL FIVE of idle.png
+  // decoded, speaking.mp4 playable-through, a real /api/tts warm-up call
+  // (pre-empting the serverless cold start so the tutor's first spoken
+  // line isn't the one that pays for it), a ready AudioContext, and
+  // /api/chat answering 200 — mounting earlier is what used to make the
+  // avatar and audio try to start against half-loaded assets or a cold
+  // API. "fading" is a brief transitional state: the loading screen fades
+  // out while the just-mounted app fades in underneath it (see
+  // .loading-screen-fadeout / .app-fade-in in globals.css). "timeout"
+  // fires if boot is still incomplete after BOOT_TIMEOUT_MS — distinct
+  // from "error" (a step definitively failed) even though both show a
+  // retry screen, since nothing here actually rejected.
+  const [bootState, setBootState] = useState<"loading" | "fading" | "ready" | "error" | "timeout">("loading");
+  const [bootAssets, setBootAssets] = useState<BootAssets>(INITIAL_BOOT_ASSETS);
 
   const runBoot = useCallback(() => {
     setBootState("loading");
-    let cancelled = false;
+    setBootAssets(INITIAL_BOOT_ASSETS);
+    let settled = false; // true once either the timeout or Promise.all wins the race
+
+    const markDone = (key: keyof BootAssets) => {
+      if (settled) return; // a step finishing after timeout has nothing left to update
+      setBootAssets((prev) => ({ ...prev, [key]: true }));
+    };
+
+    const timeoutId = window.setTimeout(() => {
+      if (settled) return;
+      settled = true;
+      setBootState("timeout");
+    }, BOOT_TIMEOUT_MS);
 
     (async () => {
-      const [, , healthOk] = await Promise.all([
-        preloadAvatarAssets(),
-        waitForVoices(2000),
+      const [, , ttsOk, , chatOk] = await Promise.all([
+        preloadAvatarImage().then(() => markDone("avatarImage")),
+        preloadAvatarVideo().then(() => markDone("avatarVideo")),
+        warmUpTts().then((ok) => {
+          markDone("ttsWarm");
+          return ok;
+        }),
+        ensureAudioContextReady().then((ctx) => {
+          // If this invocation was already cancelled (timeout fired, or a
+          // React StrictMode dev double-invoke tore it down) by the time
+          // this resolves, don't let an abandoned context overwrite
+          // whatever the live invocation is holding — close it instead of
+          // leaking it.
+          if (settled) {
+            void ctx?.close();
+            return;
+          }
+          warmAudioCtxRef.current = ctx;
+          markDone("audioCtx");
+        }),
         checkApiHealth(HEALTH_CHECK_TIMEOUT_MS).then((ok) => {
-          if (!cancelled) setConnected(ok);
+          setConnected(ok);
+          markDone("chatHealth");
           return ok;
         }),
       ]);
-      if (cancelled) return;
-      if (!healthOk) {
+      if (settled) return; // the 8s timeout already fired and took over
+      settled = true;
+      window.clearTimeout(timeoutId);
+      if (!chatOk || !ttsOk) {
         setBootState("error");
         return;
       }
       setBootState("fading");
-      window.setTimeout(() => {
-        if (!cancelled) setBootState("ready");
-      }, BOOT_FADE_MS);
+      window.setTimeout(() => setBootState("ready"), BOOT_FADE_MS);
     })();
 
     return () => {
-      cancelled = true;
+      settled = true;
+      window.clearTimeout(timeoutId);
     };
   }, []);
 
   useEffect(() => runBoot(), [runBoot]);
+
+  const bootDoneCount = Object.values(bootAssets).filter(Boolean).length;
+  const bootProgressPct = Math.round((bootDoneCount / BOOT_STEPS_TOTAL) * 100);
+  // Staged status text: which group of steps is still outstanding, in the
+  // order the student sees them settle — avatar assets first, then voice
+  // (TTS warm-up + AudioContext), then the chat connection. Once every
+  // flag is true this naturally lands on "Tudo pronto!", covering the
+  // brief "fading" state too without needing a separate branch for it.
+  const bootStatusText =
+    !(bootAssets.avatarImage && bootAssets.avatarVideo)
+      ? branding.copy.bootLoadingAvatar
+      : !(bootAssets.ttsWarm && bootAssets.audioCtx)
+        ? branding.copy.bootLoadingVoice
+        : !bootAssets.chatHealth
+          ? branding.copy.bootConnecting
+          : branding.copy.bootReady;
 
   // Tracks the current turn's hint (see TutorResponse.hint / persona.ts's
   // HINTS section) — real-time, tied to whatever the tutor just asked, not
@@ -229,18 +306,7 @@ export default function Page() {
     return undefined;
   }, [entries]);
 
-  // Mobile's video-style caption (see MobileVoiceScreen) shows only the
-  // tutor's most recent line, not the full log.
-  const lastTutorResponse = useMemo(() => {
-    for (let i = entries.length - 1; i >= 0; i--) {
-      const entry = entries[i];
-      if (entry.role === "tutor") return entry.response;
-    }
-    return undefined;
-  }, [entries]);
-
   const isMobile = useIsMobile();
-  const [chatOpen, setChatOpen] = useState(false);
 
   // Tips-button attention animation: only counts idle time that comes right
   // after the tutor finishes speaking (never while listening/thinking/
@@ -280,6 +346,13 @@ export default function Page() {
   }, [orchestrator]);
 
   async function handleStudentPick(student: DemoStudent) {
+    // The demo-login buttons are already mounted during "fading" (for the
+    // crossfade — see the app-shell render below), so a very fast click
+    // could otherwise land before the loading screen has actually
+    // finished fading out. Bailing out here guarantees the tutor's
+    // kickoff (PRE_KICKOFF_DELAY_MS below) only ever starts counting once
+    // bootState is truly "ready", not just "fading".
+    if (bootState !== "ready") return;
     // Unlocks speechSynthesis on browsers (notably iOS Safari) that require
     // the first utterance to originate from a user gesture — this click is
     // the first real user gesture in the whole flow.
@@ -341,7 +414,12 @@ export default function Page() {
   return (
     <main style={{ height: "100dvh", display: "flex", flexDirection: "column" }} onClick={resetTipsAttention}>
       {bootState !== "ready" && (
-        <LoadingScreen status={bootState === "error" ? "error" : "loading"} fadingOut={bootState === "fading"} />
+        <LoadingScreen
+          status={bootState === "error" || bootState === "timeout" ? bootState : "loading"}
+          fadingOut={bootState === "fading"}
+          progressPct={bootProgressPct}
+          statusText={bootStatusText}
+        />
       )}
 
       {(bootState === "fading" || bootState === "ready") && (
@@ -368,7 +446,6 @@ export default function Page() {
               totalSeconds={totalSeconds}
               remainingSeconds={remainingSeconds}
               showTimeUpNotice={showTimeUpNotice}
-              lastTutorResponse={lastTutorResponse}
               entries={entries}
               currentLesson={currentLesson}
               currentHint={currentHint}
@@ -380,8 +457,6 @@ export default function Page() {
                 resetTipsAttention();
               }}
               onSubmit={handleSubmit}
-              chatOpen={chatOpen}
-              onChatOpenChange={setChatOpen}
               lessonComplete={lessonComplete}
               onEndLesson={handleEndLesson}
             />

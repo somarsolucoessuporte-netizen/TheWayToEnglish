@@ -18,3 +18,24 @@ export function warmUpAudioContext(): AudioContext | null {
   void ctx.suspend();
   return ctx;
 }
+
+/**
+ * Boot-gate variant of warmUpAudioContext: creates the context and
+ * resolves only once it's actually suspended, not just constructed — so
+ * the loading screen's "voice ready" step (see app/page.tsx's runBoot)
+ * reflects real readiness rather than a synchronous call that returned
+ * before the browser's audio subsystem finished spinning up. Resolves
+ * with null if AudioContext isn't available at all, same as
+ * warmUpAudioContext.
+ */
+export async function ensureAudioContextReady(): Promise<AudioContext | null> {
+  const ctx = warmUpAudioContext();
+  if (!ctx) return null;
+  try {
+    await ctx.suspend();
+  } catch {
+    // Already suspended, or suspend() rejected because of the state it's
+    // already in — either way the context itself exists and is usable.
+  }
+  return ctx;
+}

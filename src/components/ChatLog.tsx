@@ -3,9 +3,14 @@
 import { useEffect, useMemo, useRef } from "react";
 import type { ChatEntry } from "@/core/conversation/orchestrator";
 import { CorrectionCard } from "./CorrectionCard";
+import { MiniCorrectionCard } from "./MiniCorrectionCard";
 import { VisualCard } from "./VisualCard";
 
-export function ChatLog({ entries }: { entries: ChatEntry[] }) {
+/** `compact` swaps the full CorrectionCard (explanation + pronunciation
+ * hint text) for MiniCorrectionCard (just ❌word → ✅word + audio buttons)
+ * — used on mobile, where the explanation was already spoken aloud by the
+ * tutor and repeating it in writing is just clutter on a small screen. */
+export function ChatLog({ entries, compact = false }: { entries: ChatEntry[]; compact?: boolean }) {
   const logRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -94,7 +99,12 @@ export function ChatLog({ entries }: { entries: ChatEntry[] }) {
                 </>
               )}
             </div>
-            {entry.response.correction && <CorrectionCard correction={entry.response.correction} />}
+            {entry.response.correction &&
+              (compact ? (
+                <MiniCorrectionCard correction={entry.response.correction} />
+              ) : (
+                <CorrectionCard correction={entry.response.correction} />
+              ))}
             {entry.response.visual && firstOccurrenceIndex.has(i) && (
               <VisualCard visual={entry.response.visual} />
             )}

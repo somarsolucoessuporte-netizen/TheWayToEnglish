@@ -131,34 +131,33 @@ body {
   color: var(--muted);
 }
 
-.loading-dots span {
-  display: inline-block;
-  width: 8px;
+.loading-progress {
+  width: min(260px, 80vw);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+}
+
+.loading-progress-track {
+  width: 100%;
   height: 8px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.08);
+  overflow: hidden;
+}
+
+.loading-progress-fill {
+  height: 100%;
+  border-radius: 999px;
   background: #00c853;
-  border-radius: 50%;
-  margin: 0 4px;
-  animation: dot-pulse 1.4s ease-in-out infinite;
+  transition: width 300ms ease;
 }
 
-.loading-dots span:nth-child(2) {
-  animation-delay: 0.2s;
-}
-.loading-dots span:nth-child(3) {
-  animation-delay: 0.4s;
-}
-
-@keyframes dot-pulse {
-  0%,
-  80%,
-  100% {
-    transform: scale(0.6);
-    opacity: 0.4;
-  }
-  40% {
-    transform: scale(1);
-    opacity: 1;
-  }
+.loading-progress-text {
+  font-size: 13px;
+  color: var(--muted);
+  text-align: center;
 }
 
 .loading-error-text {
@@ -808,13 +807,14 @@ body {
   }
 }
 
-/* Voice-first mobile layout (<768px — see components/useIsMobile.ts,
-   which decides in JS whether MobileVoiceScreen or the desktop .main
-   layout renders at all, so these rules never have to fight the desktop
-   ones via a CSS breakpoint). The avatar dominates the screen; the full
-   chat history and text input live behind the "💬 Conversa" bottom sheet
-   instead of always being visible — reading is the fallback path here,
-   not the primary one. */
+/* Mobile layout (<768px — see components/useIsMobile.ts, which decides in
+   JS whether MobileVoiceScreen or the desktop .main layout renders at
+   all, so these rules never have to fight the desktop ones via a CSS
+   breakpoint). The chat log is always visible and always the thing that
+   scrolls — only the avatar, time bar and footer are pinned. This is a
+   language lesson: the student needs to see the spelling of what's being
+   said, not just hear it, so the transcript is never hidden behind a
+   button. */
 .mobile-screen {
   position: relative;
   flex: 1;
@@ -824,43 +824,9 @@ body {
   overflow: hidden;
 }
 
-.mobile-top-bar {
-  position: relative;
-  z-index: 6;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 10px 10px 0;
-}
-
-.mobile-top-bar .lesson-timer {
-  flex: 1;
-  padding: 0;
-  border-bottom: none;
-  background: none;
-}
-
-.mobile-top-bar-spacer {
-  flex: 1;
-}
-
-.mobile-chat-toggle {
-  flex: none;
-  border: 1px solid var(--stroke);
-  background: rgba(0, 0, 0, 0.45);
-  backdrop-filter: blur(8px);
-  color: var(--text);
-  border-radius: 999px;
-  padding: 8px 14px;
-  font-size: 13px;
-  font-weight: 700;
-  cursor: pointer;
-  white-space: nowrap;
-}
-
 .mobile-avatar-wrap {
   position: relative;
-  flex: 0 0 65vh;
+  flex: 0 0 40vh;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -886,41 +852,91 @@ body {
   background: linear-gradient(rgba(0, 0, 0, 0), rgba(0, 0, 0, 0.6) 70%);
 }
 
-.mobile-below-avatar {
-  flex: 1;
+.mobile-timer-row {
+  flex-shrink: 0;
   display: flex;
-  flex-direction: column;
   align-items: center;
-  gap: 14px;
-  padding: 16px 18px 24px;
-  overflow-y: auto;
+  padding: 6px 12px;
 }
 
-.mobile-caption {
-  margin: 0;
-  max-width: 34ch;
-  text-align: center;
+.mobile-timer-row .lesson-timer {
+  flex: 1;
+  padding: 0;
+  border-bottom: none;
+  background: none;
+}
+
+/* Reuses .chat-log (flex:1, overflow:auto — see the shared rule above)
+   as-is; these are additive mobile-only overrides. min-height:0 is load
+   bearing here — without it a flex child's default min-height:auto can
+   stop it from ever shrinking enough to actually scroll, and the footer
+   would get pushed off screen instead. */
+.mobile-screen .chat-log {
+  min-height: 0;
   font-size: 15px;
-  line-height: 1.4;
-  color: var(--muted);
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
+  line-height: 1.5;
+  -webkit-overflow-scrolling: touch;
 }
 
-.mobile-talk-wrap {
-  margin-top: auto;
-  width: 100%;
+.mobile-input-row {
+  flex-shrink: 0;
   display: flex;
+  gap: 8px;
+  padding: 10px 14px;
+  border-top: 1px solid var(--stroke);
+  background: rgba(0, 0, 0, 0.25);
+}
+
+.mobile-footer {
+  flex-shrink: 0;
+  min-height: 72px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 14px;
+  border-top: 1px solid var(--stroke);
+  background: rgba(0, 0, 0, 0.35);
+  backdrop-filter: blur(8px);
+}
+
+.mobile-footer .force-send-btn {
+  flex: 1;
+  min-height: 56px;
+  font-size: 16px;
+  border-radius: 999px;
+}
+
+.mobile-footer-icons {
+  flex: none;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.mobile-footer-icons .tips-btn-expanded {
+  max-width: 140px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.mobile-footer-icon-btn {
+  flex: none;
+  width: 48px;
+  height: 48px;
+  border-radius: 999px;
+  border: 1px solid var(--stroke);
+  background: rgba(255, 255, 255, 0.06);
+  color: var(--text);
+  cursor: pointer;
+  font-size: 18px;
+  line-height: 1;
+  display: flex;
+  align-items: center;
   justify-content: center;
 }
 
-.mobile-talk-wrap .force-send-btn {
-  min-height: 64px;
-  min-width: 220px;
-  font-size: 17px;
-  border-radius: 999px;
+.mobile-footer-icon-btn:hover {
+  background: rgba(255, 255, 255, 0.1);
 }
 
 .mini-correction {
@@ -962,53 +978,6 @@ body {
   display: flex;
   gap: 6px;
   flex: none;
-}
-
-.mobile-sheet-overlay {
-  position: fixed;
-  inset: 0;
-  z-index: 30;
-  background: rgba(0, 0, 0, 0.55);
-  display: flex;
-  align-items: flex-end;
-}
-
-.mobile-sheet {
-  width: 100%;
-  max-height: 85vh;
-  display: flex;
-  flex-direction: column;
-  background: #10151c;
-  border: 1px solid var(--stroke);
-  border-bottom: none;
-  border-radius: 20px 20px 0 0;
-  animation: mobile-sheet-up 250ms ease-out;
-}
-
-@keyframes mobile-sheet-up {
-  from {
-    transform: translateY(100%);
-  }
-  to {
-    transform: translateY(0);
-  }
-}
-
-.mobile-sheet .chat-header {
-  border-radius: 20px 20px 0 0;
-}
-
-.mobile-sheet-close {
-  flex: none;
-  width: 28px;
-  height: 28px;
-  border-radius: 999px;
-  border: 1px solid var(--stroke);
-  background: rgba(255, 255, 255, 0.06);
-  color: var(--text);
-  cursor: pointer;
-  font-size: 18px;
-  line-height: 1;
 }
 
 .intro-overlay {

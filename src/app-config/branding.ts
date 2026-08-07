@@ -35,6 +35,13 @@ export const branding = {
     micUnsupported: "Este navegador não suporta reconhecimento de voz. Digite sua mensagem.",
     genericError: "Perdi você por um instante, pode repetir?",
     sessionTimeUpNotice: "Tempo da sessão encerrado — continue quando quiser",
+    bootLoadingAvatar: "Carregando a professora...",
+    bootLoadingVoice: "Preparando a voz...",
+    bootConnecting: "Conectando...",
+    bootReady: "Tudo pronto!",
+    bootTimeoutText: "A conexão está lenta. Tentar novamente?",
+    bootErrorText: "Estamos com instabilidade. Tente novamente em instantes.",
+    bootRetryButton: "Tentar novamente",
     footer: "The Way To English — Tutor IA",
   },
 } as const;
