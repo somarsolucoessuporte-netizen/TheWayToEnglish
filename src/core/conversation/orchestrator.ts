@@ -405,11 +405,17 @@ export class ConversationOrchestrator {
     studentName: string;
     currentLessonCode: string;
     canDoGoals?: string[];
+    /** See CurriculumLesson.vocabulary / SpeechToTextProvider.setLessonVocabulary
+     * — forwarded straight to the STT provider so it can hint transcription
+     * toward this lesson's specific words (Whisper's `prompt`, see
+     * /api/stt/route.ts). */
+    vocabulary?: string[];
     prefetched?: { response: TutorResponse; audioBlob?: Blob };
   }): Promise<void> {
     this.studentName = opts.studentName;
     this.currentLessonCode = opts.currentLessonCode;
     this.lessonGoals = opts.canDoGoals ?? [];
+    this.stt.setLessonVocabulary?.(opts.vocabulary ?? []);
     this.completedGoals.clear();
     this.lessonCompleteFired = false;
     this.idleAccumulatedMs = 0;
@@ -517,6 +523,7 @@ export class ConversationOrchestrator {
     this.pendingCorrectionWord = undefined;
     this.correctionAttemptCount = 0;
     this.lessonGoals = [];
+    this.stt.setLessonVocabulary?.([]);
     this.completedGoals.clear();
     this.lessonCompleteFired = false;
     this.idleAccumulatedMs = 0;

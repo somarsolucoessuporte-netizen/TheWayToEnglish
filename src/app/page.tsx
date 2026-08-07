@@ -586,6 +586,7 @@ export default function Page() {
       studentName: student.name,
       currentLessonCode: student.currentLesson,
       canDoGoals: lesson?.canDo,
+      vocabulary: lesson?.vocabulary,
       prefetched,
     });
   }

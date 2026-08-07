@@ -34,8 +34,9 @@ const GET_USER_MEDIA_TIMEOUT_MS = 5000;
 const STT_FETCH_TIMEOUT_MS = 15000;
 
 /**
- * STT via Groq's Whisper endpoint (server-side proxy at /api/stt — the
- * GROQ_API_KEY never touches the browser). Push-to-talk to OPEN the mic —
+ * STT via OpenAI's Whisper-1 endpoint (server-side proxy at /api/stt —
+ * the OPENAI_API_KEY never touches the browser; migrated off Groq, see
+ * that route's doc comment). Push-to-talk to OPEN the mic —
  * start() is only ever called from the Falar button's onClick (see
  * orchestrator.startListening) — that rule is unchanged. What's changed
  * is how the recording CLOSES: it now stops itself once the student
@@ -80,6 +81,11 @@ export class WhisperSTTProvider implements SpeechToTextProvider {
    * correct reset — surfacing a confusing error toast right after the
    * long-press escape hatch the student just used successfully. */
   private aborted = false;
+
+  /** See SpeechToTextProvider.setLessonVocabulary — sent with every
+   * upload until the next lesson replaces or clears it (see
+   * transcribeAndFinish). */
+  private lessonVocabulary: string[] = [];
 
   private audioCtx: AudioContext | null = null;
   private analyser: AnalyserNode | null = null;
@@ -237,6 +243,10 @@ export class WhisperSTTProvider implements SpeechToTextProvider {
     return () => this.listeners[event].delete(cb);
   }
 
+  setLessonVocabulary(vocabulary: string[]): void {
+    this.lessonVocabulary = vocabulary;
+  }
+
   /** Energy-based VAD purely for the auto-stop decision and the
    * real-time "amplitude" event the UI's sound-wave bars react to —
    * entirely separate from MediaRecorder, which keeps recording the
@@ -349,6 +359,9 @@ export class WhisperSTTProvider implements SpeechToTextProvider {
       const form = new FormData();
       form.append("audio", blob, "audio.webm");
       // No "lang" field — let Whisper auto-detect (see class doc comment).
+      if (this.lessonVocabulary.length > 0) {
+        form.append("lessonVocabulary", this.lessonVocabulary.join(", "));
+      }
 
       const controller = new AbortController();
       this.uploadController = controller;
@@ -379,7 +392,7 @@ export class WhisperSTTProvider implements SpeechToTextProvider {
         detectedLanguage = data.detectedLanguage;
         console.log("[WhisperSTT] latency", {
           clientMs: clientLatencyMs, // silence detected (or forced) -> transcript usable here
-          groqApiMs: data.serverLatencyMs, // our server's round trip to Groq
+          openaiApiMs: data.serverLatencyMs, // our server's round trip to OpenAI
           transcript,
           detectedLanguage,
         });

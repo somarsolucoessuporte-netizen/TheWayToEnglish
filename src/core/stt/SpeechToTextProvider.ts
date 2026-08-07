@@ -50,4 +50,17 @@ export interface SpeechToTextProvider {
    * fall back to its own stop().
    */
   abort?(): void;
+  /**
+   * Tells the provider which words the current lesson cares about (see
+   * app-config/curriculum's CurriculumLesson.vocabulary) so it can hint
+   * its transcription toward them — e.g. WhisperSTTProvider appends this
+   * to the /api/stt request's prompt (see that route), which measurably
+   * cuts down on near-homophone mixups ("city"/"siege",
+   * "Morocco"/"Marroko") for Brazilian-accented English. Optional: a
+   * provider without a vocabulary-hinting mechanism (e.g.
+   * BrowserSTTProvider, whose native SpeechRecognition has no such
+   * concept) can omit this. Called once per lesson (see
+   * orchestrator.startLesson) — pass [] to clear it.
+   */
+  setLessonVocabulary?(vocabulary: string[]): void;
 }
