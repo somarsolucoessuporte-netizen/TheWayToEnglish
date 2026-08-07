@@ -1,4 +1,4 @@
-export type STTEvent = "partial" | "final" | "error" | "end" | "transcribing";
+export type STTEvent = "partial" | "final" | "error" | "end" | "transcribing" | "amplitude";
 
 /** Payload of the "final" event. `detectedLanguage` is best-effort and
  * provider-specific — e.g. WhisperSTTProvider reports what Groq detected;
@@ -30,6 +30,11 @@ export interface SpeechToTextProvider {
    * between "stopped recording" and "transcript ready" (e.g. a batch STT
    * provider that uploads the whole recording) — never fires for engines
    * that transcribe live and have no such gap.
+   * "amplitude" fires repeatedly while listening (payload: a real-time
+   * RMS number, roughly 0-1) for providers with a real energy-based VAD
+   * (e.g. WhisperSTTProvider) — used to drive a genuine sound-wave
+   * indicator in the UI instead of a canned animation. Never fires for
+   * providers without one (e.g. BrowserSTTProvider).
    */
   on(event: STTEvent, cb: (payload: unknown) => void): () => void;
 }

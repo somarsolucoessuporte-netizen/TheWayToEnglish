@@ -103,6 +103,7 @@ export class OpenAITTSProvider implements SpeechProvider {
       // this "start" event (see orchestrator's constructor) specifically
       // so it can never start moving before sound is actually audible.
       audio.onplaying = () => {
+        console.log("[TTS] playing disparou");
         this.speaking = true;
         this.emit("start");
       };

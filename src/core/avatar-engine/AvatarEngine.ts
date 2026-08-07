@@ -76,6 +76,7 @@ export class AvatarEngine {
 
   private notify(): void {
     const videoState = this.getVideoState();
+    console.log("[avatar] estado ->", videoState);
     for (const listener of this.listeners) listener(videoState);
   }
 

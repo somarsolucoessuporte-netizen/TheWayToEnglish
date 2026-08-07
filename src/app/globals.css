@@ -744,9 +744,13 @@ body {
   color: var(--accent);
 }
 
-/* Recording state of the talk button: a pulsing equalizer replaces the
-   label so the student gets a live visual confirmation the mic is on —
-   the button itself stays green/clickable to force-send early. */
+/* Recording state of the talk button: an equalizer replaces the label so
+   the student gets a live visual confirmation the mic is on — the button
+   itself stays green/clickable to force-send early. Bar height is driven
+   by the mic's real amplitude (see ForceSendButton's inline transform),
+   not a canned animation — this is just the shared base size and the
+   transition that smooths amplitude changes into something that reads as
+   "gradually winding down" rather than jumpy, per-sample jumps. */
 .listening-indicator {
   display: flex;
   flex-direction: column;
@@ -769,40 +773,10 @@ body {
 .sound-wave span {
   display: block;
   width: 4px;
+  height: 24px;
   background: #00c853;
   border-radius: 2px;
-  animation: sound-bar 0.8s ease-in-out infinite;
-}
-
-.sound-wave span:nth-child(1) {
-  animation-delay: 0s;
-  height: 8px;
-}
-.sound-wave span:nth-child(2) {
-  animation-delay: 0.1s;
-  height: 16px;
-}
-.sound-wave span:nth-child(3) {
-  animation-delay: 0.2s;
-  height: 24px;
-}
-.sound-wave span:nth-child(4) {
-  animation-delay: 0.1s;
-  height: 16px;
-}
-.sound-wave span:nth-child(5) {
-  animation-delay: 0s;
-  height: 8px;
-}
-
-@keyframes sound-bar {
-  0%,
-  100% {
-    transform: scaleY(0.4);
-  }
-  50% {
-    transform: scaleY(1);
-  }
+  transition: transform 120ms ease-out;
 }
 
 @media (max-width: 980px) {

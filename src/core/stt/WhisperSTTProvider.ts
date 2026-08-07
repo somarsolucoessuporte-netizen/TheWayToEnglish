@@ -2,18 +2,41 @@ import type { SpeechToTextProvider, STTEvent } from "./SpeechToTextProvider";
 
 type Listener = (payload: unknown) => void;
 
+/** RMS amplitude below which the mic is considered silent — see the
+ * auto-stop VAD in startSilenceWatch. Speech typically sits well above
+ * this; ambient room noise typically sits below it. */
+const SILENCE_THRESHOLD_RMS = 0.015;
+/** How long the mic must stay below SILENCE_THRESHOLD_RMS, continuously,
+ * before an utterance auto-finishes — long enough that a language
+ * learner's mid-sentence thinking pause doesn't get mistaken for "done
+ * talking". Do not shorten this: cutting off too fast is what push-to-
+ * talk's original second click was specifically avoiding. */
+const SILENCE_DURATION_MS = 1800;
+/** How often the analyser is sampled for both the auto-stop VAD and the
+ * "amplitude" event the UI uses for real sound-wave bars. */
+const SAMPLE_INTERVAL_MS = 50;
+/** Hard ceiling on a single recording — sends whatever's been said so far
+ * rather than recording forever if the student just keeps talking, or
+ * something goes wrong with silence detection. */
+const MAX_RECORDING_MS = 30000;
+
 /**
  * STT via Groq's Whisper endpoint (server-side proxy at /api/stt — the
- * GROQ_API_KEY never touches the browser). Pure push-to-talk: start()
- * opens the mic and records; the recording only ever stops when the caller
- * explicitly calls stop() (the Falar button clicked again — see
- * ForceSendButton / orchestrator.stopListening). There is no silence
- * detection, no auto-finish, and no give-up timeout — the mic stays open
- * for as long as the student wants until they click again.
+ * GROQ_API_KEY never touches the browser). Push-to-talk to OPEN the mic —
+ * start() is only ever called from the Falar button's onClick (see
+ * orchestrator.startListening) — that rule is unchanged. What's changed
+ * is how the recording CLOSES: it now stops itself once the student
+ * actually stops talking (a real energy-based VAD over the mic stream,
+ * see startSilenceWatch), instead of requiring a second manual click.
+ * stop() is kept as an explicit override — the Falar button stays
+ * clickable throughout, for a student who wants to force-send before the
+ * silence timer would.
  *
  * There is no live partial transcription like BrowserSTTProvider's
  * streaming recognizer — "partial" never fires, only "transcribing"
- * (upload in flight) then "final".
+ * (upload in flight) then "final". "amplitude" fires continuously while
+ * recording with the mic's real RMS, so the UI's sound-wave indicator
+ * (see ForceSendButton) reacts to actual voice instead of a canned loop.
  *
  * Privacy: the recorded audio only ever exists in memory — this
  * provider's MediaRecorder buffer, and the /api/stt request body — never
@@ -27,17 +50,34 @@ export class WhisperSTTProvider implements SpeechToTextProvider {
   private stopResolve: ((text: string) => void) | null = null;
   private finished = false;
 
+  private audioCtx: AudioContext | null = null;
+  private analyser: AnalyserNode | null = null;
+  private sampleIntervalHandle: ReturnType<typeof setInterval> | null = null;
+  private maxRecordingTimeoutHandle: ReturnType<typeof setTimeout> | null = null;
+  /** Set the first time RMS crosses SILENCE_THRESHOLD_RMS — silence
+   * counting (see startSilenceWatch) never starts before the student has
+   * actually said something at least once, so a slow starter never gets
+   * cut off before they've begun. */
+  private hasDetectedSpeech = false;
+  /** performance.now() of the last sample AT OR ABOVE the silence
+   * threshold — the auto-stop fires once "now" is SILENCE_DURATION_MS
+   * past this. */
+  private lastLoudAt = 0;
+
   private readonly listeners: Record<STTEvent, Set<Listener>> = {
     partial: new Set(),
     final: new Set(),
     error: new Set(),
     end: new Set(),
     transcribing: new Set(),
+    amplitude: new Set(),
   };
 
   async start(): Promise<void> {
     this.chunks = [];
     this.finished = false;
+    this.hasDetectedSpeech = false;
+    this.lastLoudAt = 0;
 
     console.log("[STT] iniciando getUserMedia...");
     try {
@@ -57,11 +97,19 @@ export class WhisperSTTProvider implements SpeechToTextProvider {
     this.recorder = recorder;
     recorder.start();
 
-    console.log("[WhisperSTT] listening started (push-to-talk, manual stop only)");
+    this.startSilenceWatch();
+    this.maxRecordingTimeoutHandle = setTimeout(() => {
+      console.log("[WhisperSTT] limite de 30s atingido — enviando automaticamente");
+      this.finishUtterance();
+    }, MAX_RECORDING_MS);
+
+    console.log("[WhisperSTT] listening started (auto-stop on silence, manual stop still available)");
   }
 
-  /** The only way an utterance ever finishes: the student clicked Falar
-   * again (see ForceSendButton / orchestrator.stopListening). */
+  /** Manual override: the student clicked Falar again while already
+   * listening (see ForceSendButton / orchestrator.stopListening) — ends
+   * the recording right now instead of waiting for the silence VAD or the
+   * 30s ceiling. */
   stop(): Promise<string> {
     return new Promise((resolve) => {
       if (this.finished || !this.recorder || this.recorder.state === "inactive") {
@@ -79,9 +127,92 @@ export class WhisperSTTProvider implements SpeechToTextProvider {
     return () => this.listeners[event].delete(cb);
   }
 
+  /** Energy-based VAD purely for the auto-stop decision and the
+   * real-time "amplitude" event the UI's sound-wave bars react to —
+   * entirely separate from MediaRecorder, which keeps recording the
+   * actual audio regardless of what this measures. Deliberately NOT
+   * connected to audioCtx.destination, so the student never hears their
+   * own mic echoed back. Failing to set up (Web Audio unavailable, or the
+   * AnalyserNode construction throws) just means no auto-stop — stop()
+   * and the 30s ceiling still work, so this never blocks recording. */
+  private startSilenceWatch(): void {
+    if (!this.stream) return;
+    const AudioCtx =
+      window.AudioContext ?? (window as unknown as { webkitAudioContext?: typeof AudioContext }).webkitAudioContext;
+    if (!AudioCtx) {
+      console.error(
+        "[WhisperSTT] Web Audio indisponível — sem auto-stop por silêncio, só stop() manual e o limite de 30s"
+      );
+      return;
+    }
+
+    try {
+      const audioCtx = new AudioCtx();
+      const source = audioCtx.createMediaStreamSource(this.stream);
+      const analyser = audioCtx.createAnalyser();
+      analyser.fftSize = 512;
+      source.connect(analyser);
+      this.audioCtx = audioCtx;
+      this.analyser = analyser;
+    } catch (err) {
+      console.error("[WhisperSTT] falha ao criar AnalyserNode — sem auto-stop por silêncio:", err);
+      return;
+    }
+
+    const analyser = this.analyser;
+    const data = new Uint8Array(analyser.frequencyBinCount);
+
+    this.sampleIntervalHandle = setInterval(() => {
+      if (this.finished) return;
+      analyser.getByteTimeDomainData(data);
+      let sumSquares = 0;
+      for (let i = 0; i < data.length; i++) {
+        const v = (data[i] - 128) / 128;
+        sumSquares += v * v;
+      }
+      const rms = Math.sqrt(sumSquares / data.length);
+      this.emit("amplitude", rms);
+
+      const now = performance.now();
+      if (rms >= SILENCE_THRESHOLD_RMS) {
+        this.hasDetectedSpeech = true;
+        this.lastLoudAt = now;
+        return;
+      }
+
+      // Silence-counting only ever starts after real speech has actually
+      // been heard at least once — a student who clicked Falar and is
+      // still gathering their thoughts must never get cut off before
+      // they've said anything (see the class doc comment).
+      if (!this.hasDetectedSpeech) return;
+
+      if (now - this.lastLoudAt >= SILENCE_DURATION_MS) {
+        console.log("[WhisperSTT] silêncio de 1.8s detectado — enviando automaticamente");
+        this.finishUtterance();
+      }
+    }, SAMPLE_INTERVAL_MS);
+  }
+
+  private stopSilenceWatch(): void {
+    if (this.sampleIntervalHandle !== null) {
+      clearInterval(this.sampleIntervalHandle);
+      this.sampleIntervalHandle = null;
+    }
+    this.analyser = null;
+    if (this.audioCtx) {
+      void this.audioCtx.close().catch(() => {});
+      this.audioCtx = null;
+    }
+  }
+
   private finishUtterance(): void {
     if (this.finished) return;
     this.finished = true;
+    this.stopSilenceWatch();
+    if (this.maxRecordingTimeoutHandle !== null) {
+      clearTimeout(this.maxRecordingTimeoutHandle);
+      this.maxRecordingTimeoutHandle = null;
+    }
 
     const recorder = this.recorder;
     if (!recorder || recorder.state === "inactive") {

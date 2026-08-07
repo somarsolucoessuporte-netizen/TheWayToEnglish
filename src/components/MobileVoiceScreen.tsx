@@ -68,6 +68,7 @@ export function MobileVoiceScreen({
   onSubmit,
   lessonComplete,
   onEndLesson,
+  micAmplitude,
 }: {
   avatarEngine: AvatarEngine;
   started: boolean;
@@ -88,6 +89,7 @@ export function MobileVoiceScreen({
   onSubmit: (e: React.FormEvent) => void;
   lessonComplete: boolean;
   onEndLesson: () => void;
+  micAmplitude: number;
 }) {
   const [drawerOpen, setDrawerOpen] = useState(false);
   const drawerRef = useRef<HTMLDivElement>(null);
@@ -275,6 +277,7 @@ export function MobileVoiceScreen({
                 listeningLabel={branding.copy.forceSendWhileListening}
                 isListening={characterState === "listening"}
                 onClick={handleTalkClick}
+                amplitude={micAmplitude}
               />
               <TipsPanel hint={currentHint} lesson={currentLesson} attention={tipsAttention} onBlinkEnd={onTipsBlinkEnd} />
             </div>

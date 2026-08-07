@@ -130,6 +130,11 @@ export default function Page() {
   const [transcribing, setTranscribing] = useState(false);
   const [connected, setConnected] = useState<boolean | null>(null);
   const [inputValue, setInputValue] = useState("");
+  // Real mic RMS while listening (see orchestrator.onAmplitude /
+  // WhisperSTTProvider's VAD) — drives ForceSendButton's sound-wave bars
+  // with actual voice amplitude. Stays 0 for an STT provider without a
+  // real VAD (e.g. BrowserSTTProvider), which just means flat bars.
+  const [micAmplitude, setMicAmplitude] = useState(0);
 
   // Holds the AudioContext created by runBoot's audioCtx step (see below)
   // for the page's lifetime — some platforms have real first-AudioContext
@@ -364,6 +369,7 @@ export default function Page() {
       setTranscribing(value);
       avatarEngine.setTranscribing(value); // see AvatarEngine.getVideoState's transcribing override
     });
+    const unsubAmplitude = orchestrator.onAmplitude(setMicAmplitude);
 
     return () => {
       unsubEntries();
@@ -371,8 +377,17 @@ export default function Page() {
       unsubError();
       unsubApiStatus();
       unsubTranscribing();
+      unsubAmplitude();
     };
   }, [orchestrator, avatarEngine]);
+
+  // Resets the sound-wave bars to flat the instant listening stops — the
+  // WhisperSTTProvider VAD interval that was driving micAmplitude is
+  // already torn down by then, so without this the bars would otherwise
+  // freeze at whatever RMS the last sample happened to be.
+  useEffect(() => {
+    if (characterState !== "listening") setMicAmplitude(0);
+  }, [characterState]);
 
   async function handleStudentPick(student: DemoStudent) {
     // The demo-login buttons are already mounted during "fading" (for the
@@ -500,6 +515,7 @@ export default function Page() {
               onSubmit={handleSubmit}
               lessonComplete={lessonComplete}
               onEndLesson={handleEndLesson}
+              micAmplitude={micAmplitude}
             />
           ) : (
             <div className="main">
@@ -536,6 +552,7 @@ export default function Page() {
                           listeningLabel={branding.copy.forceSendWhileListening}
                           isListening={characterState === "listening"}
                           onClick={handleTalkClick}
+                          amplitude={micAmplitude}
                         />
                       </div>
                     )}

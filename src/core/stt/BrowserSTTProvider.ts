@@ -24,6 +24,7 @@ export class BrowserSTTProvider implements SpeechToTextProvider {
     error: new Set(),
     end: new Set(),
     transcribing: new Set(), // never emitted — this engine transcribes live, no upload gap
+    amplitude: new Set(), // never emitted — no analyser here, no real amplitude to report
   };
 
   constructor(private readonly lang: string = "en-US") {}

@@ -35,6 +35,7 @@ type ErrorListener = (message: string) => void;
 type ApiStatusListener = (online: boolean) => void;
 type TranscribingListener = (transcribing: boolean) => void;
 type LessonCompleteListener = () => void;
+type AmplitudeListener = (rms: number) => void;
 
 /** Escalating idle-silence reactions — see the idle clock fields below and
  * persona.ts's ACTIVE TUTOR section. 'answer' is the 40s-total resolution
@@ -133,6 +134,7 @@ export class ConversationOrchestrator {
   private readonly apiStatusListeners = new Set<ApiStatusListener>();
   private readonly transcribingListeners = new Set<TranscribingListener>();
   private readonly lessonCompleteListeners = new Set<LessonCompleteListener>();
+  private readonly amplitudeListeners = new Set<AmplitudeListener>();
 
   constructor(opts: ConversationOrchestratorOptions) {
     this.speech = opts.speech;
@@ -210,6 +212,13 @@ export class ConversationOrchestrator {
     // "stopped recording" and "transcript ready" (e.g. WhisperSTTProvider).
     // BrowserSTTProvider never emits this — it transcribes live.
     this.stt.on("transcribing", () => this.setTranscribing(true));
+    // Real-time mic RMS from a provider with an energy-based VAD (see
+    // WhisperSTTProvider) — forwarded as-is for the UI's sound-wave
+    // indicator (see ForceSendButton). Never fires for a provider without
+    // one, same as "transcribing".
+    this.stt.on("amplitude", (rms) => {
+      for (const cb of this.amplitudeListeners) cb(rms as number);
+    });
   }
 
   onEntriesChange(cb: EntriesListener): () => void {
@@ -240,6 +249,15 @@ export class ConversationOrchestrator {
   onTranscribing(cb: TranscribingListener): () => void {
     this.transcribingListeners.add(cb);
     return () => this.transcribingListeners.delete(cb);
+  }
+
+  /** Real-time mic RMS while listening (see stt.on("amplitude") in the
+   * constructor) — drives the Falar button's sound-wave indicator with
+   * actual voice amplitude instead of a canned animation. Never fires for
+   * an STT provider without a real VAD (e.g. BrowserSTTProvider). */
+  onAmplitude(cb: AmplitudeListener): () => void {
+    this.amplitudeListeners.add(cb);
+    return () => this.amplitudeListeners.delete(cb);
   }
 
   /** Fires exactly once per lesson, the moment every can-do goal has been
