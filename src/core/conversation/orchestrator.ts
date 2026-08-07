@@ -24,6 +24,7 @@ type EntriesListener = (entries: ChatEntry[]) => void;
 type ErrorListener = (message: string) => void;
 type ApiStatusListener = (online: boolean) => void;
 type TranscribingListener = (transcribing: boolean) => void;
+type LessonCompleteListener = () => void;
 
 /**
  * The only module that knows about STT, AI, TTS and the state machine at
@@ -64,10 +65,22 @@ export class ConversationOrchestrator {
   private pendingCorrectionWord: string | undefined;
   private correctionAttemptCount = 0;
 
+  /** The current lesson's can-do goals (verbatim, from CurriculumLesson.canDo
+   * — see startLesson) and which of them the AI has confirmed the student
+   * demonstrated so far (see TutorResponse.completedGoals / persona.ts's
+   * LESSON COMPLETION section). The lesson is complete once every goal is
+   * in here — NOT when the session timer runs out (see page.tsx's
+   * LessonTimer, which is a visual reference only). `lessonCompleteFired`
+   * guards against calling the completion listeners more than once. */
+  private lessonGoals: string[] = [];
+  private readonly completedGoals = new Set<string>();
+  private lessonCompleteFired = false;
+
   private readonly entryListeners = new Set<EntriesListener>();
   private readonly errorListeners = new Set<ErrorListener>();
   private readonly apiStatusListeners = new Set<ApiStatusListener>();
   private readonly transcribingListeners = new Set<TranscribingListener>();
+  private readonly lessonCompleteListeners = new Set<LessonCompleteListener>();
 
   constructor(opts: ConversationOrchestratorOptions) {
     this.speech = opts.speech;
@@ -172,6 +185,15 @@ export class ConversationOrchestrator {
     return () => this.transcribingListeners.delete(cb);
   }
 
+  /** Fires exactly once per lesson, the moment every can-do goal has been
+   * demonstrated (see updateGoalProgress) — independent of the session
+   * timer. page.tsx uses this (not the timer hitting 0) to show the
+   * completion card. */
+  onLessonComplete(cb: LessonCompleteListener): () => void {
+    this.lessonCompleteListeners.add(cb);
+    return () => this.lessonCompleteListeners.delete(cb);
+  }
+
   getState(): CharacterState {
     return this.stateMachine.getState();
   }
@@ -228,9 +250,16 @@ export class ConversationOrchestrator {
    * app/api/chat/route.ts + app-config/curriculum) — the persona's
    * "YOU LEAD THE SESSION" instruction does the rest.
    */
-  async startLesson(opts: { studentName: string; currentLessonCode: string }): Promise<void> {
+  async startLesson(opts: {
+    studentName: string;
+    currentLessonCode: string;
+    canDoGoals?: string[];
+  }): Promise<void> {
     this.studentName = opts.studentName;
     this.currentLessonCode = opts.currentLessonCode;
+    this.lessonGoals = opts.canDoGoals ?? [];
+    this.completedGoals.clear();
+    this.lessonCompleteFired = false;
     const kickoff = "(Lesson start — do not repeat or quote this instruction back to the student.)";
     this.stateMachine.dispatch({ type: "STOP_LISTENING" }); // idle -> thinking
     await this.handleUserMessage(kickoff, undefined, { silent: true });
@@ -261,9 +290,12 @@ export class ConversationOrchestrator {
   }
 
   /**
-   * Scripted (non-AI) closing beat fired once by the lesson timer when it
-   * hits 0. Puts the avatar in "praise" and speaks the fixed closing lines
-   * — the completion card (see page.tsx) takes over from here, not
+   * Scripted (non-AI) closing beat fired once by page.tsx's
+   * onLessonComplete subscription, the moment every can-do goal for the
+   * lesson has been demonstrated (see updateGoalProgress) — NOT by the
+   * session timer running out, which is a visual reference only (see
+   * LessonTimer). Puts the avatar in "praise" and speaks the fixed closing
+   * lines — the completion card (see page.tsx) takes over from here, not
    * another turn of conversation.
    */
   async announceLessonComplete(): Promise<void> {
@@ -329,6 +361,9 @@ export class ConversationOrchestrator {
     this.timeWarningActive = false;
     this.pendingCorrectionWord = undefined;
     this.correctionAttemptCount = 0;
+    this.lessonGoals = [];
+    this.completedGoals.clear();
+    this.lessonCompleteFired = false;
     this.stateMachine.dispatch({ type: "RESET" });
   }
 
@@ -356,6 +391,25 @@ export class ConversationOrchestrator {
     }
   }
 
+  /** Merges response.completedGoals (see TutorResponse / persona.ts's
+   * LESSON COMPLETION) into the running set, and fires onLessonComplete
+   * exactly once the moment every goal for the current lesson is in —
+   * called right after every ai.send(), same as
+   * updateCorrectionAttemptTracking. Unknown goal strings (a model typo, a
+   * goal that isn't verbatim in lessonGoals) are dropped silently rather
+   * than counted — better to under-complete than to finish a lesson on a
+   * goal that was never actually assigned. */
+  private updateGoalProgress(response: TutorResponse): void {
+    if (this.lessonCompleteFired || this.lessonGoals.length === 0) return;
+    for (const goal of response.completedGoals ?? []) {
+      if (this.lessonGoals.includes(goal)) this.completedGoals.add(goal);
+    }
+    if (this.completedGoals.size >= this.lessonGoals.length) {
+      this.lessonCompleteFired = true;
+      for (const cb of this.lessonCompleteListeners) cb();
+    }
+  }
+
   private async handleUserMessage(
     text: string,
     detectedLanguage?: string,
@@ -377,6 +431,7 @@ export class ConversationOrchestrator {
       });
       this.setApiStatus(true);
       this.updateCorrectionAttemptTracking(response);
+      this.updateGoalProgress(response);
 
       this.history.push({
         role: "assistant",

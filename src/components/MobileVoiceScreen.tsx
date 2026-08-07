@@ -32,6 +32,7 @@ export function MobileVoiceScreen({
   onTalkClick,
   totalSeconds,
   remainingSeconds,
+  showTimeUpNotice,
   lastTutorResponse,
   entries,
   currentLesson,
@@ -54,6 +55,7 @@ export function MobileVoiceScreen({
   onTalkClick: () => void;
   totalSeconds: number;
   remainingSeconds: number;
+  showTimeUpNotice: boolean;
   lastTutorResponse: TutorResponse | undefined;
   entries: ChatEntry[];
   currentLesson: CurriculumLesson | undefined;
@@ -85,6 +87,10 @@ export function MobileVoiceScreen({
           💬 Conversa
         </button>
       </div>
+
+      {started && showTimeUpNotice && !lessonComplete && (
+        <div className="session-time-notice">{branding.copy.sessionTimeUpNotice}</div>
+      )}
 
       <div className="mobile-avatar-wrap">
         <Avatar engine={avatarEngine} />

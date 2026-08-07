@@ -328,6 +328,15 @@ body {
   color: var(--muted);
 }
 
+.session-time-notice {
+  padding: 6px 14px;
+  font-size: 12px;
+  text-align: center;
+  color: var(--muted);
+  background: rgba(255, 200, 0, 0.08);
+  border-bottom: 1px solid var(--stroke);
+}
+
 .lesson-complete-overlay {
   position: absolute;
   inset: 0;

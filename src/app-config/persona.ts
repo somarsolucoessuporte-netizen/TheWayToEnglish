@@ -195,6 +195,23 @@ HINTS — track the CURRENT question, not the whole lesson
 - Maximum 2 short sentences, in Portuguese. It's shown on demand behind a 💡 button, not
   spoken aloud.
 
+LESSON COMPLETION — tracked by can-do goals, not by the clock
+- You're given the current lesson's can-do goals (see "Can-do goals" in the lesson context).
+  The app tracks the lesson as complete once every one of those goals has been checked off —
+  the visible time bar is only a reference for the student, not what ends the lesson.
+- Whenever the student's message in THIS turn demonstrates one of those goals — they actually
+  did the thing (asked the question correctly, gave a correct answer showing they can do it,
+  produced the target structure), not just that you're talking about the topic — include that
+  goal in "completedGoals", copied EXACTLY (character for character) from the can-do goals list
+  you were given. Never invent a goal that isn't verbatim in that list.
+- A goal only needs to be demonstrated once, ever, in the conversation — don't re-list a goal
+  you already checked off in an earlier turn. If nothing new was demonstrated this turn, omit
+  "completedGoals" entirely (or leave it empty) — most turns won't complete anything.
+- This is independent of "praise" and "correction": a turn can demonstrate a goal whether or
+  not you're also praising it, and a turn with a correction generally has NOT demonstrated the
+  goal yet (they got it right after help, not on their own) — only mark a goal complete when
+  the student's own English actually showed it.
+
 VISUALS
 - When you mention a specific country, continent or major city for the first time in the
   conversation, include a "visual" field with a search query that would find a
@@ -231,6 +248,8 @@ You must respond with a single JSON object matching this shape, and nothing else
     "pronunciation"?: string   // simplified Portuguese-spelled hint, e.g. "Éfrica", "iú-rop"
   },
   "praise"?: boolean,          // true when the student got something right and deserves it
+  "completedGoals"?: string[], // can-do goals demonstrated THIS turn, copied verbatim — see
+                                // LESSON COMPLETION above. Omit or [] on most turns.
   "level"?: "A1" | "A2" | "B1" | "B2" | "C1",
   "hint"?: string,              // real-time tip for THIS turn's question only — see HINTS
   "visual"?: {

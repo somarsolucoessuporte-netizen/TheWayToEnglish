@@ -122,10 +122,14 @@ export default function Page() {
   // while the student could actually be interacting (see the ticking
   // effect below) — time spent waiting on the tutor doesn't count against
   // them. totalSeconds doubles as "has a lesson actually started" (0 means
-  // no lesson picked yet), which the warning/completion effects rely on.
+  // no lesson picked yet), which the warning effect relies on. The bar is
+  // a visual reference only — it does NOT end the lesson on its own (see
+  // showTimeUpNotice below and orchestrator.onLessonComplete): the lesson
+  // only actually completes once every can-do goal has been demonstrated.
   const [totalSeconds, setTotalSeconds] = useState(0);
   const [remainingSeconds, setRemainingSeconds] = useState(0);
   const [lessonComplete, setLessonComplete] = useState(false);
+  const [showTimeUpNotice, setShowTimeUpNotice] = useState(false);
 
   useEffect(() => {
     if (!started || lessonComplete) return;
@@ -143,11 +147,23 @@ export default function Page() {
       // safe to "call again" on every tick while under the threshold.
       void orchestrator.announceTimeWarning();
     }
+    // Time running out is only a discreet heads-up now, not an end-of-lesson
+    // trigger — the lesson keeps going until every can-do goal is done (see
+    // orchestrator.onLessonComplete below).
     if (remainingSeconds <= 0) {
-      setLessonComplete(true);
-      void orchestrator.announceLessonComplete();
+      setShowTimeUpNotice(true);
     }
   }, [remainingSeconds, started, lessonComplete, totalSeconds, orchestrator]);
+
+  // The ONLY trigger for the lesson-complete card: every can-do goal for
+  // the current lesson has been demonstrated (see orchestrator's
+  // updateGoalProgress) — independent of however much time is left.
+  useEffect(() => {
+    return orchestrator.onLessonComplete(() => {
+      setLessonComplete(true);
+      void orchestrator.announceLessonComplete();
+    });
+  }, [orchestrator]);
 
   function handleEndLesson() {
     orchestrator.reset();
@@ -156,6 +172,7 @@ export default function Page() {
     setLessonComplete(false);
     setTotalSeconds(0);
     setRemainingSeconds(0);
+    setShowTimeUpNotice(false);
     setTipsAttention("normal");
   }
 
@@ -278,8 +295,13 @@ export default function Page() {
     setTotalSeconds(seconds);
     setRemainingSeconds(seconds);
     setLessonComplete(false);
+    setShowTimeUpNotice(false);
     await new Promise((resolve) => window.setTimeout(resolve, PRE_KICKOFF_DELAY_MS));
-    await orchestrator.startLesson({ studentName: student.name, currentLessonCode: student.currentLesson });
+    await orchestrator.startLesson({
+      studentName: student.name,
+      currentLessonCode: student.currentLesson,
+      canDoGoals: lesson?.canDo,
+    });
   }
 
   // The ONLY call site for orchestrator.startListening() in the whole app
@@ -345,6 +367,7 @@ export default function Page() {
               onTalkClick={handleTalkClick}
               totalSeconds={totalSeconds}
               remainingSeconds={remainingSeconds}
+              showTimeUpNotice={showTimeUpNotice}
               lastTutorResponse={lastTutorResponse}
               entries={entries}
               currentLesson={currentLesson}
@@ -419,6 +442,9 @@ export default function Page() {
                 </div>
 
                 {started && <LessonTimer totalSeconds={totalSeconds} remainingSeconds={remainingSeconds} />}
+                {started && showTimeUpNotice && !lessonComplete && (
+                  <div className="session-time-notice">{branding.copy.sessionTimeUpNotice}</div>
+                )}
 
                 <ChatLog entries={entries} />
 

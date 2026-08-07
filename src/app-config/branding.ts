@@ -34,6 +34,7 @@ export const branding = {
     connFailed: "Perdi você por um instante, pode repetir?",
     micUnsupported: "Este navegador não suporta reconhecimento de voz. Digite sua mensagem.",
     genericError: "Perdi você por um instante, pode repetir?",
+    sessionTimeUpNotice: "Tempo da sessão encerrado — continue quando quiser",
     footer: "The Way To English — Tutor IA",
   },
 } as const;

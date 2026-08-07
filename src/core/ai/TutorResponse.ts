@@ -27,6 +27,13 @@ export const TutorResponseSchema = z
       })
       .optional(),
     praise: z.boolean().optional(),
+    /** Which of the current lesson's can-do goals (verbatim strings from
+     * CurriculumLesson.canDo — see app-config/curriculum) the student just
+     * demonstrated in this exchange, if any — see persona.ts's LESSON
+     * COMPLETION section. Accumulated turn over turn by the orchestrator;
+     * the lesson is considered complete once every goal has been checked
+     * off at least once, independent of the session timer. */
+    completedGoals: z.array(z.string()).optional(),
     level: z.enum(["A1", "A2", "B1", "B2", "C1"]).optional(),
     /** Short, real-time tip (in Portuguese) that helps the student answer
      * THIS turn's question specifically — not a lesson-wide tip list. Shown
