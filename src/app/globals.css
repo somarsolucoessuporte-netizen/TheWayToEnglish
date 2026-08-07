@@ -307,6 +307,40 @@ body {
   color: var(--muted);
 }
 
+/* Sits directly under .lesson-timer (see page.tsx/MobileVoiceScreen) —
+   same track height/layout so the two read as one stacked pair, not two
+   unrelated bars. Fixed brand-navy fill (not the time bar's green/yellow/
+   red bands): progress here only ever moves forward, so there's no "danger
+   zone" to color-code. */
+.lesson-progress {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 0 14px 10px;
+}
+
+.lesson-progress-track {
+  flex: 1;
+  height: 8px;
+  border-radius: 999px;
+  background: var(--border);
+  overflow: hidden;
+}
+
+.lesson-progress-fill {
+  height: 100%;
+  border-radius: 999px;
+  background: var(--brand-navy);
+  transition: width 0.4s ease;
+}
+
+.lesson-progress-label {
+  flex: none;
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+  color: var(--text-secondary);
+}
+
 .session-time-notice {
   padding: 6px 14px;
   font-size: 12px;
@@ -376,6 +410,27 @@ body {
   flex-direction: column;
   gap: 10px;
   align-items: center;
+  /* Simple fade-in, no confetti/explosion per spec — see LessonCompleteCard. */
+  animation: lesson-complete-in 300ms ease-out;
+}
+
+@keyframes lesson-complete-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* .lesson-progress is normally sized for the chat header's own padded row
+   (see the shared rule above) — full width here instead, so its track has
+   room to fill inside the card's own padding. */
+.lesson-complete-card .lesson-progress {
+  width: 100%;
+  padding: 0;
 }
 
 .lesson-complete-title {

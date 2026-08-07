@@ -112,6 +112,7 @@ export const MobileVoiceScreen = forwardRef<
     showTimeUpNotice: boolean;
     entries: ChatEntry[];
     currentLesson: CurriculumLesson | undefined;
+    currentStudentName: string | undefined;
     currentHints: string[] | undefined;
     hintLevel: number;
     onHintReveal: () => void;
@@ -134,6 +135,7 @@ export const MobileVoiceScreen = forwardRef<
     showTimeUpNotice,
     entries,
     currentLesson,
+    currentStudentName,
     currentHints,
     hintLevel,
     onHintReveal,
@@ -452,9 +454,12 @@ export const MobileVoiceScreen = forwardRef<
 
       {lessonComplete && currentLesson && (
         <LessonCompleteCard
+          studentName={currentStudentName ?? ""}
           lessonCode={currentLesson.lessonCode}
           lessonTitle={currentLesson.title}
-          durationMinutes={currentLesson.durationMinutes}
+          entries={entries}
+          canDoGoals={currentLesson.canDo}
+          elapsedSeconds={totalSeconds - remainingSeconds}
           onClose={onEndLesson}
         />
       )}

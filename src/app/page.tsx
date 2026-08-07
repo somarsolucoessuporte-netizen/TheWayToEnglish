@@ -4,7 +4,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { branding } from "@/app-config/branding";
 import { TUTOR_SYSTEM_PROMPT } from "@/app-config/persona";
 import { DEMO_STUDENTS, type DemoStudent } from "@/app-config/demo-students";
-import { getLessonByCode, type CurriculumLesson } from "@/app-config/curriculum";
+import { getLessonByCode, getNextLesson, type CurriculumLesson } from "@/app-config/curriculum";
 import { aiProvider, speechProvider, sttProvider } from "@/app-config/providers";
 import { AvatarEngine } from "@/core/avatar-engine/AvatarEngine";
 import { preloadAllAvatarVideos } from "@/core/avatar-engine/preloadAvatarAssets";
@@ -21,6 +21,7 @@ import { ChatLog } from "@/components/ChatLog";
 import { ErrorToast } from "@/components/ErrorToast";
 import { ForceSendButton } from "@/components/ForceSendButton";
 import { LessonCompleteCard } from "@/components/LessonCompleteCard";
+import { LessonProgressBar } from "@/components/LessonProgressBar";
 import { LessonTimer } from "@/components/LessonTimer";
 import { LoadingScreen } from "@/components/LoadingScreen";
 import { MobileVoiceScreen, type MobileVoiceScreenHandle } from "@/components/MobileVoiceScreen";
@@ -222,6 +223,9 @@ export default function Page() {
   // the school's academic system are wired in.
   const [started, setStarted] = useState(false);
   const [currentLesson, setCurrentLesson] = useState<CurriculumLesson | undefined>(undefined);
+  // Only for display on the lesson-complete card (see LessonCompleteCard) —
+  // the orchestrator already tracks this itself for the session's own use.
+  const [currentStudentName, setCurrentStudentName] = useState<string | undefined>(undefined);
 
   // Lesson timer: counts down from the lesson's durationMinutes, but only
   // while the student could actually be interacting (see the ticking
@@ -252,28 +256,33 @@ export default function Page() {
       // safe to "call again" on every tick while under the threshold.
       void orchestrator.announceTimeWarning();
     }
-    // Time running out is only a discreet heads-up now, not an end-of-lesson
-    // trigger — the lesson keeps going until every can-do goal is done (see
-    // orchestrator.onLessonComplete below).
+    // Time running out now ALSO ends the lesson (see LessonCompleteCard's
+    // redesign), same completion path as every can-do goal being done —
+    // whichever happens first. The effect's own top guard (lessonComplete)
+    // means this only ever fires once.
     if (remainingSeconds <= 0) {
       setShowTimeUpNotice(true);
+      setLessonComplete(true);
+      void orchestrator.announceLessonComplete(currentLesson ? getNextLesson(currentLesson.lessonCode) : undefined);
     }
-  }, [remainingSeconds, started, lessonComplete, totalSeconds, orchestrator]);
+  }, [remainingSeconds, started, lessonComplete, totalSeconds, orchestrator, currentLesson]);
 
-  // The ONLY trigger for the lesson-complete card: every can-do goal for
-  // the current lesson has been demonstrated (see orchestrator's
-  // updateGoalProgress) — independent of however much time is left.
+  // Every can-do goal for the current lesson demonstrated (see
+  // orchestrator's updateGoalProgress) — the OTHER trigger for the
+  // lesson-complete card, independent of however much time is left (see
+  // the time-based trigger above).
   useEffect(() => {
     return orchestrator.onLessonComplete(() => {
       setLessonComplete(true);
-      void orchestrator.announceLessonComplete();
+      void orchestrator.announceLessonComplete(currentLesson ? getNextLesson(currentLesson.lessonCode) : undefined);
     });
-  }, [orchestrator]);
+  }, [orchestrator, currentLesson]);
 
   function handleEndLesson() {
     orchestrator.reset();
     setStarted(false);
     setCurrentLesson(undefined);
+    setCurrentStudentName(undefined);
     setLessonComplete(false);
     setTotalSeconds(0);
     setRemainingSeconds(0);
@@ -588,6 +597,7 @@ export default function Page() {
     const seconds = (lesson?.durationMinutes ?? DEFAULT_LESSON_DURATION_MIN) * 60;
     setStarted(true);
     setCurrentLesson(lesson);
+    setCurrentStudentName(student.name);
     setTotalSeconds(seconds);
     setRemainingSeconds(seconds);
     setLessonComplete(false);
@@ -743,6 +753,7 @@ export default function Page() {
               showTimeUpNotice={showTimeUpNotice}
               entries={entries}
               currentLesson={currentLesson}
+              currentStudentName={currentStudentName}
               currentHints={currentHints}
               hintLevel={hintLevel}
               onHintReveal={handleHintReveal}
@@ -807,6 +818,9 @@ export default function Page() {
                 </div>
 
                 {started && <LessonTimer totalSeconds={totalSeconds} remainingSeconds={remainingSeconds} />}
+                {started && currentLesson && (
+                  <LessonProgressBar entries={entries} canDoGoals={currentLesson.canDo} />
+                )}
                 {started && showTimeUpNotice && !lessonComplete && (
                   <div className="session-time-notice">{branding.copy.sessionTimeUpNotice}</div>
                 )}
@@ -815,9 +829,12 @@ export default function Page() {
 
                 {lessonComplete && currentLesson && (
                   <LessonCompleteCard
+                    studentName={currentStudentName ?? ""}
                     lessonCode={currentLesson.lessonCode}
                     lessonTitle={currentLesson.title}
-                    durationMinutes={currentLesson.durationMinutes}
+                    entries={entries}
+                    canDoGoals={currentLesson.canDo}
+                    elapsedSeconds={totalSeconds - remainingSeconds}
                     onClose={handleEndLesson}
                   />
                 )}

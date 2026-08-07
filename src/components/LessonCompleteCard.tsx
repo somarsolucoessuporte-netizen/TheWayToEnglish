@@ -1,21 +1,41 @@
 "use client";
 
+import type { ChatEntry } from "@/core/conversation/orchestrator";
+import { LessonProgressBar } from "./LessonProgressBar";
+
+/** Local, not imported from LessonTimer — this component stays self-
+ * contained on purpose (see the "only touch the lesson-completion
+ * component" constraint this redesign was built under). */
+function formatMMSS(totalSeconds: number): string {
+  const clamped = Math.max(0, Math.round(totalSeconds));
+  const minutes = Math.floor(clamped / 60);
+  const seconds = clamped % 60;
+  return `${minutes}:${seconds.toString().padStart(2, "0")}`;
+}
+
 /**
- * Shown over the chat panel once the lesson timer reaches 0 (see page.tsx).
- * Note: the spec's mockup also showed "Etapas: 3 de 5" — this app has no
- * concept of numbered lesson steps/stages anywhere in the curriculum data
- * or UI, so that line was left out rather than inventing a number that
- * doesn't correspond to anything real.
+ * Shown over the chat panel once the lesson is complete (see page.tsx —
+ * every can-do goal demonstrated, OR the session timer reaching 0).
+ * `entries`/`canDoGoals` feed the same LessonProgressBar used under the
+ * time bar during the lesson, so this shows the REAL step count at the
+ * moment of completion — e.g. "3 de 5" if time ran out before every goal
+ * was demonstrated, not always a full bar.
  */
 export function LessonCompleteCard({
+  studentName,
   lessonCode,
   lessonTitle,
-  durationMinutes,
+  entries,
+  canDoGoals,
+  elapsedSeconds,
   onClose,
 }: {
+  studentName: string;
   lessonCode: string;
   lessonTitle: string;
-  durationMinutes: number;
+  entries: ChatEntry[];
+  canDoGoals: string[];
+  elapsedSeconds: number;
   onClose: () => void;
 }) {
   return (
@@ -23,11 +43,14 @@ export function LessonCompleteCard({
       <div className="lesson-complete-card">
         <div className="lesson-complete-title">🎉 Lição concluída!</div>
         <div className="lesson-complete-lesson">
+          {studentName}, você completou:
+          <br />
           Lição {lessonCode} — {lessonTitle}
         </div>
-        <div className="lesson-complete-meta">Tempo: {durationMinutes}:00</div>
+        <LessonProgressBar entries={entries} canDoGoals={canDoGoals} />
+        <div className="lesson-complete-meta">Tempo: {formatMMSS(elapsedSeconds)}</div>
         <button type="button" className="btn btn-primary" onClick={onClose}>
-          Encerrar
+          Próxima aula →
         </button>
       </div>
     </div>

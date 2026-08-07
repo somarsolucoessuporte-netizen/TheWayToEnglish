@@ -451,18 +451,31 @@ export class ConversationOrchestrator {
 
   /**
    * Scripted (non-AI) closing beat fired once by page.tsx's
-   * onLessonComplete subscription, the moment every can-do goal for the
-   * lesson has been demonstrated (see updateGoalProgress) — NOT by the
-   * session timer running out, which is a visual reference only (see
-   * LessonTimer). Puts the avatar in "praise" and speaks the fixed closing
-   * lines — the completion card (see page.tsx) takes over from here, not
+   * onLessonComplete subscription (every can-do goal demonstrated) or by
+   * the session timer reaching 0 — see page.tsx for both triggers. Puts
+   * the avatar in "praise" and speaks the closing lines — the completion
+   * card (see page.tsx/LessonCompleteCard) takes over from here, not
    * another turn of conversation.
+   *
+   * `nextLesson`, if given, is resolved by the caller (see app-config/
+   * curriculum's getNextLesson) rather than looked up here, so this class
+   * doesn't need to reach into curriculum data directly — undefined (the
+   * current lesson was the last one in the course) falls back to a
+   * generic "all done for today" closing line instead of naming one.
    */
-  async announceLessonComplete(): Promise<void> {
+  async announceLessonComplete(nextLesson?: { lessonCode: string; title: string }): Promise<void> {
+    const name = this.studentName;
+    const code = this.currentLessonCode;
+    const closingEn = nextLesson
+      ? `Next time we'll work on Lesson ${nextLesson.lessonCode} — ${nextLesson.title}.`
+      : "We've completed all lessons for today!";
+    const closingPt = nextLesson
+      ? `Na próxima vez vamos trabalhar a Lição ${nextLesson.lessonCode} — ${nextLesson.title}.`
+      : "Completamos todas as lições de hoje!";
     const response: TutorResponse = {
       speech: {
-        english: "Great job today!",
-        portuguese: "Você completou a lição de hoje! Até a próxima.",
+        english: `Congratulations${name ? ` ${name}` : ""}! You've completed Lesson ${code}. ${closingEn} See you soon!`,
+        portuguese: `Parabéns${name ? `, ${name}` : ""}! Você completou a Lição ${code}. ${closingPt} Até a próxima!`,
       },
       praise: true,
     };

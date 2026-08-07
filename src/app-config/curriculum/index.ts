@@ -33,3 +33,15 @@ export function getLessonByCode(code: string): CurriculumLesson | undefined {
 export function getCourseOverview(): { lessonCode: string; title: string }[] {
   return ALL_LESSONS.map((l) => ({ lessonCode: l.lessonCode, title: l.title }));
 }
+
+/** The lesson immediately after `code` in the curriculum's own array order
+ * (book01-unit01.json's sequence) — not a prerequisite-based recommendation,
+ * just positional order. undefined if `code` isn't found or is the last
+ * lesson in the course — see orchestrator.announceLessonComplete's doc
+ * comment for how the caller handles that case. */
+export function getNextLesson(code: string): CurriculumLesson | undefined {
+  const normalized = code.trim().toLowerCase();
+  const index = ALL_LESSONS.findIndex((l) => l.lessonCode.toLowerCase() === normalized);
+  if (index === -1) return undefined;
+  return ALL_LESSONS[index + 1];
+}
