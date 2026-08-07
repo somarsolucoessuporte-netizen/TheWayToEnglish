@@ -11,15 +11,14 @@ import { branding } from "@/app-config/branding";
 export function LoadingScreen({
   status,
   fadingOut,
-  onRetry,
 }: {
   status: "loading" | "error";
   fadingOut: boolean;
-  onRetry: () => void;
 }) {
   return (
     <div className={`loading-screen${fadingOut ? " loading-screen-fadeout" : ""}`}>
       <div className="loading-logo">{branding.companyName}</div>
+      <div className="loading-subtitle">{branding.productName}</div>
       {status === "loading" ? (
         <div className="loading-dots" aria-label="Carregando">
           <span />
@@ -28,8 +27,16 @@ export function LoadingScreen({
         </div>
       ) : (
         <>
-          <p className="loading-error-text">Estamos com instabilidade. Tente novamente em instantes.</p>
-          <button type="button" className="btn btn-primary" onClick={onRetry}>
+          <p className="loading-error-text">
+            ⚠️ Estamos com instabilidade.
+            <br />
+            Tente novamente em instantes.
+          </p>
+          {/* A full reload, not a re-run of the in-memory boot promise —
+              if the app got this far into a broken state, starting the JS
+              runtime over is the more reliable recovery than trusting its
+              own retry logic. */}
+          <button type="button" className="btn btn-primary" onClick={() => window.location.reload()}>
             Tentar novamente
           </button>
         </>

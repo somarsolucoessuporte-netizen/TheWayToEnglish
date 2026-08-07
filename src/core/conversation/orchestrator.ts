@@ -44,15 +44,12 @@ export class ConversationOrchestrator {
   private busy = false;
   private studentName: string | undefined;
   private currentLessonCode: string | undefined;
-  /** Hands-free voice mode: once true (set by startLesson), the orchestrator
-   * auto-restarts listening every time the state machine settles back on
-   * "idle" — no push-to-talk click needed for each turn. VAD inside the
-   * active SpeechToTextProvider (see WhisperSTTProvider) decides when the
-   * student is done talking. */
-  private voiceModeEnabled = false;
-  /** Guards against overlapping start() calls — the auto-relisten hook
-   * (idle -> startListening) and a manual button click can otherwise both
-   * fire while getUserMedia is still resolving from a previous call. */
+  /** Guards against overlapping start() calls — e.g. a double-click on the
+   * talk button while getUserMedia is still resolving from the first one.
+   * The mic is push-to-talk ONLY: startListening() is called from exactly
+   * one place outside this file — the Falar button's onClick in page.tsx.
+   * Nothing in this class ever calls it on its own; the microphone must
+   * never open without that explicit click. */
   private listeningStartInFlight = false;
   /** Set once by announceTimeWarning() and carried on every subsequent
    * ai.send() call for the rest of the session — see AIOptions.timeWarning. */
@@ -79,10 +76,6 @@ export class ConversationOrchestrator {
       // but the moment the state machine actually leaves "listening" for
       // any reason, that gap is over one way or another.
       if (state !== "listening") this.setTranscribing(false);
-      // Hands-free loop: every time we land back on "idle" (after the
-      // tutor finishes speaking, or a praise/correction overlay reverts),
-      // start listening again on our own — no button press per turn.
-      if (state === "idle" && this.voiceModeEnabled) void this.startListening();
     });
 
     // Only re-binds the avatar's amplitude source to whichever <audio>
@@ -91,9 +84,9 @@ export class ConversationOrchestrator {
     // (English part, then Portuguese part — see speakParts), and each
     // call fires its own provider-level "start"/"end". If those directly
     // dispatched SPEECH_START/SPEECH_END, the state machine would drop to
-    // "idle" between parts — which, with hands-free voice mode on, would
-    // start recording the tutor's own voice as if the student were
-    // talking. speakParts is the sole authority for SPEECH_START/END.
+    // "idle" between parts, which would visually flicker the avatar out of
+    // "speaking" and back between the two parts of one reply. speakParts
+    // is the sole authority for SPEECH_START/END.
     this.speech.on("start", () => {
       this.avatar.onAudioElement(this.speech.getAudioElement?.() ?? null);
     });
@@ -185,14 +178,16 @@ export class ConversationOrchestrator {
   }
 
   /**
-   * Manual override (spec item 5): force the current utterance to send
-   * right now, without waiting for VAD to detect a silence gap — e.g. the
-   * student clicked the talk button while already listening, or the room
-   * is too noisy for silence detection to work. The actual state
-   * transition and message handling happen in the "final"/"end" listeners
-   * wired in the constructor — not here — because a hands-free provider
-   * may have already finished the utterance on its own (via VAD) before
-   * this is even called.
+   * Manual force-send: the student clicked the talk button again while
+   * already listening, ending the recording right now instead of waiting
+   * for the STT provider's own silence-based auto-stop (see
+   * WhisperSTTProvider's VAD) to notice the pause. Push-to-talk's second
+   * half — click opens the mic (startListening, called only from the
+   * button's onClick), click-again-or-silence closes it (this, or the
+   * provider's own VAD). The actual state transition and message handling
+   * happen in the "final"/"end" listeners wired in the constructor — not
+   * here — because the provider's VAD may have already finished the
+   * utterance on its own before this is even called.
    */
   async stopListening(): Promise<void> {
     await this.stt.stop();
@@ -217,13 +212,12 @@ export class ConversationOrchestrator {
   async startLesson(opts: { studentName: string; currentLessonCode: string }): Promise<void> {
     this.studentName = opts.studentName;
     this.currentLessonCode = opts.currentLessonCode;
-    this.voiceModeEnabled = true;
     const kickoff = "(Lesson start — do not repeat or quote this instruction back to the student.)";
     this.stateMachine.dispatch({ type: "STOP_LISTENING" }); // idle -> thinking
     await this.handleUserMessage(kickoff, undefined, { silent: true });
-    // handleUserMessage ends back on "idle" (or a praise/correction overlay
-    // on top of it) once the tutor's opening line finishes speaking, which
-    // triggers the very first auto-listen via the subscribe hook above.
+    // handleUserMessage ends back on "idle" once the tutor's opening line
+    // finishes speaking. The mic stays closed until the student clicks
+    // Falar — no auto-listen here or anywhere else in this class.
   }
 
   /**
@@ -243,17 +237,17 @@ export class ConversationOrchestrator {
     };
     this.pushEntry({ role: "tutor", response });
     await this.forceAnnounce([{ text: response.speech.english, lang: "en-US" }]);
-    this.maybeAutoRelisten(); // lesson isn't over yet — resume hands-free mode
+    // Mic stays closed after this, same as after any other tutor turn —
+    // the student clicks Falar when they're ready to answer.
   }
 
   /**
    * Scripted (non-AI) closing beat fired once by the lesson timer when it
-   * hits 0. Puts the avatar in "praise", speaks the fixed closing lines,
-   * and turns hands-free mode off for good — the completion card (see
-   * page.tsx) takes over from here, not another turn of conversation.
+   * hits 0. Puts the avatar in "praise" and speaks the fixed closing lines
+   * — the completion card (see page.tsx) takes over from here, not
+   * another turn of conversation.
    */
   async announceLessonComplete(): Promise<void> {
-    this.voiceModeEnabled = false;
     const response: TutorResponse = {
       speech: {
         english: "Great job today!",
@@ -313,7 +307,6 @@ export class ConversationOrchestrator {
     this.busy = false;
     this.studentName = undefined;
     this.currentLessonCode = undefined;
-    this.voiceModeEnabled = false;
     this.timeWarningActive = false;
     this.stateMachine.dispatch({ type: "RESET" });
   }
@@ -377,22 +370,9 @@ export class ConversationOrchestrator {
     } finally {
       this.busy = false;
     }
-    // The state machine's own idle -> startListening hook (see constructor)
-    // fires on every dispatch that lands on "idle" — but every dispatch
-    // above happened while `busy` was still true, so startListening()
-    // bailed out each time (see its own busy guard). Nothing dispatches
-    // again after busy flips back to false, so hands-free mode would
-    // otherwise just go silent after this turn. This re-checks once, now
-    // that busy is clear.
-    this.maybeAutoRelisten();
-  }
-
-  /** Restarts hands-free listening if we've actually landed on "idle" and
-   * voice mode is on — see the note above handleUserMessage's call site. */
-  private maybeAutoRelisten(): void {
-    if (this.stateMachine.getState() === "idle" && this.voiceModeEnabled) {
-      void this.startListening();
-    }
+    // Mic stays closed once the tutor's done — push-to-talk only. The
+    // student clicks Falar (see ForceSendButton's onClick in page.tsx)
+    // when they're ready to answer; nothing here reopens it for them.
   }
 
   /**
@@ -424,7 +404,7 @@ export class ConversationOrchestrator {
    * part) — or a correction's spoken explanation plus its automatic
    * pronunciation drill (see runPronunciationDrill) — play as one
    * continuous avatar "speaking" state instead of flickering back to idle
-   * (and briefly re-triggering hands-free auto-listen) in between.
+   * in between.
    */
   private async speakParts(
     parts: { text: string; lang: string }[],
@@ -449,8 +429,8 @@ export class ConversationOrchestrator {
    * not a pitch-shifted playback hack), another beat, then the cue to try
    * it themselves. Called as speakParts' `after` step so it runs inside
    * the same SPEECH_START/END span as the correction's explanation — the
-   * avatar stays "speaking" throughout instead of dropping to idle (and
-   * re-triggering hands-free listening) mid-drill.
+   * avatar stays "speaking" throughout instead of dropping to idle
+   * mid-drill.
    */
   private async runPronunciationDrill(word: string): Promise<void> {
     const trimmed = word.trim();

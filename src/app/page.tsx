@@ -37,7 +37,14 @@ const HEALTH_CHECK_TIMEOUT_MS = 5000;
 /** How long the loading screen's fade-out (and the app's fade-in behind
  * it) take — must match .loading-screen's transition and .app-fade-in's
  * animation duration in globals.css. */
-const BOOT_FADE_MS = 300;
+const BOOT_FADE_MS = 400;
+/** Small buffer after the demo-student click, before the tutor's opening
+ * line starts — gives the avatar's just-mounted <img> elements a beat to
+ * finish painting (they're already preloaded/decoded by the boot gate, but
+ * layout/paint of a freshly-mounted element can still lag a frame or two)
+ * so the first line of speech never starts before the avatar is visually
+ * settled. */
+const PRE_KICKOFF_DELAY_MS = 500;
 
 /** GET /api/chat as a lightweight readiness probe — same endpoint the app
  * already used for the "Conectado"/"Sem conexão" pill, just with a hard
@@ -240,18 +247,19 @@ export default function Page() {
     setTotalSeconds(seconds);
     setRemainingSeconds(seconds);
     setLessonComplete(false);
+    await new Promise((resolve) => window.setTimeout(resolve, PRE_KICKOFF_DELAY_MS));
     await orchestrator.startLesson({ studentName: student.name, currentLessonCode: student.currentLesson });
   }
 
+  // The ONLY call site for orchestrator.startListening() in the whole app
+  // — push-to-talk is a hard rule (see orchestrator.ts's comments): the
+  // microphone opens on this explicit click and never on its own.
   async function handleTalkClick() {
     const isListening = characterState === "listening";
-    console.log("[voice] botão Falar clicado");
-    console.log("[voice] estado atual:", characterState);
-    console.log("[voice] isListening:", isListening);
     if (isListening) {
       await orchestrator.stopListening(); // force-send early
     } else {
-      await orchestrator.startListening(); // manual kick-off — covers cases where auto-VAD hasn't started yet
+      await orchestrator.startListening(); // the one and only mic-open path
     }
   }
 
@@ -280,11 +288,7 @@ export default function Page() {
   return (
     <main style={{ height: "100dvh", display: "flex", flexDirection: "column" }} onClick={resetTipsAttention}>
       {bootState !== "ready" && (
-        <LoadingScreen
-          status={bootState === "error" ? "error" : "loading"}
-          fadingOut={bootState === "fading"}
-          onRetry={runBoot}
-        />
+        <LoadingScreen status={bootState === "error" ? "error" : "loading"} fadingOut={bootState === "fading"} />
       )}
 
       {(bootState === "fading" || bootState === "ready") && (
