@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { branding } from "@/app-config/branding";
 import { TUTOR_SYSTEM_PROMPT } from "@/app-config/persona";
 import { DEMO_STUDENTS, type DemoStudent } from "@/app-config/demo-students";
@@ -8,6 +8,7 @@ import { getLessonByCode, type CurriculumLesson } from "@/app-config/curriculum"
 import { aiProvider, speechProvider, sttProvider } from "@/app-config/providers";
 import { AvatarEngine } from "@/core/avatar-engine/AvatarEngine";
 import { preloadAvatarSprites } from "@/core/avatar-engine/preloadSprites";
+import { warmUpAudioContext } from "@/core/audio/warmUpAudioContext";
 import { waitForVoices } from "@/core/speech/waitForVoices";
 import { CharacterStateMachine, type CharacterState } from "@/core/character-state-machine/stateMachine";
 import { ConversationOrchestrator, type ChatEntry } from "@/core/conversation/orchestrator";
@@ -93,6 +94,20 @@ export default function Page() {
   const [transcribing, setTranscribing] = useState(false);
   const [connected, setConnected] = useState<boolean | null>(null);
   const [inputValue, setInputValue] = useState("");
+
+  // Spins up the browser's audio subsystem once, as early as possible —
+  // some platforms have real first-AudioContext latency (driver/hardware
+  // init), and without this the very first TTS playback of the session
+  // would be the one to pay for it. Held in a ref (not used directly) so
+  // it isn't garbage-collected, which can undo the warm-up.
+  const warmAudioCtxRef = useRef<AudioContext | null>(null);
+  useEffect(() => {
+    warmAudioCtxRef.current = warmUpAudioContext();
+    return () => {
+      void warmAudioCtxRef.current?.close();
+      warmAudioCtxRef.current = null;
+    };
+  }, []);
 
   // Single-step demo login: picks a canned student profile (name + where
   // they are in the course) in place of real authentication. See

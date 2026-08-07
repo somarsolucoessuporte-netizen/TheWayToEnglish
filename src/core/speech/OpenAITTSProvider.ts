@@ -52,10 +52,18 @@ export class OpenAITTSProvider implements SpeechProvider {
       this.audio = audio;
 
       await new Promise<void>((resolve) => {
-        audio.onplay = () => {
+        // "playing" fires when the browser actually has audible frames
+        // ready to render — NOT "play" (fires as soon as .play() lifts
+        // the element out of paused state, which can happen before enough
+        // of a freshly-fetched MP3 blob is decoded) and NOT
+        // "canplay"/"loadeddata" (fire even earlier, before playback has
+        // been requested at all). The avatar's mouth animation is gated on
+        // this "start" event (see orchestrator's constructor) specifically
+        // so it can never start moving before sound is actually audible.
+        audio.addEventListener("playing", () => {
           this.speaking = true;
           this.emit("start");
-        };
+        });
         audio.onended = () => {
           this.speaking = false;
           this.emit("end");

@@ -36,10 +36,14 @@ export class ElevenLabsSpeechProvider implements SpeechProvider {
       this.audio = audio;
 
       await new Promise<void>((resolve) => {
-        audio.onplay = () => {
+        // "playing" (audible frames actually ready), not "play" (fires as
+        // soon as .play() lifts the element out of paused state, which can
+        // happen before a freshly-fetched blob is decoded) — see
+        // OpenAITTSProvider's matching comment for the full rationale.
+        audio.addEventListener("playing", () => {
           this.speaking = true;
           this.emit("start");
-        };
+        });
         audio.onended = () => {
           this.speaking = false;
           this.emit("end");

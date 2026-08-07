@@ -78,17 +78,31 @@ export class ConversationOrchestrator {
       if (state !== "listening") this.setTranscribing(false);
     });
 
-    // Only re-binds the avatar's amplitude source to whichever <audio>
-    // element is currently playing — does NOT drive the state machine.
+    // Rebinds the avatar's amplitude source to whichever <audio> element
+    // is currently playing, THEN dispatches SPEECH_START — this "start"
+    // event is the provider's real "playing" DOM event (see
+    // OpenAITTSProvider), i.e. audio the student can actually hear, not
+    // the moment speak() was called or the /api/tts fetch kicked off. The
+    // avatar must never start its mouth animation before that: with the
+    // audio element still unbound (or bound to the previous, now-silent
+    // turn's element) the animation loop would fall back to a synthetic
+    // talking rhythm completely disconnected from real sound — most
+    // visible on the very first turn, before any audio element has ever
+    // been bound at all.
+    //
     // A reply's speech can be spoken as multiple sequential speak() calls
-    // (English part, then Portuguese part — see speakParts), and each
-    // call fires its own provider-level "start"/"end". If those directly
-    // dispatched SPEECH_START/SPEECH_END, the state machine would drop to
-    // "idle" between parts, which would visually flicker the avatar out of
-    // "speaking" and back between the two parts of one reply. speakParts
-    // is the sole authority for SPEECH_START/END.
+    // (English part, then Portuguese part, or a correction's pronunciation
+    // drill — see speakParts), and EACH call fires its own provider-level
+    // "start". Dispatching SPEECH_START here on every one of them is safe,
+    // not repeated-flicker: CharacterStateMachine only defines a
+    // SPEECH_START transition FROM "thinking" — by the second part the
+    // state machine is already "speaking", so the same dispatch is a
+    // silent no-op. speakParts is still the sole authority for
+    // SPEECH_END, dispatched once after every part (and any drill) is
+    // done, not per-call — that part hasn't changed.
     this.speech.on("start", () => {
       this.avatar.onAudioElement(this.speech.getAudioElement?.() ?? null);
+      this.stateMachine.dispatch({ type: "SPEECH_START" });
     });
 
     // The transcript is delivered here, not through stop()'s return value —
@@ -380,8 +394,9 @@ export class ConversationOrchestrator {
    * own (CharacterStateMachine's transient timer, ~1.5s) before resolving —
    * that revert lands back on "thinking" (the persistent state captured
    * when PRAISE was dispatched, since a response always arrives while
-   * still "thinking"), which is exactly the state speakParts' SPEECH_START
-   * needs to transition out of next.
+   * still "thinking"), which is exactly the state the "start" event's
+   * SPEECH_START dispatch (see constructor) needs to transition out of
+   * once speakParts actually starts playing audio next.
    */
   private async enterPraiseBeforeSpeaking(): Promise<void> {
     return new Promise<void>((resolve) => {
@@ -397,14 +412,18 @@ export class ConversationOrchestrator {
 
   /**
    * Speaks one or more parts back-to-back as a single logical "speaking"
-   * turn: dispatches SPEECH_START once before the first non-empty part
-   * and SPEECH_END once after the last one (and after `opts.after`, if
-   * given), regardless of how many actual speak() calls happen underneath.
-   * This is what lets a bilingual reply (English part, then Portuguese
-   * part) — or a correction's spoken explanation plus its automatic
-   * pronunciation drill (see runPronunciationDrill) — play as one
-   * continuous avatar "speaking" state instead of flickering back to idle
-   * in between.
+   * turn. Does NOT dispatch SPEECH_START itself — that happens the moment
+   * the first part's audio is actually audible (see the constructor's
+   * `speech.on("start", ...)` handler), so the state machine (and the
+   * avatar's mouth animation) stays "thinking" through the whole
+   * /api/tts fetch instead of jumping to "speaking" early. SPEECH_END,
+   * though, IS this method's responsibility: dispatched once after the
+   * last part (and after `opts.after`, if given) finishes, regardless of
+   * how many actual speak() calls happened underneath — that's what lets
+   * a bilingual reply (English part, then Portuguese part) or a
+   * correction's pronunciation drill (see runPronunciationDrill) play as
+   * one continuous "speaking" state instead of flickering back to idle
+   * between parts.
    */
   private async speakParts(
     parts: { text: string; lang: string }[],
@@ -413,7 +432,6 @@ export class ConversationOrchestrator {
     const nonEmpty = parts.filter((p) => p.text.trim().length > 0);
     if (nonEmpty.length === 0 && !opts.after) return;
 
-    this.stateMachine.dispatch({ type: "SPEECH_START" });
     for (const part of nonEmpty) {
       await this.speech.speak(part.text, { lang: part.lang });
     }
