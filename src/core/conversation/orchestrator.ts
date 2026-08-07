@@ -713,6 +713,16 @@ export class ConversationOrchestrator {
     prefetchedAudioBlob?: Blob;
   } = {}): Promise<void> {
     this.setBusy(true);
+    // Hoisted out of the try block so the catch below can still find and
+    // resolve THIS turn's pending chat bubble (see pushPendingTutorEntry)
+    // if something throws after it was created but before speakPartsWithReveal
+    // ever gets to clear it — e.g. playCorrectSound() throwing on the praise
+    // beat (a fresh AudioContext can throw once a browser's per-page limit is
+    // hit — Safari/iOS is known to cap this). Without this, busy still
+    // correctly clears (see the outer finally), but the chat bubble itself
+    // stays stuck on its "..." typing indicator forever, which is what
+    // actually reads as a freeze to the student.
+    let entryIndex: number | undefined;
     try {
       let response: TutorResponse;
       // Marks "the reply is ready to be spoken" — for a live call this is
@@ -757,7 +767,7 @@ export class ConversationOrchestrator {
         if (spoken) this.usedNudgePhrases.push(spoken);
       }
 
-      const entryIndex = this.pushPendingTutorEntry(response);
+      entryIndex = this.pushPendingTutorEntry(response);
 
       // Praise plays out BEFORE speaking, not after: a short chord plus the
       // avatar's praise pose for ~1.5s, then normal speech resumes — the
@@ -793,6 +803,16 @@ export class ConversationOrchestrator {
       this.setApiStatus(false);
       this.emitError(errorMessage(err));
       this.stateMachine.dispatch({ type: "ERROR" });
+      // See entryIndex's doc comment above — without this, a pending
+      // bubble whose turn blew up before ever reaching speakPartsWithReveal
+      // (or partway through it) is left showing "..." forever, even though
+      // the error toast and busy=false already correctly fired.
+      if (entryIndex !== undefined) {
+        const orphaned = this.entries[entryIndex];
+        if (orphaned?.role === "tutor" && orphaned.pending) {
+          this.replaceEntry(entryIndex, { role: "tutor", response: orphaned.response });
+        }
+      }
     } finally {
       this.setBusy(false);
     }
@@ -877,7 +897,15 @@ export class ConversationOrchestrator {
     opts: { after?: () => Promise<void> } = {}
   ): Promise<void> {
     const nonEmpty = parts.filter((p) => p.text.trim().length > 0);
-    if (nonEmpty.length === 0 && !opts.after) return;
+    if (nonEmpty.length === 0 && !opts.after) {
+      // No audio ever played, so there's no "start" event to drive the
+      // usual SPEECH_START -> SPEECH_END path — RESET is the one
+      // transition guaranteed to work from any state (see
+      // CharacterStateMachine.dispatch), so the avatar doesn't get stuck
+      // showing "thinking" forever with nothing left to wait on.
+      this.stateMachine.dispatch({ type: "RESET" });
+      return;
+    }
 
     for (const part of nonEmpty) {
       await this.speech.speak(part.text, { lang: part.lang });
@@ -905,6 +933,9 @@ export class ConversationOrchestrator {
     const nonEmpty = parts.filter((p) => p.text.trim().length > 0);
     if (nonEmpty.length === 0 && !opts.after) {
       this.replaceEntry(entryIndex, { role: "tutor", response });
+      // See speakParts's matching branch for why RESET (not SPEECH_END,
+      // which is a no-op from "thinking" — see PERSISTENT_TRANSITIONS).
+      this.stateMachine.dispatch({ type: "RESET" });
       return;
     }
 

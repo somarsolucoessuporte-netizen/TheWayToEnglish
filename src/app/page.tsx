@@ -782,12 +782,6 @@ export default function Page() {
                   </div>
                 )}
 
-                {started && (
-                  <div className="avatar-ui">
-                    <div className="avatar-state">{stateLabel}</div>
-                  </div>
-                )}
-
                 {/* Absolute within .stage (not the page-level fixed dock
                     mobile uses below) — desktop's avatar only occupies
                     this left column, not the full viewport, so centering

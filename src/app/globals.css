@@ -252,36 +252,6 @@ body {
   will-change: opacity;
 }
 
-.avatar-ui {
-  position: absolute;
-  left: 12px;
-  bottom: 12px;
-  right: 12px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 8px;
-  padding: 12px;
-  border-radius: 16px;
-  background: rgba(0, 0, 0, 0.4);
-  border: 1px solid var(--stroke);
-  backdrop-filter: blur(8px);
-  z-index: 3;
-}
-
-.avatar-state {
-  font-size: 11px;
-  color: var(--muted);
-  text-align: center;
-}
-
-.avatar-actions {
-  display: flex;
-  justify-content: center;
-  gap: 10px;
-  flex-wrap: wrap;
-}
-
 .chat {
   display: flex;
   flex-direction: column;
