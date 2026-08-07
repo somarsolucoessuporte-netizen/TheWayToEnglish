@@ -1,69 +1,88 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import type { AvatarEngine } from "@/core/avatar-engine/AvatarEngine";
-import type { CharacterState } from "@/core/character-state-machine/stateMachine";
+import type { AvatarEngine, AvatarVideoState } from "@/core/avatar-engine/AvatarEngine";
+
+/** Which clip backs each video state, and whether it loops — see
+ * public/avatar/. Only "praise" doesn't loop (see the play/pause effect
+ * below): it's a one-shot reaction, not an ambient idle-style clip. */
+const VIDEO_CLIPS: { state: AvatarVideoState; src: string; loop: boolean }[] = [
+  { state: "idle", src: "/avatar/idle.mp4", loop: true },
+  { state: "listening", src: "/avatar/listening.mp4", loop: true },
+  { state: "thinking", src: "/avatar/thinking.mp4", loop: true },
+  { state: "speaking", src: "/avatar/speaking.mp4", loop: true },
+  { state: "praise", src: "/avatar/praise.mp4", loop: false },
+];
 
 /**
- * Two elements stacked in the same frame, crossfading via opacity:
- * idle.png (a real frame extracted from speaking.mp4 itself — see
- * public/avatar/_old_sprites/ for the retired 9-sprite PNG system this
- * replaced) for every non-speaking state, and the looping speaking video
- * while "speaking". Because idle.png comes from the video itself, the
- * 150ms crossfade (see .avatar-sprite-layer) has no lighting/framing/scale
- * mismatch to hide — unlike the old sprite set, which was assembled from
- * different rows of a source grid with visible micro-differences between
- * frames.
+ * Five <video> elements stacked in the same frame, all mounted from the
+ * start and crossfading via opacity (see .avatar-sprite-layer's
+ * transition) — only the active AvatarVideoState (see AvatarEngine) is at
+ * opacity 1. The 4 loopable clips (idle/listening/thinking/speaking) play
+ * continuously in the background even while invisible: calling play() at
+ * the moment of a state switch is what causes a visible stutter, so
+ * autoplay+loop on all 4 from mount is what makes switching between them
+ * instant, just a crossfade with nothing to wait on.
  *
- * Play/pause is driven ONLY by the "speaking" CharacterState, which is
- * itself driven only by real SpeechProvider "start"/"end" audio events —
- * never a timer or an estimated duration (see orchestrator's
- * speech.on("start", ...) handler and speakParts). That state already
- * spans an entire multi-part turn (a bilingual reply's English+Portuguese
- * parts, or a correction's full "hear it, repeat it" pronunciation drill)
- * as ONE continuous "speaking" stretch — speakParts dispatches SPEECH_END
- * only once, after every part is done — so the video is never restarted
- * mid-turn, only at the true start and true end of one.
+ * praise is different — it's a one-shot reaction, not an ambient loop.
+ * See the effect below: entering "praise" resets it to frame 0 and plays
+ * it once; leaving pauses it (wherever it got to) so a later praise
+ * always restarts clean instead of resuming mid-clip or replaying a
+ * frozen last frame. CharacterStateMachine's transient timer (~2s — see
+ * page.tsx's CharacterStateMachine construction) is what actually reverts
+ * the character state afterward; this component only reacts to it.
+ *
+ * All 5 videos are muted — both because none of them are supposed to be
+ * heard (their own audio tracks are stripped at the source anyway, see
+ * public/avatar/ — muted is belt-and-suspenders) and because autoplay
+ * without a user gesture is only allowed at all for muted video.
+ *
+ * If a specific clip fails to load (network hiccup, bad file), that
+ * state's video is treated as permanently broken for this session and
+ * idle is shown instead whenever that state would otherwise be active —
+ * never a blank/broken video.
  */
 export function Avatar({ engine }: { engine: AvatarEngine }) {
-  const [state, setState] = useState<CharacterState>(engine.getCurrentState());
-  const videoRef = useRef<HTMLVideoElement>(null);
+  const [videoState, setVideoState] = useState<AvatarVideoState>(engine.getVideoState());
+  const [failedStates, setFailedStates] = useState<ReadonlySet<AvatarVideoState>>(new Set());
+  const praiseVideoRef = useRef<HTMLVideoElement>(null);
 
-  useEffect(() => engine.subscribe(setState), [engine]);
+  useEffect(() => engine.subscribe(setVideoState), [engine]);
 
-  const isSpeaking = state === "speaking";
+  // Falls back to "idle" for a state whose clip failed to load — see this
+  // component's doc comment. Doesn't fall back FROM idle itself (nothing
+  // left to fall back to).
+  const effectiveState = videoState !== "idle" && failedStates.has(videoState) ? "idle" : videoState;
 
   useEffect(() => {
-    const video = videoRef.current;
+    const video = praiseVideoRef.current;
     if (!video) return;
-    if (isSpeaking) {
+    if (effectiveState === "praise") {
       video.currentTime = 0;
       void video.play().catch(() => {});
     } else {
       video.pause();
-      video.currentTime = 0;
     }
-  }, [isSpeaking]);
+  }, [effectiveState]);
 
   return (
     <div className="avatar-frame">
-      <img
-        src="/avatar/idle.png"
-        alt=""
-        draggable={false}
-        className="avatar-sprite-layer"
-        style={{ opacity: isSpeaking ? 0 : 1 }}
-      />
-      <video
-        ref={videoRef}
-        src="/avatar/speaking.mp4"
-        loop
-        muted
-        playsInline
-        preload="auto"
-        className="avatar-sprite-layer"
-        style={{ opacity: isSpeaking ? 1 : 0 }}
-      />
+      {VIDEO_CLIPS.map(({ state, src, loop }) => (
+        <video
+          key={state}
+          ref={state === "praise" ? praiseVideoRef : undefined}
+          src={src}
+          poster="/avatar/poster.jpg"
+          loop={loop}
+          autoPlay={loop} // praise is started/reset imperatively, not on mount
+          muted
+          playsInline
+          preload="auto"
+          className="avatar-sprite-layer"
+          style={{ opacity: effectiveState === state ? 1 : 0 }}
+          onError={() => setFailedStates((prev) => new Set(prev).add(state))}
+        />
+      ))}
     </div>
   );
 }

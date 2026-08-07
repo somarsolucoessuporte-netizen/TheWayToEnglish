@@ -212,9 +212,10 @@ body {
   animation: avatarBreathe 4200ms ease-in-out infinite;
 }
 
-/* The PNG-swap avatar has no per-layer rig to animate, so idle "aliveness"
-   (spec 10.2: visible within the first second, even with no interaction)
-   comes from this subtle breathing scale on the whole frame instead. */
+/* A subtle breathing scale on the whole frame, layered on top of
+   whichever avatar video is actually playing — idle "aliveness" (spec
+   10.2: visible within the first second, even with no interaction)
+   independent of what the video itself is doing. */
 @keyframes avatarBreathe {
   0%,
   100% {
@@ -234,12 +235,10 @@ body {
   object-fit: cover;
   object-position: top;
   image-rendering: auto;
-  /* idle.png is a frame extracted from speaking.mp4 itself (see
-     public/avatar/_old_sprites/ for the retired 9-sprite set this
-     replaced, which needed a longer/eased crossfade to hide mismatches
-     between separately-generated frames) — same lighting, framing and
-     scale, so a short linear fade is enough to hide the switch. */
-  transition: opacity 150ms linear;
+  /* All 5 clips (see Avatar.tsx) are stills of the same character, shot
+     the same way — same lighting, framing and scale — so a plain opacity
+     crossfade is enough to hide the switch, no need to mask a hard cut. */
+  transition: opacity 220ms ease-in-out;
 }
 
 .avatar-ui {

@@ -21,9 +21,10 @@ export interface SpeechProvider {
   isSpeaking(): boolean;
   on(event: SpeechEvent, cb: (e?: unknown) => void): () => void;
   /**
-   * Exposes the underlying <audio> element currently playing speech, if any.
-   * Used by the avatar engine to drive mouth-shape selection from real
-   * audio amplitude (AnalyserNode) instead of a blind timer.
+   * Exposes the underlying <audio> element currently playing speech, if
+   * any. Used by the orchestrator's text-reveal sync (see
+   * speakOnePartWithReveal) to read the real `.duration` and pace how
+   * quickly words are revealed against it, instead of guessing.
    */
   getAudioElement?(): HTMLAudioElement | null;
   /**

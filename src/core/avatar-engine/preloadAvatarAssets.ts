@@ -1,27 +1,20 @@
-/**
- * Decodes idle.png via Image().onload — used by the app's boot loading gate
- * (see app/page.tsx) so the resting frame isn't still loading when the
- * avatar first mounts. Never rejects: a failed load still resolves (the
- * <img> in Avatar.tsx will just show a broken image, which is a smaller
- * problem than hanging the boot gate forever over one asset).
- */
-export function preloadAvatarImage(): Promise<void> {
-  return new Promise<void>((resolve) => {
-    const img = new Image();
-    img.onload = () => resolve();
-    img.onerror = () => resolve();
-    img.src = "/avatar/idle.png";
-  });
-}
+import type { AvatarVideoState } from "./AvatarEngine";
+
+/** Every clip the avatar can show — see public/avatar/ and Avatar.tsx's
+ * VIDEO_CLIPS. Preloaded together during the boot loading screen (see
+ * page.tsx's runBoot) so switching between them is always an instant
+ * crossfade, never a network wait mid-conversation. */
+const AVATAR_VIDEO_STATES: AvatarVideoState[] = ["idle", "listening", "thinking", "speaking", "praise"];
 
 /**
- * Buffers speaking.mp4 up to "canplaythrough" (enough that it can play
- * through without stalling for more data) — used alongside
- * preloadAvatarImage by the boot gate. Resolves once ready, or after
+ * Buffers one avatar clip up to "canplaythrough" (enough that it can play
+ * through without stalling for more data). Resolves once ready, or after
  * `timeoutMs` (a slow connection shouldn't hang the loading screen
- * forever) — never rejects.
+ * forever) — never rejects, even on a genuine load error: Avatar.tsx's
+ * own per-video onError handler is what falls back to idle for a clip
+ * that's actually broken, not the boot gate refusing to release the app.
  */
-export function preloadAvatarVideo(timeoutMs = 5000): Promise<void> {
+function preloadAvatarVideo(state: AvatarVideoState, timeoutMs = 5000): Promise<void> {
   return new Promise<void>((resolve) => {
     const video = document.createElement("video");
     video.preload = "auto";
@@ -37,7 +30,13 @@ export function preloadAvatarVideo(timeoutMs = 5000): Promise<void> {
     };
     video.addEventListener("canplaythrough", finish);
     video.addEventListener("error", finish);
-    video.src = "/avatar/speaking.mp4";
+    video.src = `/avatar/${state}.mp4`;
     window.setTimeout(finish, timeoutMs);
   });
+}
+
+/** Preloads all 5 avatar clips in parallel — see preloadAvatarVideo.
+ * Resolves once every one has settled (loaded, errored, or timed out). */
+export function preloadAllAvatarVideos(timeoutMs = 5000): Promise<void> {
+  return Promise.all(AVATAR_VIDEO_STATES.map((state) => preloadAvatarVideo(state, timeoutMs))).then(() => undefined);
 }

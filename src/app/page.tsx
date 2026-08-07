@@ -7,7 +7,7 @@ import { DEMO_STUDENTS, type DemoStudent } from "@/app-config/demo-students";
 import { getLessonByCode, type CurriculumLesson } from "@/app-config/curriculum";
 import { aiProvider, speechProvider, sttProvider } from "@/app-config/providers";
 import { AvatarEngine } from "@/core/avatar-engine/AvatarEngine";
-import { preloadAvatarImage, preloadAvatarVideo } from "@/core/avatar-engine/preloadAvatarAssets";
+import { preloadAllAvatarVideos } from "@/core/avatar-engine/preloadAvatarAssets";
 import { ensureAudioContextReady } from "@/core/audio/warmUpAudioContext";
 import { warmUpTts } from "@/core/speech/warmUpTts";
 import { CharacterStateMachine, type CharacterState } from "@/core/character-state-machine/stateMachine";
@@ -42,16 +42,16 @@ const HEALTH_CHECK_TIMEOUT_MS = 5000;
  * it) take — must match .loading-screen's transition and .app-fade-in's
  * animation duration in globals.css. */
 const BOOT_FADE_MS = 400;
-/** Safety net: if the five boot steps below haven't ALL settled by this
+/** Safety net: if the four boot steps below haven't ALL settled by this
  * point, stop waiting and show the "connection is slow, retry?" screen
  * instead of leaving the student staring at a progress bar forever. */
 const BOOT_TIMEOUT_MS = 8000;
 /** Small buffer after the demo-student click, before the tutor's opening
- * line starts — gives the avatar's just-mounted <img> elements a beat to
- * finish painting (they're already preloaded/decoded by the boot gate, but
- * layout/paint of a freshly-mounted element can still lag a frame or two)
- * so the first line of speech never starts before the avatar is visually
- * settled. */
+ * line starts — gives the avatar's just-mounted <video> elements a beat to
+ * finish painting (they're already preloaded to canplaythrough by the boot
+ * gate, but layout/paint of freshly-mounted elements can still lag a frame
+ * or two) so the first line of speech never starts before the avatar is
+ * visually settled. */
 const PRE_KICKOFF_DELAY_MS = 500;
 
 /** GET /api/chat as a lightweight readiness probe — same endpoint the app
@@ -70,20 +70,22 @@ async function checkApiHealth(timeoutMs: number): Promise<boolean> {
   }
 }
 
-/** The five things the boot gate waits on, in parallel, before releasing
+/** The four things the boot gate waits on, in parallel, before releasing
  * the app — see runBoot. Each flag flips true independently as its own
- * step settles, driving both the progress bar and the staged status text. */
+ * step settles, driving both the progress bar and the staged status text.
+ * avatarVideos covers all 5 avatar clips together (see
+ * preloadAllAvatarVideos) — they're preloaded as one batch, not tracked
+ * individually, since the app has nothing meaningful to show for "3 of 5
+ * ready" beyond the single "Carregando a professora..." status line. */
 interface BootAssets {
-  avatarImage: boolean;
-  avatarVideo: boolean;
+  avatarVideos: boolean;
   ttsWarm: boolean;
   audioCtx: boolean;
   chatHealth: boolean;
 }
 
 const INITIAL_BOOT_ASSETS: BootAssets = {
-  avatarImage: false,
-  avatarVideo: false,
+  avatarVideos: false,
   ttsWarm: false,
   audioCtx: false,
   chatHealth: false,
@@ -103,7 +105,13 @@ const STATE_LABELS: Record<CharacterState, string> = {
 
 export default function Page() {
   const avatarEngine = useMemo(() => new AvatarEngine(), []);
-  const stateMachine = useMemo(() => new CharacterStateMachine(), []);
+  // 2000ms (not the default 1500) so the praise video (see Avatar.tsx) —
+  // a one-shot reaction clip, not a loop — gets its full "fica visível
+  // por 2 segundos" before reverting. Also applies to the "correction"
+  // transient, which is harmless since it doesn't have a dedicated video
+  // (falls back to idle — see AvatarEngine.getVideoState) and isn't
+  // timing-sensitive the way praise is.
+  const stateMachine = useMemo(() => new CharacterStateMachine({ transientDurationMs: 2000 }), []);
   const orchestrator = useMemo(
     () =>
       new ConversationOrchestrator({
@@ -202,14 +210,14 @@ export default function Page() {
     setTipsAttention("normal");
   }
 
-  // Boot gate: the avatar and chat never mount until ALL FIVE of idle.png
-  // decoded, speaking.mp4 playable-through, a real /api/tts warm-up call
-  // (pre-empting the serverless cold start so the tutor's first spoken
-  // line isn't the one that pays for it), a ready AudioContext, and
-  // /api/chat answering 200 — mounting earlier is what used to make the
-  // avatar and audio try to start against half-loaded assets or a cold
-  // API. "fading" is a brief transitional state: the loading screen fades
-  // out while the just-mounted app fades in underneath it (see
+  // Boot gate: the avatar and chat never mount until ALL FOUR of the 5
+  // avatar clips playable-through (see preloadAllAvatarVideos), a real
+  // /api/tts warm-up call (pre-empting the serverless cold start so the
+  // tutor's first spoken line isn't the one that pays for it), a ready
+  // AudioContext, and /api/chat answering 200 — mounting earlier is what
+  // used to make the avatar and audio try to start against half-loaded
+  // assets or a cold API. "fading" is a brief transitional state: the
+  // loading screen fades out while the just-mounted app fades in underneath it (see
   // .loading-screen-fadeout / .app-fade-in in globals.css). "timeout"
   // fires if boot is still incomplete after BOOT_TIMEOUT_MS — distinct
   // from "error" (a step definitively failed) even though both show a
@@ -250,9 +258,8 @@ export default function Page() {
     }, BOOT_TIMEOUT_MS);
 
     (async () => {
-      const [, , , , chatOk] = await Promise.all([
-        preloadAvatarImage().then(() => markDone("avatarImage")),
-        preloadAvatarVideo().then(() => markDone("avatarVideo")),
+      const [, , , chatOk] = await Promise.all([
+        preloadAllAvatarVideos().then(() => markDone("avatarVideos")),
         // Best-effort: still drives the progress bar and status text, but
         // a failed pre-warm (missing API key, provider briefly down)
         // degrades to a per-turn voice error instead of blocking the
@@ -305,7 +312,7 @@ export default function Page() {
   // flag is true this naturally lands on "Tudo pronto!", covering the
   // brief "fading" state too without needing a separate branch for it.
   const bootStatusText =
-    !(bootAssets.avatarImage && bootAssets.avatarVideo)
+    !bootAssets.avatarVideos
       ? branding.copy.bootLoadingAvatar
       : !(bootAssets.ttsWarm && bootAssets.audioCtx)
         ? branding.copy.bootLoadingVoice
@@ -353,7 +360,10 @@ export default function Page() {
     const unsubState = orchestrator.onStateChange(setCharacterState);
     const unsubError = orchestrator.onError((message) => console.error("[conversation]", message));
     const unsubApiStatus = orchestrator.onApiStatus(setConnected);
-    const unsubTranscribing = orchestrator.onTranscribing(setTranscribing);
+    const unsubTranscribing = orchestrator.onTranscribing((value) => {
+      setTranscribing(value);
+      avatarEngine.setTranscribing(value); // see AvatarEngine.getVideoState's transcribing override
+    });
 
     return () => {
       unsubEntries();
@@ -362,7 +372,7 @@ export default function Page() {
       unsubApiStatus();
       unsubTranscribing();
     };
-  }, [orchestrator]);
+  }, [orchestrator, avatarEngine]);
 
   async function handleStudentPick(student: DemoStudent) {
     // The demo-login buttons are already mounted during "fading" (for the
