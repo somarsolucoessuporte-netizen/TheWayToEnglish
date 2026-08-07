@@ -810,35 +810,35 @@ body {
 /* Mobile layout (<768px — see components/useIsMobile.ts, which decides in
    JS whether MobileVoiceScreen or the desktop .main layout renders at
    all, so these rules never have to fight the desktop ones via a CSS
-   breakpoint). The chat log is always visible and always the thing that
-   scrolls — only the avatar, time bar and footer are pinned. This is a
-   language lesson: the student needs to see the spelling of what's being
-   said, not just hear it, so the transcript is never hidden behind a
-   button. */
+   breakpoint). The avatar fills the whole screen; the transcript and text
+   input live in a bottom sheet ("gaveta") that slides up over it instead
+   of being always visible — see MobileVoiceScreen's doc comment. */
 .mobile-screen {
   position: relative;
   flex: 1;
-  display: flex;
-  flex-direction: column;
   min-height: 0;
   overflow: hidden;
 }
 
-.mobile-avatar-wrap {
-  position: relative;
-  flex: 0 0 40vh;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  overflow: hidden;
+.mobile-avatar-fullscreen {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
 }
 
-.mobile-avatar-wrap .avatar-frame {
-  max-width: 78vw;
+.mobile-avatar-fullscreen .avatar-frame {
+  position: absolute;
+  inset: 0;
+  width: 100%;
   height: 100%;
-  max-height: 100%;
-  width: auto;
-  aspect-ratio: 242 / 382;
+  max-width: none;
+  aspect-ratio: auto;
+  border-radius: 0;
+  border: none;
+  margin: 0;
+  /* The subtle breathing scale is a nice touch on a framed portrait, but
+     full-bleed it would reveal edges/scale the whole viewport — off here. */
+  animation: none;
 }
 
 .mobile-login {
@@ -852,91 +852,160 @@ body {
   background: linear-gradient(rgba(0, 0, 0, 0), rgba(0, 0, 0, 0.6) 70%);
 }
 
-.mobile-timer-row {
-  flex-shrink: 0;
+.mobile-float-header {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 6;
   display: flex;
   align-items: center;
-  padding: 6px 12px;
+  gap: 10px;
+  padding: calc(env(safe-area-inset-top, 0px) + 10px) 14px 10px;
+  background: rgba(0, 0, 0, 0.55);
+  backdrop-filter: blur(8px);
 }
 
-.mobile-timer-row .lesson-timer {
+.mobile-float-title {
+  flex: none;
+  font-weight: 800;
+  font-size: 14px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 45vw;
+}
+
+.mobile-float-header .lesson-timer {
   flex: 1;
   padding: 0;
   border-bottom: none;
   background: none;
 }
 
+.mobile-time-notice-float {
+  position: absolute;
+  top: 52px;
+  left: 14px;
+  right: 14px;
+  z-index: 5;
+  padding: 6px 12px;
+  border-radius: 10px;
+  font-size: 12px;
+  text-align: center;
+  color: var(--text);
+  background: rgba(0, 0, 0, 0.55);
+  backdrop-filter: blur(8px);
+}
+
+/* Sits just above the floating controls (see .mobile-avatar-controls'
+   height budget below) — tapping it opens the drawer, same as the handle. */
+.mobile-caption-float {
+  position: absolute;
+  left: 14px;
+  right: 14px;
+  bottom: calc(env(safe-area-inset-bottom, 0px) + 92px);
+  z-index: 4;
+  padding: 10px 14px;
+  border-radius: 14px;
+  background: rgba(0, 0, 0, 0.55);
+  backdrop-filter: blur(8px);
+  font-size: 15px;
+  line-height: 1.4;
+  color: var(--text);
+  cursor: pointer;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  transition: opacity 200ms ease;
+}
+
+/* Falar + tips, floating over the avatar — hidden while the drawer is
+   open (see MobileVoiceScreen: not rendered at all then), matching the
+   spec's two mockup states exactly and avoiding any overlap with the
+   drawer's own bottom-edge input row. */
+.mobile-avatar-controls {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 6;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 10px 14px calc(env(safe-area-inset-bottom, 0px) + 14px);
+}
+
+.mobile-avatar-controls .force-send-btn {
+  min-height: 56px;
+  min-width: 160px;
+  font-size: 16px;
+  border-radius: 999px;
+}
+
+.mobile-drawer {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 10;
+  height: 70dvh;
+  display: flex;
+  flex-direction: column;
+  background: rgba(10, 10, 10, 0.92);
+  backdrop-filter: blur(20px);
+  border-radius: 20px 20px 0 0;
+  box-shadow: 0 -8px 24px rgba(0, 0, 0, 0.35);
+  transform: translateY(100%);
+  transition: transform 300ms cubic-bezier(0.32, 0.72, 0, 1);
+}
+
+.mobile-drawer-handle {
+  flex: none;
+  display: flex;
+  justify-content: center;
+  padding: 10px 0 8px;
+  cursor: grab;
+  touch-action: none;
+}
+
+.mobile-drawer-handle-bar {
+  width: 40px;
+  height: 4px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.3);
+}
+
+.mobile-drawer-content {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+
 /* Reuses .chat-log (flex:1, overflow:auto — see the shared rule above)
    as-is; these are additive mobile-only overrides. min-height:0 is load
    bearing here — without it a flex child's default min-height:auto can
-   stop it from ever shrinking enough to actually scroll, and the footer
-   would get pushed off screen instead. */
-.mobile-screen .chat-log {
+   stop it from ever shrinking enough to actually scroll. */
+.mobile-drawer .chat-log {
   min-height: 0;
   font-size: 15px;
   line-height: 1.5;
   -webkit-overflow-scrolling: touch;
 }
 
-.mobile-input-row {
-  flex-shrink: 0;
-  display: flex;
-  gap: 8px;
-  padding: 10px 14px;
-  border-top: 1px solid var(--stroke);
-  background: rgba(0, 0, 0, 0.25);
-}
-
-.mobile-footer {
-  flex-shrink: 0;
-  min-height: 72px;
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  padding: 10px 14px;
-  border-top: 1px solid var(--stroke);
-  background: rgba(0, 0, 0, 0.35);
-  backdrop-filter: blur(8px);
-}
-
-.mobile-footer .force-send-btn {
-  flex: 1;
-  min-height: 56px;
-  font-size: 16px;
-  border-radius: 999px;
-}
-
-.mobile-footer-icons {
+.mobile-drawer-input-row {
   flex: none;
   display: flex;
-  align-items: center;
   gap: 8px;
+  padding: 10px 14px calc(env(safe-area-inset-bottom, 0px) + 10px);
+  border-top: 1px solid var(--stroke);
 }
 
-.mobile-footer-icons .tips-btn-expanded {
-  max-width: 140px;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.mobile-footer-icon-btn {
-  flex: none;
-  width: 48px;
-  height: 48px;
-  border-radius: 999px;
-  border: 1px solid var(--stroke);
-  background: rgba(255, 255, 255, 0.06);
-  color: var(--text);
-  cursor: pointer;
-  font-size: 18px;
-  line-height: 1;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.mobile-footer-icon-btn:hover {
-  background: rgba(255, 255, 255, 0.1);
+.mobile-screen .lesson-complete-overlay {
+  z-index: 50;
 }
 
 .mini-correction {

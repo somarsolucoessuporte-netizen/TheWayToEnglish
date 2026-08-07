@@ -426,16 +426,21 @@ export default function Page() {
 
       {(bootState === "fading" || bootState === "ready") && (
         <div className={`app-shell${bootState === "fading" ? " app-fade-in" : ""}`}>
-          <header className="topbar">
-            <div className="brand">
-              <div className="dot" />
-              <div className="brand-text">
-                <div className="title">{branding.productName}</div>
-                <div className="subtitle">{branding.companyName}</div>
+          {/* Mobile renders its own floating header over the full-screen
+              avatar (see MobileVoiceScreen) — this bar would otherwise eat
+              into the 100dvh the avatar is supposed to fill entirely. */}
+          {!isMobile && (
+            <header className="topbar">
+              <div className="brand">
+                <div className="dot" />
+                <div className="brand-text">
+                  <div className="title">{branding.productName}</div>
+                  <div className="subtitle">{branding.companyName}</div>
+                </div>
               </div>
-            </div>
-            <StatusPills connected={connected} stateLabel={stateLabel} />
-          </header>
+              <StatusPills connected={connected} stateLabel={stateLabel} />
+            </header>
+          )}
 
           {isMobile ? (
             <MobileVoiceScreen
