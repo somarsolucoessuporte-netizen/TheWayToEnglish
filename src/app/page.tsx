@@ -486,6 +486,23 @@ export default function Page() {
     };
   }, [characterState]);
 
+  // Stops any playing TTS audio and closes the mic the instant the page is
+  // about to go away (reload, navigation, tab close) or this component
+  // unmounts — see orchestrator.stopAllMedia's doc comment for why this
+  // couldn't just be a generic `document.querySelectorAll('audio')` sweep
+  // in this codebase. "pagehide" (not just "beforeunload") is what also
+  // catches iOS Safari, which doesn't reliably fire "beforeunload".
+  useEffect(() => {
+    const stopMediaOnUnload = () => orchestrator.stopAllMedia();
+    window.addEventListener("beforeunload", stopMediaOnUnload);
+    window.addEventListener("pagehide", stopMediaOnUnload);
+    return () => {
+      window.removeEventListener("beforeunload", stopMediaOnUnload);
+      window.removeEventListener("pagehide", stopMediaOnUnload);
+      stopMediaOnUnload();
+    };
+  }, [orchestrator]);
+
   useEffect(() => {
     const unsubEntries = orchestrator.onEntriesChange(setEntries);
     const unsubState = orchestrator.onStateChange(setCharacterState);

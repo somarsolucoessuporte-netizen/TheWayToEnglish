@@ -561,6 +561,29 @@ export class ConversationOrchestrator {
   }
 
   /**
+   * Immediately silences any in-flight TTS audio and closes the mic,
+   * without touching conversation state (history, entries, busy, lesson
+   * progress) — unlike reset()/forceReset(), which are for "start fresh"
+   * or "something hung" situations where clearing that state is the
+   * point. This is for the one moment where none of that state matters
+   * because the JS context is about to be torn down anyway: a page
+   * reload/navigation-away (see page.tsx's beforeunload/pagehide
+   * listener) or this component unmounting. Without it, OpenAITTSProvider's
+   * `Audio` objects (never attached to the DOM, so a naive
+   * `document.querySelectorAll('audio')` sweep wouldn't even find them —
+   * see cancel()) and WhisperSTTProvider's open `MediaStream`/AudioContext
+   * would otherwise keep running for whatever few hundred ms the browser
+   * takes to actually unload the page, which is what let the tutor's
+   * question keep audibly playing through a reload.
+   */
+  stopAllMedia(): void {
+    this.speech.cancel();
+    if (this.stt.abort) this.stt.abort();
+    else void this.stt.stop().catch(() => {});
+    this.stopIdleClock();
+  }
+
+  /**
    * Updates the consecutive-attempt tracking used for AIOptions.attemptCount
    * (see the fields' doc comments) from the response that just arrived —
    * called right after every ai.send(), so the count sent on the NEXT call
