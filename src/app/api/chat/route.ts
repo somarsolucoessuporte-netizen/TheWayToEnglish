@@ -27,6 +27,7 @@ interface ChatRequestBody {
   detectedLanguage?: string;
   studentName?: string;
   currentLessonCode?: string;
+  timeWarning?: boolean;
 }
 
 const MAX_NAME_LEN = 80;
@@ -63,6 +64,15 @@ export async function POST(req: NextRequest) {
     });
   }
 
+  if (body.timeWarning) {
+    hints.push({
+      role: "system",
+      content:
+        "Note: only about 3 minutes remain in this lesson (see TIME MANAGEMENT). Steer the " +
+        "conversation toward a natural wrap-up now — don't start new topics or new vocabulary.",
+    });
+  }
+
   const studentName = body.studentName?.slice(0, MAX_NAME_LEN).trim();
   const lesson = body.currentLessonCode ? getLessonByCode(body.currentLessonCode) : undefined;
 
@@ -95,6 +105,7 @@ export async function POST(req: NextRequest) {
         detectedLanguage: body.detectedLanguage,
         studentName,
         currentLessonCode: body.currentLessonCode,
+        timeWarning: body.timeWarning,
       }
     );
     return NextResponse.json(TutorResponseSchema.parse(response));

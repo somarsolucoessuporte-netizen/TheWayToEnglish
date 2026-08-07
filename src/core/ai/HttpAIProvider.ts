@@ -19,6 +19,7 @@ export class HttpAIProvider implements AIProvider {
         detectedLanguage: opts?.detectedLanguage,
         studentName: opts?.studentName,
         currentLessonCode: opts?.currentLessonCode,
+        timeWarning: opts?.timeWarning,
       }),
     });
 

@@ -7,6 +7,9 @@ export interface CurriculumLesson {
   lessonCode: string;
   title: string;
   type: string;
+  /** Allotted time for the lesson timer bar (see LessonTimer) — defaults
+   * to 15 in every current lesson, but can vary per lesson. */
+  durationMinutes: number;
   vocabulary: string[];
   grammarPoints: string[];
   targetPhrases: string[];

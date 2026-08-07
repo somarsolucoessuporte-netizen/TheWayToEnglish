@@ -54,6 +54,9 @@ export class ConversationOrchestrator {
    * (idle -> startListening) and a manual button click can otherwise both
    * fire while getUserMedia is still resolving from a previous call. */
   private listeningStartInFlight = false;
+  /** Set once by announceTimeWarning() and carried on every subsequent
+   * ai.send() call for the rest of the session — see AIOptions.timeWarning. */
+  private timeWarningActive = false;
 
   private readonly entryListeners = new Set<EntriesListener>();
   private readonly errorListeners = new Set<ErrorListener>();
@@ -223,6 +226,98 @@ export class ConversationOrchestrator {
     // triggers the very first auto-listen via the subscribe hook above.
   }
 
+  /**
+   * Scripted (non-AI) interruption fired once by the lesson timer (see
+   * LessonTimer / page.tsx) when ~3 minutes remain. Speaks a fixed English
+   * heads-up, logs it as a tutor chat entry, and — from this point on —
+   * flags every subsequent ai.send() call with timeWarning: true so the
+   * persona actively wraps the lesson up (see persona.ts's TIME MANAGEMENT
+   * section) instead of starting new ground. Safe to call more than once;
+   * only the first call actually does anything.
+   */
+  async announceTimeWarning(): Promise<void> {
+    if (this.timeWarningActive) return;
+    this.timeWarningActive = true;
+    const response: TutorResponse = {
+      speech: { english: "We have about 3 minutes left. Let's wrap up!", portuguese: "" },
+    };
+    this.pushEntry({ role: "tutor", response });
+    await this.forceAnnounce([{ text: response.speech.english, lang: "en-US" }]);
+    this.maybeAutoRelisten(); // lesson isn't over yet — resume hands-free mode
+  }
+
+  /**
+   * Scripted (non-AI) closing beat fired once by the lesson timer when it
+   * hits 0. Puts the avatar in "praise", speaks the fixed closing lines,
+   * and turns hands-free mode off for good — the completion card (see
+   * page.tsx) takes over from here, not another turn of conversation.
+   */
+  async announceLessonComplete(): Promise<void> {
+    this.voiceModeEnabled = false;
+    const response: TutorResponse = {
+      speech: {
+        english: "Great job today!",
+        portuguese: "Você completou a lição de hoje! Até a próxima.",
+      },
+      praise: true,
+    };
+    this.pushEntry({ role: "tutor", response });
+    await this.forceAnnounce(
+      [
+        { text: response.speech.english, lang: "en-US" },
+        { text: response.speech.portuguese, lang: "pt-BR" },
+      ],
+      { praiseFirst: true }
+    );
+  }
+
+  /**
+   * Cuts into whatever's currently happening (an open recording, mid-think,
+   * mid-speech) and forces a clean path to "speaking" for a scripted
+   * announcement that isn't a reply to anything the student said. RESET
+   * works from any state, so this is the one dispatch sequence guaranteed
+   * to succeed regardless of what the state machine was doing a moment
+   * ago. Guarded by `busy` for the same reason handleUserMessage is: stops
+   * a stray STT "final" event or a manual button click from landing mid-
+   * announcement.
+   */
+  private async forceAnnounce(
+    parts: { text: string; lang: string }[],
+    opts: { praiseFirst?: boolean } = {}
+  ): Promise<void> {
+    this.busy = true;
+    try {
+      if (this.stateMachine.getState() === "listening") {
+        await this.stt.stop().catch(() => {});
+      }
+      this.stateMachine.dispatch({ type: "RESET" }); // -> idle, from any state
+      this.stateMachine.dispatch({ type: "STOP_LISTENING" }); // idle -> thinking
+      if (opts.praiseFirst) await this.enterPraiseBeforeSpeaking();
+      await this.speakParts(parts);
+    } finally {
+      this.busy = false;
+    }
+  }
+
+  /**
+   * Clears all session state back to fresh — called when the student clicks
+   * "Encerrar" on the lesson-complete card to return to the onboarding
+   * screen. Without this, picking a new demo student would carry over the
+   * previous lesson's chat history and entries into the new session.
+   */
+  reset(): void {
+    this.speech.cancel();
+    this.history = [];
+    this.entries = [];
+    for (const cb of this.entryListeners) cb(this.entries);
+    this.busy = false;
+    this.studentName = undefined;
+    this.currentLessonCode = undefined;
+    this.voiceModeEnabled = false;
+    this.timeWarningActive = false;
+    this.stateMachine.dispatch({ type: "RESET" });
+  }
+
   private async handleUserMessage(
     text: string,
     detectedLanguage?: string,
@@ -239,6 +334,7 @@ export class ConversationOrchestrator {
         detectedLanguage,
         studentName: this.studentName,
         currentLessonCode: this.currentLessonCode,
+        timeWarning: this.timeWarningActive,
       });
       this.setApiStatus(true);
 
@@ -280,6 +376,22 @@ export class ConversationOrchestrator {
       this.stateMachine.dispatch({ type: "ERROR" });
     } finally {
       this.busy = false;
+    }
+    // The state machine's own idle -> startListening hook (see constructor)
+    // fires on every dispatch that lands on "idle" — but every dispatch
+    // above happened while `busy` was still true, so startListening()
+    // bailed out each time (see its own busy guard). Nothing dispatches
+    // again after busy flips back to false, so hands-free mode would
+    // otherwise just go silent after this turn. This re-checks once, now
+    // that busy is clear.
+    this.maybeAutoRelisten();
+  }
+
+  /** Restarts hands-free listening if we've actually landed on "idle" and
+   * voice mode is on — see the note above handleUserMessage's call site. */
+  private maybeAutoRelisten(): void {
+    if (this.stateMachine.getState() === "idle" && this.voiceModeEnabled) {
+      void this.startListening();
     }
   }
 

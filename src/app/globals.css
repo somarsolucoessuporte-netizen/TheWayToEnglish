@@ -180,6 +180,7 @@ body {
   backdrop-filter: blur(12px);
   overflow: hidden;
   min-height: 520px;
+  position: relative;
 }
 
 .stage {
@@ -288,6 +289,76 @@ body {
   margin-top: 4px;
   font-size: 12px;
   color: var(--muted);
+}
+
+.lesson-timer {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 14px;
+  border-bottom: 1px solid var(--stroke);
+  background: rgba(0, 0, 0, 0.12);
+}
+
+.lesson-timer-track {
+  flex: 1;
+  height: 8px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.08);
+  overflow: hidden;
+}
+
+.lesson-timer-fill {
+  height: 100%;
+  border-radius: 999px;
+  transition: width 1s linear, background-color 0.3s ease;
+}
+
+.lesson-timer-time {
+  flex: none;
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+  color: var(--muted);
+}
+
+.lesson-complete-overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  background: rgba(0, 0, 0, 0.55);
+}
+
+.lesson-complete-card {
+  width: min(360px, 100%);
+  border-radius: 16px;
+  border: 1px solid var(--stroke);
+  background: #10151c;
+  padding: 20px;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  align-items: center;
+}
+
+.lesson-complete-title {
+  font-size: 18px;
+  font-weight: 800;
+}
+
+.lesson-complete-lesson {
+  font-size: 14px;
+  color: var(--text);
+}
+
+.lesson-complete-meta {
+  font-size: 13px;
+  color: var(--muted);
+  margin-bottom: 6px;
 }
 
 .tips-button {

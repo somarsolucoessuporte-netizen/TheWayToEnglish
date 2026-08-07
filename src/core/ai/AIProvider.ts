@@ -19,6 +19,11 @@ export interface AIOptions {
    * actual current lesson — resolved server-side from the lesson code. */
   studentName?: string;
   currentLessonCode?: string;
+  /** Set once the lesson timer (see LessonTimer / orchestrator.announceTimeWarning)
+   * crosses the 3-minutes-remaining mark, and carried on every turn for the
+   * rest of the session from then on — tells the tutor to actively steer
+   * the conversation toward wrapping up instead of starting new ground. */
+  timeWarning?: boolean;
 }
 
 export interface AIProvider {

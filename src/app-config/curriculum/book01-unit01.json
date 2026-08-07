@@ -7,6 +7,7 @@
       "lessonCode": "3A",
       "title": "Where are you from?",
       "type": "speaking",
+      "durationMinutes": 15,
       "vocabulary": [
         "Brazil",
         "Canada",
@@ -62,6 +63,7 @@
       "lessonCode": "3B",
       "title": "Verb to be with We, You and They (plural pronouns) — Origins and Nationalities",
       "type": "grammar",
+      "durationMinutes": 15,
       "vocabulary": [
         "we",
         "you",
@@ -145,6 +147,7 @@
       "lessonCode": "3C",
       "title": "Continents and Countries",
       "type": "vocabulary",
+      "durationMinutes": 15,
       "vocabulary": [
         "Africa",
         "Morocco",
@@ -231,6 +234,7 @@
       "lessonCode": "3D",
       "title": "Ask about nationalities (Speaking)",
       "type": "speaking",
+      "durationMinutes": 15,
       "vocabulary": [],
       "grammarPoints": [
         "Full verb to be paradigm (I/you/he/she/it/we/you/they) applied to origin questions"
@@ -358,6 +362,7 @@
       "lessonCode": "3E",
       "title": "Vocabulary 2 – Nationalities",
       "type": "vocabulary",
+      "durationMinutes": 15,
       "vocabulary": [
         "Brazilian",
         "Argentinian",
@@ -463,6 +468,7 @@
       "lessonCode": "3F",
       "title": "Ask about Origins and Nationalities – Yes/No Questions",
       "type": "exercise",
+      "durationMinutes": 15,
       "vocabulary": [
         "Chinese",
         "English",
@@ -580,6 +586,7 @@
       "lessonCode": "3G",
       "title": "Grammar: Wh- vs Yes/No Questions",
       "type": "grammar",
+      "durationMinutes": 15,
       "vocabulary": [],
       "grammarPoints": [
         "Wh- questions (WHERE, WHAT, HOW OLD + verb to be + subject)",

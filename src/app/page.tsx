@@ -14,9 +14,19 @@ import { ConversationOrchestrator, type ChatEntry } from "@/core/conversation/or
 import { Avatar } from "@/components/Avatar";
 import { ChatLog } from "@/components/ChatLog";
 import { ForceSendButton } from "@/components/ForceSendButton";
+import { LessonCompleteCard } from "@/components/LessonCompleteCard";
+import { LessonTimer } from "@/components/LessonTimer";
 import { LoadingScreen } from "@/components/LoadingScreen";
 import { StatusPills } from "@/components/StatusPills";
 import { TipsPanel, type TipsAttention } from "@/components/TipsPanel";
+
+/** Lessons without an explicit durationMinutes (shouldn't happen with the
+ * current curriculum data, but a demo prototype's JSON is hand-edited) get
+ * this instead of the timer silently running forever. */
+const DEFAULT_LESSON_DURATION_MIN = 15;
+/** Fires the tutor's scripted "wrap up" heads-up once this many seconds
+ * remain — matches persona.ts's TIME MANAGEMENT section. */
+const TIME_WARNING_THRESHOLD_SECONDS = 180;
 
 /** How long the tutor must sit idle (turn over, student not yet responding)
  * before the tips button starts drawing attention to itself. */
@@ -83,6 +93,47 @@ export default function Page() {
   // the school's academic system are wired in.
   const [started, setStarted] = useState(false);
   const [currentLesson, setCurrentLesson] = useState<CurriculumLesson | undefined>(undefined);
+
+  // Lesson timer: counts down from the lesson's durationMinutes, but only
+  // while the student could actually be interacting (see the ticking
+  // effect below) — time spent waiting on the tutor doesn't count against
+  // them. totalSeconds doubles as "has a lesson actually started" (0 means
+  // no lesson picked yet), which the warning/completion effects rely on.
+  const [totalSeconds, setTotalSeconds] = useState(0);
+  const [remainingSeconds, setRemainingSeconds] = useState(0);
+  const [lessonComplete, setLessonComplete] = useState(false);
+
+  useEffect(() => {
+    if (!started || lessonComplete) return;
+    if (characterState !== "idle" && characterState !== "listening") return;
+    const id = window.setInterval(() => {
+      setRemainingSeconds((prev) => Math.max(0, prev - 1));
+    }, 1000);
+    return () => window.clearInterval(id);
+  }, [started, lessonComplete, characterState]);
+
+  useEffect(() => {
+    if (!started || lessonComplete || totalSeconds === 0) return;
+    if (remainingSeconds <= TIME_WARNING_THRESHOLD_SECONDS && remainingSeconds > 0) {
+      // announceTimeWarning() no-ops after its first real call, so it's
+      // safe to "call again" on every tick while under the threshold.
+      void orchestrator.announceTimeWarning();
+    }
+    if (remainingSeconds <= 0) {
+      setLessonComplete(true);
+      void orchestrator.announceLessonComplete();
+    }
+  }, [remainingSeconds, started, lessonComplete, totalSeconds, orchestrator]);
+
+  function handleEndLesson() {
+    orchestrator.reset();
+    setStarted(false);
+    setCurrentLesson(undefined);
+    setLessonComplete(false);
+    setTotalSeconds(0);
+    setRemainingSeconds(0);
+    setTipsAttention("normal");
+  }
 
   // Boot gate: the avatar and chat never mount until the 9 sprites are
   // decoded, speechSynthesis has voices (or 2s passed), and /api/chat has
@@ -182,8 +233,13 @@ export default function Page() {
       warmUp.volume = 0;
       window.speechSynthesis.speak(warmUp);
     }
+    const lesson = getLessonByCode(student.currentLesson);
+    const seconds = (lesson?.durationMinutes ?? DEFAULT_LESSON_DURATION_MIN) * 60;
     setStarted(true);
-    setCurrentLesson(getLessonByCode(student.currentLesson));
+    setCurrentLesson(lesson);
+    setTotalSeconds(seconds);
+    setRemainingSeconds(seconds);
+    setLessonComplete(false);
     await orchestrator.startLesson({ studentName: student.name, currentLessonCode: student.currentLesson });
   }
 
@@ -299,7 +355,18 @@ export default function Page() {
                 />
               </div>
 
+              {started && <LessonTimer totalSeconds={totalSeconds} remainingSeconds={remainingSeconds} />}
+
               <ChatLog entries={entries} />
+
+              {lessonComplete && currentLesson && (
+                <LessonCompleteCard
+                  lessonCode={currentLesson.lessonCode}
+                  lessonTitle={currentLesson.title}
+                  durationMinutes={currentLesson.durationMinutes}
+                  onClose={handleEndLesson}
+                />
+              )}
 
               <form className="chat-form" onSubmit={handleSubmit}>
                 <input
