@@ -51,6 +51,11 @@ const HEALTH_CHECK_TIMEOUT_MS = 5000;
  * it) take — must match .loading-screen's transition and .app-fade-in's
  * animation duration in globals.css. */
 const BOOT_FADE_MS = 400;
+/** LoadingScreen plays a fixed opening sequence (logo → tagline → tutor
+ * teaser → loader) that takes this long — see components/LoadingScreen.tsx.
+ * Boot is held at "loading" until at least this much time has passed so a
+ * fast boot never cuts that sequence short. */
+const MIN_SPLASH_VISIBLE_MS = 13000;
 /** Safety net: if the four boot steps below haven't ALL settled by this
  * point, stop waiting and show the "connection is slow, retry?" screen
  * instead of leaving the student staring at a progress bar forever. */
@@ -319,6 +324,7 @@ export default function Page() {
   const greetingCacheRef = useRef<Map<string, PrefetchedGreeting | null>>(new Map());
 
   const runBoot = useCallback(() => {
+    const bootStartedAt = Date.now();
     setBootState("loading");
     setBootAssets(INITIAL_BOOT_ASSETS);
     greetingCacheRef.current.clear();
@@ -402,8 +408,16 @@ export default function Page() {
         setBootState("error");
         return;
       }
-      setBootState("fading");
-      window.setTimeout(() => setBootState("ready"), BOOT_FADE_MS);
+      const startFading = () => {
+        setBootState("fading");
+        window.setTimeout(() => setBootState("ready"), BOOT_FADE_MS);
+      };
+      const sinceStart = Date.now() - bootStartedAt;
+      if (sinceStart >= MIN_SPLASH_VISIBLE_MS) {
+        startFading();
+      } else {
+        window.setTimeout(startFading, MIN_SPLASH_VISIBLE_MS - sinceStart);
+      }
     })();
 
     return () => {
