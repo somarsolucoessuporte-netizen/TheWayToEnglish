@@ -228,9 +228,9 @@ export function LoadingScreen({
           inset: 0;
           background: linear-gradient(
             to bottom,
-            rgba(28, 43, 108, 0.55) 0%,
-            rgba(28, 43, 108, 0.25) 50%,
-            rgba(28, 43, 108, 0.7) 100%
+            color-mix(in srgb, var(--brand-navy) 55%, transparent) 0%,
+            color-mix(in srgb, var(--brand-navy) 25%, transparent) 50%,
+            color-mix(in srgb, var(--brand-navy) 70%, transparent) 100%
           );
         }
         .wtes-content {
@@ -329,7 +329,7 @@ export function LoadingScreen({
         .wtes-three-body {
           --uib-size: 72px;
           --uib-speed: 0.8s;
-          --uib-color: #1c2b6c;
+          --uib-color: var(--brand-navy);
           position: relative;
           display: inline-block;
           height: var(--uib-size);

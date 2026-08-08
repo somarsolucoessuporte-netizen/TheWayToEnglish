@@ -1,14 +1,47 @@
 :root {
-  --bg: #0b0f14;
-  --panel: rgba(18, 22, 28, 0.72);
-  --stroke: rgba(255, 255, 255, 0.08);
-  --text: #eef1f6;
-  --muted: rgba(238, 241, 246, 0.72);
-  --accent: #3ba9a0;
-  --accent-soft: rgba(59, 169, 160, 0.35);
-  --good: #31d158;
+  /* Brand palette (from the logo) */
+  --brand-navy: #1c2b6c;
+  --brand-red: #dc231e;
+  --brand-gray: #a9a9a9;
+
+  /* Light theme surfaces */
+  --bg-page: #f7f8fa;
+  --bg-surface: #ffffff;
+  --border: #e3e6ec;
+
+  /* Text */
+  --text-primary: #1c2b6c;
+  --text-secondary: #5a6472;
+  --text-muted: #8b94a3;
+
+  /* Semantic */
+  --accent: #1c2b6c;
+  --success: #1a7f4b;
+  --error: #dc231e;
   --warn: #e0a94a;
-  --bubble-student: rgba(0, 0, 0, 0.22);
+
+  /* Legacy token names kept so every existing var(--x) call site below
+     still resolves correctly under the light theme — same values as
+     the brand/bg/text tokens above, just under the names already used
+     throughout this file. */
+  --bg: var(--bg-page);
+  --panel: var(--bg-surface);
+  --stroke: var(--border);
+  --text: var(--text-primary);
+  --muted: var(--text-secondary);
+  --accent-soft: color-mix(in srgb, var(--brand-navy) 30%, transparent);
+  --good: var(--success);
+  --bubble-student: var(--brand-navy);
+
+  /* The avatar panel is the one area allowed to stay dark (see .stage /
+     .avatar-frame / .mobile-avatar-fullscreen and the floating chrome
+     docked directly over the live video) — its own small token set,
+     kept separate from the light tokens above. */
+  --avatar-bg: #0a0a0f;
+  --avatar-text: rgba(255, 255, 255, 0.92);
+  --avatar-text-muted: rgba(255, 255, 255, 0.6);
+  --avatar-border: rgba(255, 255, 255, 0.14);
+
   /* Fixed px (not unitless) so it can be multiplied inside calc() below —
      15px font-size * 1.4 matches the caption's typography exactly. Keep
      this in sync with CAPTION_LINE_HEIGHT_PX in MobileVoiceScreen.tsx,
@@ -38,7 +71,7 @@ body {
   justify-content: space-between;
   padding: 14px 16px;
   border-bottom: 1px solid var(--stroke);
-  background: rgba(0, 0, 0, 0.25);
+  background: var(--bg-surface);
   backdrop-filter: blur(10px);
 }
 
@@ -78,7 +111,7 @@ body {
   padding: 8px 10px;
   border-radius: 999px;
   border: 1px solid var(--stroke);
-  background: rgba(10, 12, 16, 0.55);
+  background: var(--bg-page);
 }
 
 .pill-soft {
@@ -104,75 +137,6 @@ body {
   }
 }
 
-.loading-screen {
-  position: fixed;
-  inset: 0;
-  z-index: 50;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 20px;
-  background: #0a0a0a;
-  opacity: 1;
-  transition: opacity 400ms ease;
-}
-
-.loading-screen-fadeout {
-  opacity: 0;
-  pointer-events: none;
-}
-
-.loading-logo {
-  font-size: 22px;
-  font-weight: 800;
-  color: var(--text);
-  letter-spacing: 0.02em;
-}
-
-.loading-subtitle {
-  margin-top: -12px;
-  font-size: 13px;
-  color: var(--muted);
-}
-
-.loading-progress {
-  width: min(260px, 80vw);
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 10px;
-}
-
-.loading-progress-track {
-  width: 100%;
-  height: 8px;
-  border-radius: 999px;
-  background: rgba(255, 255, 255, 0.08);
-  overflow: hidden;
-}
-
-.loading-progress-fill {
-  height: 100%;
-  border-radius: 999px;
-  background: #00c853;
-  transition: width 300ms ease;
-}
-
-.loading-progress-text {
-  font-size: 13px;
-  color: var(--muted);
-  text-align: center;
-}
-
-.loading-error-text {
-  max-width: 320px;
-  text-align: center;
-  color: var(--muted);
-  font-size: 14px;
-  line-height: 1.5;
-}
-
 .main {
   display: grid;
   grid-template-columns: 1.15fr 0.85fr;
@@ -192,12 +156,16 @@ body {
   position: relative;
 }
 
+/* Avatar panel exception — stays dark so the tutor's video contrasts well,
+   independent of the light theme everywhere else. */
 .stage {
   position: relative;
   display: flex;
   align-items: center;
   justify-content: center;
   padding: 14px;
+  background: var(--avatar-bg);
+  border-color: var(--avatar-border);
 }
 
 .avatar-frame {
@@ -212,8 +180,8 @@ body {
   margin: 0 auto;
   border-radius: 16px;
   overflow: hidden;
-  border: 1px solid var(--stroke);
-  background: rgba(0, 0, 0, 0.25);
+  border: 1px solid var(--avatar-border);
+  background: var(--avatar-bg);
   animation: avatarBreathe 4200ms ease-in-out infinite;
 }
 
@@ -264,7 +232,7 @@ body {
   gap: 10px;
   padding: 14px 14px 10px;
   border-bottom: 1px solid var(--stroke);
-  background: rgba(0, 0, 0, 0.18);
+  background: var(--bg-page);
 }
 
 .chat-title {
@@ -283,14 +251,14 @@ body {
   gap: 10px;
   padding: 10px 14px;
   border-bottom: 1px solid var(--stroke);
-  background: rgba(0, 0, 0, 0.12);
+  background: var(--bg-page);
 }
 
 .lesson-timer-track {
   flex: 1;
   height: 8px;
   border-radius: 999px;
-  background: rgba(255, 255, 255, 0.08);
+  background: var(--border);
   overflow: hidden;
 }
 
@@ -346,7 +314,7 @@ body {
   font-size: 12px;
   text-align: center;
   color: var(--muted);
-  background: rgba(255, 200, 0, 0.08);
+  background: color-mix(in srgb, var(--warn) 12%, var(--bg-surface));
   border-bottom: 1px solid var(--stroke);
 }
 
@@ -363,14 +331,14 @@ body {
   max-width: min(360px, calc(100vw - 32px));
   padding: 10px 16px;
   border-radius: 12px;
-  background: rgba(30, 15, 15, 0.92);
+  background: color-mix(in srgb, var(--error) 8%, var(--bg-surface));
   backdrop-filter: blur(12px);
-  border: 1px solid rgba(255, 120, 120, 0.35);
-  color: #fff;
+  border: 1px solid var(--error);
+  color: var(--text-primary);
   font-size: 13px;
   line-height: 1.4;
   text-align: center;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
   animation: error-toast-in 200ms ease-out;
   pointer-events: none;
 }
@@ -403,13 +371,14 @@ body {
   width: min(360px, 100%);
   border-radius: 16px;
   border: 1px solid var(--stroke);
-  background: #10151c;
+  background: var(--bg-surface);
   padding: 20px;
   text-align: center;
   display: flex;
   flex-direction: column;
   gap: 10px;
   align-items: center;
+  box-shadow: 0 12px 32px rgba(28, 43, 108, 0.16);
   /* Simple fade-in, no confetti/explosion per spec — see LessonCompleteCard. */
   animation: lesson-complete-in 300ms ease-out;
 }
@@ -452,7 +421,9 @@ body {
 /* Same frosted-glass material as .force-send-btn (see below) but with NO
    fill at all — hierarchy between the two buttons comes from how much
    background they carry, not from size: Falar is the surface you're
-   meant to press, Dica is a quiet outline sitting next to it. */
+   meant to press, Dica is a quiet outline sitting next to it. Docked over
+   the avatar panel, so it keeps the avatar's own light-on-dark glass
+   treatment rather than the app's light theme. */
 .tips-button {
   flex: none;
   width: 32px;
@@ -468,6 +439,7 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
+  color: var(--avatar-text);
 }
 
 .tips-button:hover {
@@ -492,9 +464,9 @@ body {
   gap: 8px;
   padding: 6px 12px;
   border-radius: 20px;
-  background: rgba(255, 200, 0, 0.1);
-  border: 1px solid rgba(255, 200, 0, 0.4);
-  color: #ffc800;
+  background: color-mix(in srgb, var(--warn) 12%, transparent);
+  border: 1px solid color-mix(in srgb, var(--warn) 55%, transparent);
+  color: var(--avatar-text);
   font-size: 13px;
   white-space: nowrap;
   cursor: pointer;
@@ -518,13 +490,13 @@ body {
 
 @keyframes pulse-gold {
   0% {
-    box-shadow: 0 0 0 0 rgba(255, 200, 0, 0.4);
+    box-shadow: 0 0 0 0 color-mix(in srgb, var(--warn) 45%, transparent);
   }
   70% {
-    box-shadow: 0 0 0 8px rgba(255, 200, 0, 0);
+    box-shadow: 0 0 0 8px color-mix(in srgb, var(--warn) 0%, transparent);
   }
   100% {
-    box-shadow: 0 0 0 0 rgba(255, 200, 0, 0);
+    box-shadow: 0 0 0 0 color-mix(in srgb, var(--warn) 0%, transparent);
   }
 }
 
@@ -555,8 +527,9 @@ body {
   overflow-y: auto;
   border-radius: 16px;
   border: 1px solid var(--stroke);
-  background: #10151c;
+  background: var(--bg-surface);
   padding: 16px;
+  box-shadow: 0 12px 32px rgba(28, 43, 108, 0.16);
 }
 
 .tips-card-header {
@@ -578,7 +551,7 @@ body {
   height: 28px;
   border-radius: 999px;
   border: 1px solid var(--stroke);
-  background: rgba(255, 255, 255, 0.06);
+  background: var(--bg-page);
   color: var(--text);
   cursor: pointer;
   font-size: 18px;
@@ -597,7 +570,7 @@ body {
   gap: 10px;
   font-size: 13px;
   line-height: 1.45;
-  color: rgba(255, 255, 255, 0.88);
+  color: var(--text-secondary);
 }
 
 .tips-hint-latest {
@@ -608,7 +581,7 @@ body {
 .tips-hint-more {
   width: 100%;
   border: 1px solid var(--accent-soft);
-  background: rgba(59, 169, 160, 0.12);
+  background: color-mix(in srgb, var(--accent) 10%, transparent);
   color: var(--accent);
   border-radius: 12px;
   padding: 10px 12px;
@@ -618,7 +591,7 @@ body {
 }
 
 .tips-hint-more:hover {
-  background: rgba(59, 169, 160, 0.2);
+  background: color-mix(in srgb, var(--accent) 18%, transparent);
 }
 
 .tips-hint-done {
@@ -636,7 +609,7 @@ body {
   gap: 10px;
   font-size: 13px;
   line-height: 1.45;
-  color: rgba(255, 255, 255, 0.88);
+  color: var(--text-secondary);
 }
 
 .chat-log {
@@ -654,15 +627,19 @@ body {
 
 .msg {
   border: 1px solid var(--stroke);
-  background: rgba(0, 0, 0, 0.22);
+  background: var(--bg-surface);
+  color: var(--text);
   padding: 12px;
   border-radius: 14px;
   white-space: pre-wrap;
   line-height: 1.35;
 }
 
+/* Aluno — solid brand navy, per the approved bubble spec. */
 .msg.user {
-  border-color: rgba(59, 169, 160, 0.35);
+  background: var(--brand-navy);
+  border-color: var(--brand-navy);
+  color: #fff;
   align-self: flex-end;
   position: relative;
 }
@@ -676,11 +653,11 @@ body {
     background: var(--bubble-student);
   }
   25% {
-    background: rgba(0, 200, 83, 0.35);
-    border-color: #00c853;
+    background: color-mix(in srgb, var(--success) 35%, transparent);
+    border-color: var(--success);
   }
   75% {
-    background: rgba(0, 200, 83, 0.15);
+    background: color-mix(in srgb, var(--success) 15%, transparent);
   }
   100% {
     background: var(--bubble-student);
@@ -694,8 +671,8 @@ body {
   width: 18px;
   height: 18px;
   border-radius: 999px;
-  background: #00c853;
-  color: #06110f;
+  background: var(--success);
+  color: #fff;
   font-size: 12px;
   font-weight: 800;
   line-height: 1;
@@ -704,8 +681,10 @@ body {
   justify-content: center;
 }
 
+/* Tutora — plain surface + hairline border, per the approved bubble spec. */
 .msg.bot {
-  border-color: rgba(80, 140, 255, 0.22);
+  background: var(--bg-surface);
+  border-color: var(--border);
 }
 
 /* Shown in place of the tutor's reply while /api/tts is still loading
@@ -722,7 +701,7 @@ body {
   width: 7px;
   height: 7px;
   border-radius: 50%;
-  background: rgba(255, 255, 255, 0.55);
+  background: var(--text-muted);
   animation: typing-pulse 1.2s ease-in-out infinite;
 }
 
@@ -754,8 +733,8 @@ body {
 }
 
 .correction-card {
-  border: 1px solid rgba(224, 169, 74, 0.4);
-  background: rgba(224, 169, 74, 0.08);
+  border: 1px solid color-mix(in srgb, var(--warn) 40%, transparent);
+  background: color-mix(in srgb, var(--warn) 8%, var(--bg-surface));
   border-radius: 14px;
   padding: 12px;
   font-size: 13px;
@@ -776,8 +755,8 @@ body {
 
 .pronunciation-btn {
   flex: none;
-  border: 1px solid rgba(224, 169, 74, 0.4);
-  background: rgba(224, 169, 74, 0.1);
+  border: 1px solid color-mix(in srgb, var(--warn) 40%, transparent);
+  background: color-mix(in srgb, var(--warn) 10%, var(--bg-surface));
   color: var(--text);
   border-radius: 999px;
   cursor: pointer;
@@ -787,14 +766,14 @@ body {
 }
 
 .pronunciation-btn:hover {
-  background: rgba(224, 169, 74, 0.2);
+  background: color-mix(in srgb, var(--warn) 20%, var(--bg-surface));
 }
 
 .visual-card {
   align-self: flex-start;
   max-width: 220px;
   border: 1px solid var(--stroke);
-  background: rgba(255, 255, 255, 0.05);
+  background: var(--bg-page);
   border-radius: 12px;
   overflow: hidden;
 }
@@ -826,8 +805,8 @@ body {
 .chat-input {
   flex: 1;
   border-radius: 14px;
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  background: rgba(0, 0, 0, 0.25);
+  border: 1px solid var(--border);
+  background: var(--bg-surface);
   color: var(--text);
   padding: 12px;
   outline: none;
@@ -839,13 +818,13 @@ body {
 
 .footer {
   padding: 10px 14px 14px;
-  color: rgba(255, 255, 255, 0.55);
+  color: var(--text-muted);
   font-size: 12px;
 }
 
 .btn {
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid var(--border);
+  background: var(--bg-page);
   color: var(--text);
   padding: 10px 12px;
   border-radius: 14px;
@@ -854,37 +833,32 @@ body {
 }
 
 .btn:hover {
-  background: rgba(255, 255, 255, 0.08);
+  background: var(--border);
 }
 
 .btn-primary {
   background: var(--accent);
   border-color: var(--accent-soft);
-  color: #06110f;
+  /* Accent is brand navy now (very dark) — needs light text, not the old
+     near-black used when the accent was a mid-brightness teal. */
+  color: #fff;
 }
 
 .btn-ghost {
-  background: rgba(255, 255, 255, 0.06);
-  border-color: rgba(255, 255, 255, 0.1);
+  background: var(--bg-page);
+  border-color: var(--border);
 }
 
 .btn-lang-active {
   border-color: var(--accent-soft) !important;
-  background: rgba(59, 169, 160, 0.16);
+  background: color-mix(in srgb, var(--accent) 16%, transparent);
   color: var(--accent);
 }
 
-/* The single essential action on screen — but a SOLID fill read as too
-   heavy sitting directly on top of the avatar video, so this is frosted
-   glass instead: legibility comes from blur + a scrim behind the whole
-   dock (see .dock-scrim) + a bright border, never from opacity of the
-   fill itself. The inset top highlight is what sells "glass surface"
-   rather than "disabled" — without it, translucent reads as inactive.
-   idle state pulses on the BORDER (box-shadow ring), not the fill, so the
-   glass material itself never changes; .force-send-btn--listening and
-   .force-send-btn--processing (below) swap the tint but keep the same
-   blur/border/highlight construction — see ForceSendButton.tsx for which
-   class applies when. */
+/* The single essential action on screen. Solid brand fill per spec:
+   navy while idle, red while recording — see .force-send-btn--listening
+   below. Docked over the avatar video, so it keeps a glossy inset
+   highlight + drop shadow for depth rather than sitting totally flat. */
 /* Fixed, full-width strip pinned to the viewport bottom — NOT the button
    itself, which instead centers inside it via flexbox. Centering the
    button this way (instead of the more obvious `left: 50%; transform:
@@ -936,11 +910,9 @@ body {
 }
 
 .force-send-btn {
-  background: rgba(255, 255, 255, 0.16);
-  backdrop-filter: blur(20px) saturate(140%);
-  -webkit-backdrop-filter: blur(20px) saturate(140%);
-  border: 1px solid rgba(255, 255, 255, 0.28);
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.35), 0 8px 24px rgba(0, 0, 0, 0.28);
+  background: var(--brand-navy);
+  border: 1px solid var(--brand-navy);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.25), 0 8px 24px rgba(0, 0, 0, 0.28);
   color: #fff;
   text-shadow: 0 1px 3px rgba(0, 0, 0, 0.5);
   min-height: 64px;
@@ -962,8 +934,8 @@ body {
 
 /* Border pulse cueing "it's your turn" right after the "hear it, repeat
    it" drill's "Now you try." line (see orchestrator's onAwaitingRepeat) —
-   a distinct color from the idle glass pulse so it reads as a fresh
-   prompt, not just the button's normal resting animation. */
+   a distinct color from the button's own resting/recording states so it
+   reads as a fresh prompt, not just normal idle animation. */
 .force-send-btn--awaiting-repeat {
   animation: force-send-awaiting-repeat 1000ms ease-in-out infinite;
 }
@@ -971,48 +943,49 @@ body {
 @keyframes force-send-awaiting-repeat {
   0%,
   100% {
-    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.35), 0 8px 24px rgba(0, 0, 0, 0.28),
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.25), 0 8px 24px rgba(0, 0, 0, 0.28),
       0 0 0 0 rgba(120, 200, 255, 0.55);
   }
   50% {
-    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.35), 0 8px 24px rgba(0, 0, 0, 0.28),
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.25), 0 8px 24px rgba(0, 0, 0, 0.28),
       0 0 0 10px rgba(120, 200, 255, 0);
   }
 }
 
 .force-send-btn:hover {
-  background: rgba(255, 255, 255, 0.22);
+  background: color-mix(in srgb, var(--brand-navy) 88%, black);
 }
 
 @keyframes force-send-pulse {
   0%,
   100% {
-    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.35), 0 8px 24px rgba(0, 0, 0, 0.28),
-      0 0 0 0 rgba(255, 255, 255, 0.4);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.25), 0 8px 24px rgba(0, 0, 0, 0.28),
+      0 0 0 0 color-mix(in srgb, var(--brand-navy) 40%, transparent);
   }
   50% {
-    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.35), 0 8px 24px rgba(0, 0, 0, 0.28),
-      0 0 0 8px rgba(255, 255, 255, 0);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.25), 0 8px 24px rgba(0, 0, 0, 0.28),
+      0 0 0 8px color-mix(in srgb, var(--brand-navy) 0%, transparent);
   }
 }
 
-/* Same glass, red tint — the MATERIAL stays translucent, only the color
-   signals "recording now". Live waveform (see .sound-wave) is the active
-   indicator while this is on, so no idle-style pulse here. */
+/* Same solid material, red — the button's fill itself signals "recording
+   now", not just a translucent tint change. Live waveform (see
+   .sound-wave) is the active indicator while this is on, so no idle-style
+   pulse here. */
 .force-send-btn--listening {
-  background: rgba(220, 60, 60, 0.22);
-  border-color: rgba(255, 120, 120, 0.5);
+  background: var(--brand-red);
+  border-color: var(--brand-red);
   animation: none;
 }
 
 .force-send-btn--listening:hover {
-  background: rgba(220, 60, 60, 0.3);
+  background: color-mix(in srgb, var(--brand-red) 88%, black);
 }
 
 .force-send-btn--processing {
-  background: rgba(255, 255, 255, 0.1);
-  border-color: rgba(255, 255, 255, 0.15);
-  color: var(--muted);
+  background: var(--brand-gray);
+  border-color: var(--brand-gray);
+  color: #fff;
   text-shadow: none;
   cursor: not-allowed;
   animation: none;
@@ -1020,28 +993,14 @@ body {
 }
 
 .force-send-btn--processing:hover {
-  background: rgba(255, 255, 255, 0.1);
-}
-
-@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
-  /* Without blur, a light translucent fill over a busy video is
-     unreadable — go dark and much more opaque instead as a floor. */
-  .force-send-btn {
-    background: rgba(20, 20, 25, 0.72);
-  }
-  .force-send-btn--listening {
-    background: rgba(120, 20, 20, 0.72);
-  }
-  .force-send-btn--processing {
-    background: rgba(20, 20, 25, 0.72);
-  }
+  background: var(--brand-gray);
 }
 
 .force-send-spinner {
   width: 16px;
   height: 16px;
-  border: 2px solid rgba(255, 255, 255, 0.25);
-  border-top-color: var(--muted);
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-top-color: #fff;
   border-radius: 50%;
   animation: force-send-spin 700ms linear infinite;
 }
@@ -1054,13 +1013,13 @@ body {
 
 /* Recording state of the talk button: an equalizer replaces the label so
    the student gets a live visual confirmation the mic is on — the button
-   itself stays clickable to force-send early. White/translucent (not
-   green) to match the frosted-glass red tint (see
-   .force-send-btn--listening) instead of clashing with it. Bar height is
-   driven by the mic's real amplitude (see ForceSendButton's inline
-   transform), not a canned animation — this is just the shared base size
-   and the transition that smooths amplitude changes into something that
-   reads as "gradually winding down" rather than jumpy, per-sample jumps. */
+   itself stays clickable to force-send early. White bars/text read fine
+   on the solid red recording fill (see .force-send-btn--listening). Bar
+   height is driven by the mic's real amplitude (see ForceSendButton's
+   inline transform), not a canned animation — this is just the shared
+   base size and the transition that smooths amplitude changes into
+   something that reads as "gradually winding down" rather than jumpy,
+   per-sample jumps. */
 .listening-indicator {
   display: flex;
   flex-direction: column;
@@ -1122,7 +1081,7 @@ body {
 
 @keyframes force-send-shake-flash {
   50% {
-    border-color: rgba(255, 200, 0, 0.8);
+    border-color: color-mix(in srgb, var(--warn) 80%, transparent);
   }
 }
 
@@ -1192,6 +1151,7 @@ body {
   flex: 1;
   min-height: 0;
   overflow: hidden;
+  background: var(--avatar-bg);
 }
 
 .mobile-avatar-fullscreen {
@@ -1215,6 +1175,8 @@ body {
   animation: none;
 }
 
+/* Pre-lesson demo-login screen, shown over the avatar photo — part of the
+   avatar panel's own dark chrome (see .stage), not the app's light theme. */
 .mobile-login {
   position: absolute;
   inset: 0;
@@ -1224,6 +1186,7 @@ body {
   justify-content: flex-end;
   padding: 18px;
   background: linear-gradient(rgba(0, 0, 0, 0), rgba(0, 0, 0, 0.6) 70%);
+  color: var(--avatar-text);
 }
 
 .mobile-float-header {
@@ -1238,6 +1201,11 @@ body {
   padding: calc(env(safe-area-inset-top, 0px) + 10px) 14px 10px;
   background: rgba(0, 0, 0, 0.55);
   backdrop-filter: blur(8px);
+  color: var(--avatar-text);
+}
+
+.mobile-float-header .lesson-timer-time {
+  color: var(--avatar-text-muted);
 }
 
 .mobile-float-title {
@@ -1267,7 +1235,7 @@ body {
   border-radius: 10px;
   font-size: 12px;
   text-align: center;
-  color: var(--text);
+  color: var(--avatar-text);
   background: rgba(0, 0, 0, 0.55);
   backdrop-filter: blur(8px);
 }
@@ -1304,7 +1272,7 @@ body {
   margin: 0;
   font-size: 15px;
   line-height: var(--caption-line-height);
-  color: var(--text);
+  color: var(--avatar-text);
   display: -webkit-box;
   -webkit-line-clamp: 3;
   -webkit-box-orient: vertical;
@@ -1376,6 +1344,9 @@ body {
   padding: 10px 14px calc(env(safe-area-inset-bottom, 0px) + 14px);
 }
 
+/* The drawer's CONTENT is the same chat log/input as desktop's light
+   .chat panel, just presented as a bottom sheet — light surface here too,
+   not a dark glass panel, so the two never look like different apps. */
 .mobile-drawer {
   position: absolute;
   left: 0;
@@ -1385,10 +1356,9 @@ body {
   height: 70dvh;
   display: flex;
   flex-direction: column;
-  background: rgba(10, 10, 10, 0.92);
-  backdrop-filter: blur(20px);
+  background: var(--bg-surface);
   border-radius: 20px 20px 0 0;
-  box-shadow: 0 -8px 24px rgba(0, 0, 0, 0.35);
+  box-shadow: 0 -8px 24px rgba(28, 43, 108, 0.18);
   transform: translateY(100%);
   transition: transform 300ms cubic-bezier(0.32, 0.72, 0, 1);
 }
@@ -1406,7 +1376,7 @@ body {
   width: 40px;
   height: 4px;
   border-radius: 999px;
-  background: rgba(255, 255, 255, 0.3);
+  background: var(--brand-gray);
 }
 
 .mobile-drawer-content {
@@ -1447,7 +1417,7 @@ body {
 .mobile-footer-credit {
   flex: none;
   padding: 4px 14px calc(env(safe-area-inset-bottom, 0px) + 10px);
-  color: rgba(255, 255, 255, 0.4);
+  color: var(--text-muted);
   font-size: 11px;
   text-align: center;
 }
@@ -1462,8 +1432,8 @@ body {
   gap: 10px;
   padding: 10px 14px;
   border-radius: 14px;
-  border: 1px solid rgba(224, 169, 74, 0.4);
-  background: rgba(224, 169, 74, 0.08);
+  border: 1px solid color-mix(in srgb, var(--warn) 40%, transparent);
+  background: color-mix(in srgb, var(--warn) 8%, var(--bg-surface));
   font-size: 13px;
 }
 
@@ -1475,7 +1445,7 @@ body {
 }
 
 .mini-correction-wrong {
-  color: rgba(255, 255, 255, 0.6);
+  color: var(--text-muted);
   text-decoration: line-through;
 }
 
@@ -1494,6 +1464,8 @@ body {
   flex: none;
 }
 
+/* Lesson-intro card, shown over the avatar panel before the student picks
+   who they are — dark glass, same family as .mobile-login. */
 .intro-overlay {
   position: absolute;
   inset: 0;
@@ -1509,8 +1481,9 @@ body {
   border-radius: 16px;
   padding: 16px;
   background: rgba(0, 0, 0, 0.55);
-  border: 1px solid var(--stroke);
+  border: 1px solid var(--avatar-border);
   backdrop-filter: blur(10px);
+  color: var(--avatar-text);
 }
 
 .intro-title {
@@ -1520,7 +1493,7 @@ body {
 
 .intro-text {
   font-size: 13px;
-  color: rgba(255, 255, 255, 0.8);
+  color: var(--avatar-text-muted);
   line-height: 1.4;
   margin-bottom: 12px;
 }
@@ -1543,7 +1516,9 @@ body {
    overlay) since a student reporting a real freeze needs the diagnostics
    visible no matter what state the app is stuck in. A bottom SHEET, not a
    literal small corner box — the checklist + full userAgent + captured
-   errors need real width to stay legible at 14px on an iPhone. */
+   errors need real width to stay legible at 14px on an iPhone. Deliberately
+   its own self-contained dark diagnostic look, independent of the app's
+   light theme — an internal tool, not student-facing branding. */
 .debug-panel {
   position: fixed;
   left: 8px;

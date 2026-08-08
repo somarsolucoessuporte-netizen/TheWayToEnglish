@@ -1,8 +1,8 @@
 "use client";
 
-const GREEN = "#00c853";
-const YELLOW = "#ffc800";
-const RED = "#ff3d00";
+const GREEN = "var(--success)";
+const YELLOW = "var(--warn)";
+const RED = "var(--error)";
 
 function formatMMSS(totalSeconds: number): string {
   const clamped = Math.max(0, Math.round(totalSeconds));
