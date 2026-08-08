@@ -87,7 +87,7 @@ export function TipsPanel({
         aria-label="Dicas"
         title="Dicas"
       >
-        <HintIcon />
+        <HintIcon size={24} />
         {expanded && <span>{branding.copy.tipsAttentionPrompt}</span>}
       </button>
 

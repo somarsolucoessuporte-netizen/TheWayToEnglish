@@ -424,38 +424,30 @@ body {
   margin-bottom: 6px;
 }
 
-/* Same frosted-glass material as .force-send-btn (see below) but with NO
-   fill at all — hierarchy between the two buttons comes from how much
-   background they carry, not from size: Falar is the surface you're
-   meant to press, Dica is a quiet outline sitting next to it. Docked over
-   the avatar panel, so it keeps the avatar's own light-on-dark glass
-   treatment rather than the app's light theme. */
+/* Solid white pill so the navy hint icon reads clearly over the dark
+   avatar video instead of blending into it (the previous frosted-glass,
+   near-transparent treatment made it nearly invisible there) — hierarchy
+   between this and Falar still comes from how much visual weight each
+   carries, just via a light-on-dark card now instead of translucency. */
 .tips-button {
   flex: none;
-  width: 32px;
-  height: 32px;
-  border-radius: 999px;
-  border: 1px solid rgba(255, 255, 255, 0.28);
-  background: transparent;
-  backdrop-filter: blur(20px) saturate(140%);
-  -webkit-backdrop-filter: blur(20px) saturate(140%);
+  border-radius: 50%;
+  border: 1px solid #e3e6ec;
+  background: #ffffff;
+  padding: 8px;
   cursor: pointer;
-  font-size: 16px;
-  line-height: 1;
   display: flex;
   align-items: center;
   justify-content: center;
-  color: var(--avatar-text);
+  color: #1c2b6c;
+  opacity: 1;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+  transition: background 150ms ease, border-color 150ms ease;
 }
 
 .tips-button:hover {
-  background: rgba(255, 255, 255, 0.08);
-}
-
-@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
-  .tips-button {
-    background: rgba(20, 20, 25, 0.72);
-  }
+  background: #f7f8fa;
+  border-color: #1c2b6c;
 }
 
 /* Attention animation: draws the student's eye to the tips button after a
@@ -470,9 +462,9 @@ body {
   gap: 8px;
   padding: 6px 12px;
   border-radius: 20px;
-  background: color-mix(in srgb, var(--warn) 12%, transparent);
-  border: 1px solid color-mix(in srgb, var(--warn) 55%, transparent);
-  color: var(--avatar-text);
+  background: #fff8e6;
+  border: 1px solid #e8d5a3;
+  color: #7a5c00;
   font-size: 13px;
   white-space: nowrap;
   cursor: pointer;
