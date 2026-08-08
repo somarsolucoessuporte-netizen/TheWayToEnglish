@@ -22,7 +22,7 @@ export const TutorResponseSchema = z
         /** Simplified, non-phonetic pronunciation hint for the on-screen
          * card (e.g. "Éfrica", "iú-rop") — the audible pronunciation model
          * is speech.english itself; this is just a visual reminder the
-         * student can also click 🔊 to replay (see CorrectionCard). */
+         * student can also click "Ouvir" to replay (see CorrectionCard). */
         pronunciation: z.string().optional(),
       })
       .optional(),
@@ -57,7 +57,7 @@ export const TutorResponseSchema = z
      * ASKING VS. HELPING section for what each level should contain
      * (reformulation, partial clue, guided answer, in that order). NEVER
      * spoken by the TTS and NEVER shown automatically — only revealed one
-     * level at a time behind the 💡 button (see TipsPanel), which is the
+     * level at a time behind the "Dica" button (see TipsPanel), which is the
      * whole point: the student must attempt the question in silence before
      * any help appears. Omitted when this turn doesn't ask anything a hint
      * would help with (pure praise, a correction already carrying its own

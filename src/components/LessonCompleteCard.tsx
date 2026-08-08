@@ -41,7 +41,7 @@ export function LessonCompleteCard({
   return (
     <div className="lesson-complete-overlay">
       <div className="lesson-complete-card">
-        <div className="lesson-complete-title">🎉 Lição concluída!</div>
+        <div className="lesson-complete-title">Lição concluída!</div>
         <div className="lesson-complete-lesson">
           {studentName}, você completou:
           <br />

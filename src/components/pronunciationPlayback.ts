@@ -2,7 +2,7 @@ import { speechProvider } from "@/app-config/providers";
 
 /**
  * Click handlers shared by CorrectionCard (desktop) and MiniCorrectionCard
- * (mobile) for the 🔊 Normal / 🐢 Devagar buttons — kept in one place so
+ * (mobile) for the Ouvir / Devagar buttons — kept in one place so
  * the "fall back to normal speed if the provider has no real speakSlow"
  * logic (SpeechProvider.speakSlow is optional) only lives once.
  */

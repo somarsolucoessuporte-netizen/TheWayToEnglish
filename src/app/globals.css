@@ -759,6 +759,16 @@ body {
   flex: none;
 }
 
+.icon-wrong {
+  color: var(--error);
+  font-weight: 700;
+}
+
+.icon-right {
+  color: var(--success);
+  font-weight: 700;
+}
+
 .pronunciation-btn {
   flex: none;
   border: 1px solid color-mix(in srgb, var(--warn) 40%, transparent);
@@ -1451,13 +1461,13 @@ body {
 }
 
 .mini-correction-wrong {
-  color: var(--text-muted);
+  color: var(--error);
   text-decoration: line-through;
 }
 
 .mini-correction-right {
   font-weight: 700;
-  color: var(--text);
+  color: var(--success);
 }
 
 .mini-correction-arrow {

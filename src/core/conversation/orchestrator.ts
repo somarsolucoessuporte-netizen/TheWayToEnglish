@@ -1109,7 +1109,7 @@ export class ConversationOrchestrator {
    * 3 — the normal-speed pass was cut (see the Falar-button-freeze
    * investigation): a student who just got something wrong needs to hear
    * it slow, not fast first, and 3 short calls back to back is what
-   * turned this drill into a ~75s worst-case freeze. The 🔊/🐢 buttons on
+   * turned this drill into a ~75s worst-case freeze. The Ouvir/Devagar buttons on
    * the correction card (see CorrectionCard/MiniCorrectionCard) are still
    * there for the student to replay either speed as many times as they
    * want, at their own pace. Called as speakPartsWithReveal's `after`

@@ -6,7 +6,7 @@ import { isIOS } from "@/core/utils/platform";
 
 const STATUS_ICON: Record<DebugStep["status"], string> = {
   ok: "✓",
-  pending: "⏳",
+  pending: "…",
   error: "✗",
   info: "i",
 };
@@ -56,7 +56,7 @@ export function DebugPanel() {
   return (
     <div className="debug-panel">
       <div className="debug-panel-header">
-        <span>🐛 Debug</span>
+        <span>Debug</span>
         <button type="button" className="debug-panel-copy" onClick={handleCopy}>
           {copyLabel}
         </button>

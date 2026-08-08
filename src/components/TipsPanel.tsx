@@ -3,6 +3,7 @@
 import { useState } from "react";
 import type { CurriculumLesson } from "@/app-config/curriculum";
 import { branding } from "@/app-config/branding";
+import { HintIcon } from "./icons/HintIcon";
 
 /** "normal" = discrete icon (default / just interacted). "expanded" = hint
  * text visible with a soft pulse, after 8s of post-speech idle silence.
@@ -46,7 +47,7 @@ export function TipsPanel({
   // below. The ladder's OWN open/closed state is also local (closing it —
   // clicking outside, or the × button — must never itself advance
   // hintLevel, which is owned by page.tsx and only ever moves forward on
-  // an actual 💡 click); hintLevel additionally gates the ladder content so
+  // an actual Dica click); hintLevel additionally gates the ladder content so
   // it can never render revealed hints across a new question even if this
   // stayed true from a previous turn.
   const [fallbackOpen, setFallbackOpen] = useState(false);
@@ -69,7 +70,7 @@ export function TipsPanel({
 
   const revealedHints = hasLadder ? hints!.slice(0, hintLevel) : [];
   const hasMoreLevels = hasLadder && hintLevel < hints!.length;
-  const ladderTitle = `💡 Dica ${Math.max(1, hintLevel)} de ${hasLadder ? hints!.length : 0}`;
+  const ladderTitle = `Dica ${Math.max(1, hintLevel)} de ${hasLadder ? hints!.length : 0}`;
 
   return (
     <>
@@ -86,7 +87,8 @@ export function TipsPanel({
         aria-label="Dicas"
         title="Dicas"
       >
-        💡{expanded && <span>{branding.copy.tipsAttentionPrompt}</span>}
+        <HintIcon />
+        {expanded && <span>{branding.copy.tipsAttentionPrompt}</span>}
       </button>
 
       {hasLadder && ladderOpen && hintLevel > 0 && (
@@ -122,7 +124,7 @@ export function TipsPanel({
                 Mais uma dica →
               </button>
             ) : (
-              <div className="tips-hint-done">É isso — tenta agora! 😊</div>
+              <div className="tips-hint-done">É isso — tenta agora!</div>
             )}
           </div>
         </div>
@@ -132,7 +134,7 @@ export function TipsPanel({
         <div className="tips-overlay" onClick={() => setFallbackOpen(false)}>
           <div className="tips-card" onClick={(e) => e.stopPropagation()}>
             <div className="tips-card-header">
-              <div className="tips-card-title">📚 Dicas da lição</div>
+              <div className="tips-card-title">Dicas da lição</div>
               <button
                 type="button"
                 className="tips-card-close"

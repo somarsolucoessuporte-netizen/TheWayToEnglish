@@ -19,7 +19,7 @@ export function revealedText(text: string, wordsShown: number | undefined): stri
 }
 
 /** `compact` swaps the full CorrectionCard (explanation + pronunciation
- * hint text) for MiniCorrectionCard (just ❌word → ✅word + audio buttons)
+ * hint text) for MiniCorrectionCard (just ✗word → ✓word + audio buttons)
  * — used on mobile, where the explanation was already spoken aloud by the
  * tutor and repeating it in writing is just clutter on a small screen. */
 export function ChatLog({ entries, compact = false }: { entries: ChatEntry[]; compact?: boolean }) {

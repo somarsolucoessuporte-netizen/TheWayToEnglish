@@ -30,7 +30,7 @@ export interface SpeechProvider {
   /**
    * Speaks `text` noticeably slower than normal (see OpenAITTSProvider's
    * 0.65x) — used for the "hear it, repeat it" pronunciation model after a
-   * correction (see orchestrator) and the correction card's 🐢 button.
+   * correction (see orchestrator) and the correction card's Devagar button.
    * Optional: providers without real speed control (e.g. WebSpeechProvider)
    * can omit this; callers should fall back to a normal speak() when it's
    * missing rather than failing.

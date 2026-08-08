@@ -147,8 +147,8 @@ const STATE_LABELS: Record<CharacterState, string> = {
   listening: branding.copy.stateListening,
   thinking: branding.copy.stateThinking,
   speaking: branding.copy.stateSpeaking,
-  praise: "😊",
-  correction: "💡",
+  praise: "Muito bem!",
+  correction: "Dica",
   error: branding.copy.genericError,
 };
 
@@ -475,7 +475,7 @@ export default function Page() {
     setHintLevel(0);
   }, [currentHintsEntryIndex]);
 
-  // Every 💡 click advances one level (see TipsPanel) — logged as the
+  // Every Dica click advances one level (see TipsPanel) — logged as the
   // "hintLevelUsed" metric the client asked to have recorded, since
   // there's no analytics backend to send it to yet.
   function handleHintReveal() {
