@@ -33,11 +33,11 @@
   --good: var(--success);
   --bubble-student: var(--brand-navy);
 
-  /* The avatar panel is the one area allowed to stay dark (see .stage /
+  /* The avatar card is the one area allowed to stay dark (see
      .avatar-frame / .mobile-avatar-fullscreen and the floating chrome
      docked directly over the live video) — its own small token set,
      kept separate from the light tokens above. */
-  --avatar-bg: #0a0a0f;
+  --avatar-bg: #0d0d1a;
   --avatar-text: rgba(255, 255, 255, 0.92);
   --avatar-text-muted: rgba(255, 255, 255, 0.6);
   --avatar-border: rgba(255, 255, 255, 0.14);
@@ -156,18 +156,21 @@ body {
   position: relative;
 }
 
-/* Avatar panel exception — stays dark so the tutor's video contrasts well,
-   independent of the light theme everywhere else. */
+/* .stage is just the light page area the avatar card sits in — the dark
+   avatar-panel exception below is scoped to .avatar-frame itself now, not
+   this whole column. */
 .stage {
   position: relative;
   display: flex;
   align-items: center;
   justify-content: center;
   padding: 14px;
-  background: var(--avatar-bg);
-  border-color: var(--avatar-border);
+  background: var(--bg-page);
+  border: none;
 }
 
+/* Avatar panel exception — this card stays dark so the tutor's video
+   contrasts well, independent of the light theme everywhere else. */
 .avatar-frame {
   position: relative;
   /* flex:none pins the flex-basis to `width` directly, with no
@@ -175,12 +178,12 @@ body {
      black-screen bug was this box resolving to 0 width. */
   flex: none;
   width: 100%;
-  max-width: 380px;
+  max-width: 420px;
   aspect-ratio: 242 / 382;
-  margin: 0 auto;
+  margin: auto;
+  padding: 0;
   border-radius: 16px;
   overflow: hidden;
-  border: 1px solid var(--avatar-border);
   background: var(--avatar-bg);
   animation: avatarBreathe 4200ms ease-in-out infinite;
 }
@@ -1507,6 +1510,18 @@ body {
 .unit-btn {
   text-align: left;
   width: 100%;
+  background: var(--bg-surface);
+  border: 2px solid var(--brand-navy);
+  color: var(--brand-navy);
+  border-radius: 8px;
+  padding: 12px 20px;
+  font-weight: 600;
+  transition: background 150ms ease, color 150ms ease;
+}
+
+.unit-btn:hover {
+  background: var(--brand-navy);
+  color: var(--bg-surface);
 }
 
 /* On-screen diagnostics for the iOS splash-freeze investigation (see
