@@ -214,6 +214,14 @@ export async function POST(req: NextRequest) {
 
     return NextResponse.json(response);
   } catch (err) {
+    // DIAGNOSTIC LOGGING (temporary — investigating repeated /api/chat
+    // failures): err is `unknown` by default in a catch block, so this
+    // narrows just enough to read the fields without a TS error — most
+    // errors thrown in this file/OpenAIProvider are plain `Error`s with no
+    // real .status/.code, so those will legitimately log as undefined;
+    // that itself is useful signal (rules out a structured API error).
+    const detail = err as { message?: string; status?: number; code?: string } | undefined;
+    console.error("[chat] erro detalhado:", detail?.message, detail?.status, detail?.code);
     console.error(err);
     return NextResponse.json({ erro: "Erro ao consultar IA" }, { status: 500 });
   }

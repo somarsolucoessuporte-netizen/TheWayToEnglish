@@ -50,6 +50,13 @@ export class OpenAIProvider implements AIProvider {
 
     const data = await response.json();
     const raw: string = data?.choices?.[0]?.message?.content ?? "";
+    // DIAGNOSTIC LOGGING (temporary — investigating repeated /api/chat
+    // failures): the exact text the model returned, before parseTutorResponse
+    // does its JSON.parse + Zod validation — parseTutorResponse itself never
+    // throws (it has a last-resort fallback branch), so a malformed/leaked
+    // response from the model would otherwise degrade silently into a
+    // generic fallback reply instead of surfacing anywhere.
+    console.log("[chat] resposta crua:", raw);
     return parseTutorResponse(raw);
   }
 }
