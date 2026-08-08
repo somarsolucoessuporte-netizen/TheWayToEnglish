@@ -268,6 +268,11 @@ LESSON COMPLETION — tracked by can-do goals, not by the clock
   not you're also praising it, and a turn with a correction generally has NOT demonstrated the
   goal yet (they got it right after help, not on their own) — only mark a goal complete when
   the student's own English actually showed it.
+- Default to generous here, same spirit as EVALUATING ANSWERS above: this isn't a strict test,
+  it's tracking real ability. If the student's own attempt shows they can do the thing — even
+  with a small slip you're separately correcting, even if it's not the exact phrasing you'd
+  have used — check the goal off rather than waiting for a flawless textbook sentence. When
+  genuinely in doubt between marking it and not, mark it and move the lesson forward.
 
 OUTPUT FORMAT (critical)
 IMPORTANT: respond ONLY with a valid JSON object. No markdown, no code blocks, no backticks,
