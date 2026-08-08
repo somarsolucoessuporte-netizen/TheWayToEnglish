@@ -40,7 +40,6 @@
   --avatar-bg: #0d0d1a;
   --avatar-text: rgba(255, 255, 255, 0.92);
   --avatar-text-muted: rgba(255, 255, 255, 0.6);
-  --avatar-border: rgba(255, 255, 255, 0.14);
 
   /* Fixed px (not unitless) so it can be multiplied inside calc() below —
      15px font-size * 1.4 matches the caption's typography exactly. Keep
@@ -178,8 +177,12 @@ body {
      black-screen bug was this box resolving to 0 width. */
   flex: none;
   width: 100%;
-  max-width: 420px;
-  aspect-ratio: 242 / 382;
+  max-width: 500px;
+  /* Fills whatever height .stage actually has (not just derived from
+     width via a fixed aspect-ratio) — the inner .avatar-sprite-layer's
+     own object-fit: cover handles cropping the video to whatever box
+     shape results. */
+  height: 100%;
   margin: auto;
   padding: 0;
   border-radius: 16px;
@@ -1481,22 +1484,23 @@ body {
 
 .intro-card {
   width: min(420px, 92vw);
-  border-radius: 16px;
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
   padding: 16px;
-  background: rgba(0, 0, 0, 0.55);
-  border: 1px solid var(--avatar-border);
-  backdrop-filter: blur(10px);
-  color: var(--avatar-text);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
 }
 
 .intro-title {
-  font-weight: 900;
+  color: var(--brand-navy);
+  font-size: 14px;
+  font-weight: 600;
   margin-bottom: 6px;
 }
 
 .intro-text {
   font-size: 13px;
-  color: var(--avatar-text-muted);
+  color: var(--text-secondary);
   line-height: 1.4;
   margin-bottom: 12px;
 }
