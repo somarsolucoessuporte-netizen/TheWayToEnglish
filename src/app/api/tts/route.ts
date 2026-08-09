@@ -58,6 +58,8 @@ export async function POST(req: NextRequest) {
     );
   }
 
+  console.log("[TTS] status:", response.status, "content-type:", response.headers.get("content-type"));
+
   const audioBuffer = await response.arrayBuffer();
   return new NextResponse(audioBuffer, {
     headers: { "Content-Type": "audio/mpeg" },

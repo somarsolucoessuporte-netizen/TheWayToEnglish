@@ -39,17 +39,18 @@ export class OpenAITTSProvider implements SpeechProvider {
     error: new Set(),
   };
 
-  async speak(text: string, _opts: SpeechOptions = {}): Promise<void> {
-    return this.speakAtSpeed(text, 1.0);
+  async speak(text: string, opts: SpeechOptions = {}): Promise<void> {
+    return this.speakAtSpeed(text, 1.0, opts.lang);
   }
 
   /** See SpeechProvider.speakSlow. */
-  async speakSlow(text: string, _opts: SpeechOptions = {}): Promise<void> {
-    return this.speakAtSpeed(text, SLOW_SPEED);
+  async speakSlow(text: string, opts: SpeechOptions = {}): Promise<void> {
+    return this.speakAtSpeed(text, SLOW_SPEED, opts.lang);
   }
 
-  private async speakAtSpeed(text: string, speed: number): Promise<void> {
+  private async speakAtSpeed(text: string, speed: number, lang?: string): Promise<void> {
     try {
+      console.log("[TTS] iniciando...");
       const controller = new AbortController();
       const timeoutId = window.setTimeout(() => controller.abort(), TTS_FETCH_TIMEOUT_MS);
       let response: Response;
@@ -68,9 +69,11 @@ export class OpenAITTSProvider implements SpeechProvider {
       } finally {
         window.clearTimeout(timeoutId);
       }
+      console.log("[TTS] status:", response.status);
       if (!response.ok) throw new Error(`TTS HTTP ${response.status}`);
 
       const arrayBuffer = await response.arrayBuffer();
+      console.log("[TTS] blob size:", arrayBuffer.byteLength);
       await this.playBlob(new Blob([arrayBuffer], { type: "audio/mpeg" }));
     } catch (err) {
       // Explicit, not silent: log here AND rethrow so the orchestrator's
@@ -79,9 +82,51 @@ export class OpenAITTSProvider implements SpeechProvider {
       // happened — this used to only emit locally, which nothing outside
       // this class was guaranteed to surface.
       console.error("[OpenAI TTS] erro:", err);
-      this.emit("error", err);
-      throw err;
+      console.error("[TTS] ERRO:", (err as Error)?.name, (err as Error)?.message);
+      // Fallback: /api/tts itself failed (fetch error, timeout, non-2xx
+      // HTTP, or playBlob's watchdog rejecting because "playing" never
+      // fired — see playBlob) — try the browser's own speechSynthesis
+      // before giving up, so the student hears SOMETHING instead of the
+      // turn dying silently. Only emit "error" (see the single point of
+      // truth below) if the fallback ALSO fails — a successful fallback
+      // means the turn recovered, so no error should surface for it.
+      try {
+        await this.fallbackSpeak(text, lang, speed);
+        return;
+      } catch (fallbackErr) {
+        console.error("[TTS] fallback também falhou:", fallbackErr);
+        this.emit("error", err);
+        throw err;
+      }
     }
+  }
+
+  /** Last-resort fallback when /api/tts is unreachable, errors, or the
+   * audio it returns never actually starts playing (see playBlob's
+   * watchdog) — speaks directly through the browser's built-in
+   * speechSynthesis instead of OpenAI's voice. Lower quality (robotic, no
+   * custom voice), but keeps the lesson moving instead of the Falar
+   * button staying stuck behind a dead network call. `rate` reuses the
+   * same speed value speakAtSpeed already computed (1.0 normal,
+   * SLOW_SPEED for the "hear it slow" drill). */
+  private fallbackSpeak(text: string, lang: string | undefined, rate: number): Promise<void> {
+    return new Promise((resolve, reject) => {
+      if (!("speechSynthesis" in window)) {
+        reject(new Error("speechSynthesis indisponível"));
+        return;
+      }
+      console.warn("[TTS] fallback para browser (speechSynthesis)");
+      const u = new SpeechSynthesisUtterance(text);
+      u.lang = lang || "en-US";
+      u.rate = rate;
+      u.onstart = () => this.emit("start");
+      u.onend = () => {
+        this.emit("end");
+        resolve();
+      };
+      u.onerror = (e) => reject(e);
+      window.speechSynthesis.speak(u);
+    });
   }
 
   /** See SpeechProvider.speakBlob — plays an already-fetched MP3 blob
@@ -109,7 +154,7 @@ export class OpenAITTSProvider implements SpeechProvider {
     this.audio = audio;
     this.currentUrl = url;
 
-    await new Promise<void>((resolve) => {
+    await new Promise<void>((resolve, reject) => {
       // Wrapping resolve so cancel() can also settle this promise (and
       // clear the ref) if it interrupts before "ended"/"error" ever fire.
       const finish = () => {
@@ -121,15 +166,22 @@ export class OpenAITTSProvider implements SpeechProvider {
 
       // Watchdog for the case where audio.play() resolved (autoplay was
       // permitted) but "playing" never actually fires — a stalled decode,
-      // a connection that died mid-download of the blob's underlying data.
-      // Without this, a rare stall here hangs the entire turn with no
-      // error and no way for the student to tell what happened.
+      // a dead connection mid-download, or (notably on iOS Safari) the
+      // platform's autoplay policy silently blocking playback even
+      // though .play() itself didn't reject. REJECTS (not resolves) so
+      // speakAtSpeed's catch can fall back to speechSynthesis — this is
+      // the one settling path here that means "the student heard nothing
+      // at all", unlike onended/onerror/cancel() below, which all follow
+      // some real audio activity having happened.
       const startWatchdog = window.setTimeout(() => {
         console.error("[TTS] watchdog: 'playing' não disparou em", PLAYBACK_START_TIMEOUT_MS, "ms");
         this.speaking = false;
-        this.emit("error", new Error("TTS playback watchdog timeout"));
+        this.pendingResolve = null;
+        audio.onplaying = null;
+        audio.onended = null;
+        audio.onerror = null;
         this.revokeCurrentUrl();
-        finish();
+        reject(new Error("TTS playback watchdog timeout"));
       }, PLAYBACK_START_TIMEOUT_MS);
 
       // "playing" fires when the browser actually has audible frames
