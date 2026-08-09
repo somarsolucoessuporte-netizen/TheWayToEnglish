@@ -767,6 +767,11 @@ export class ConversationOrchestrator {
             (opts.nudge ? ` (nudge: ${opts.nudge})` : "")
         );
       }
+      console.log("[turn] resposta recebida:", {
+        hasSpeech: !!response.speech,
+        english: response.speech?.english?.slice(0, 50),
+        portuguese: response.speech?.portuguese?.slice(0, 50),
+      });
       this.setApiStatus(true);
       this.updateCorrectionAttemptTracking(response);
       this.updateGoalProgress(response);
@@ -799,6 +804,7 @@ export class ConversationOrchestrator {
       const englishPart = { text: response.speech.english, lang: "en-US" };
       const portuguesePart = { text: response.speech.portuguese, lang: "pt-BR" };
       const correction = response.correction;
+      console.log("[turn] chamando speak()...");
       await this.speakPartsWithReveal(
         correction ? [portuguesePart, englishPart] : [englishPart, portuguesePart],
         entryIndex,
@@ -943,8 +949,13 @@ export class ConversationOrchestrator {
     prefetchedAudioBlob?: Blob,
     readyAt?: number
   ): Promise<void> {
+    console.log("[speakParts] início, partes:", parts.length);
     const nonEmpty = parts.filter((p) => p.text.trim().length > 0);
     if (nonEmpty.length === 0 && !opts.after) {
+      console.log("[turn] speak() NÃO chamado, motivo:", {
+        busy: this.busy,
+        speechEmpty: !response.speech?.english && !response.speech?.portuguese,
+      });
       this.replaceEntry(entryIndex, { role: "tutor", response });
       // See speakParts's matching branch for why RESET (not SPEECH_END,
       // which is a no-op from "thinking" — see PERSISTENT_TRANSITIONS).
