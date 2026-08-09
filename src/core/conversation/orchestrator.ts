@@ -767,10 +767,11 @@ export class ConversationOrchestrator {
             (opts.nudge ? ` (nudge: ${opts.nudge})` : "")
         );
       }
-      console.log("[turn] resposta recebida:", {
+      console.log("[turn] resposta:", {
         hasSpeech: !!response.speech,
-        english: response.speech?.english?.slice(0, 50),
-        portuguese: response.speech?.portuguese?.slice(0, 50),
+        en: response.speech?.english?.slice(0, 40),
+        pt: response.speech?.portuguese?.slice(0, 40),
+        busy: this.busy,
       });
       this.setApiStatus(true);
       this.updateCorrectionAttemptTracking(response);
@@ -804,7 +805,7 @@ export class ConversationOrchestrator {
       const englishPart = { text: response.speech.english, lang: "en-US" };
       const portuguesePart = { text: response.speech.portuguese, lang: "pt-BR" };
       const correction = response.correction;
-      console.log("[turn] chamando speak()...");
+      console.log("[turn] chamando speak()");
       await this.speakPartsWithReveal(
         correction ? [portuguesePart, englishPart] : [englishPart, portuguesePart],
         entryIndex,
@@ -834,6 +835,7 @@ export class ConversationOrchestrator {
       }
     } finally {
       this.setBusy(false);
+      console.log("[turn] fim, busy →", this.busy);
     }
     // Mic stays closed once the tutor's done — push-to-talk only. The
     // student clicks Falar (see ForceSendButton's onClick in page.tsx)
@@ -949,12 +951,11 @@ export class ConversationOrchestrator {
     prefetchedAudioBlob?: Blob,
     readyAt?: number
   ): Promise<void> {
-    console.log("[speakParts] início, partes:", parts.length);
     const nonEmpty = parts.filter((p) => p.text.trim().length > 0);
     if (nonEmpty.length === 0 && !opts.after) {
-      console.log("[turn] speak() NÃO chamado, motivo:", {
+      console.log("[turn] speak PULADO:", {
         busy: this.busy,
-        speechEmpty: !response.speech?.english && !response.speech?.portuguese,
+        speechVazio: !response.speech?.english && !response.speech?.portuguese,
       });
       this.replaceEntry(entryIndex, { role: "tutor", response });
       // See speakParts's matching branch for why RESET (not SPEECH_END,
