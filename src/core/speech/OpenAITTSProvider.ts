@@ -33,11 +33,57 @@ export class OpenAITTSProvider implements SpeechProvider {
    * can't leave a previous speak() call awaiting forever on an "ended"
    * event that a paused, abandoned <audio> element will never fire. */
   private pendingResolve: (() => void) | null = null;
+  /** Single <audio> element unlocked by the first real user gesture on the
+   * page — see unlockAudioElement/playBlob. iOS Safari's autoplay grant is
+   * tied to the SPECIFIC element that played inside a genuine gesture, not
+   * to the page as a whole, so a fresh `new Audio(url)` on every turn (the
+   * old behavior) only ever autoplays successfully once: the very first
+   * turn, which rides on the gesture that started the lesson. Every turn
+   * after that silently fails to produce sound on iOS — text still
+   * arrives (the /api/chat call itself has nothing to do with playback),
+   * which matches exactly the "works once, then text-only" bug reported. */
+  private unlockedAudioEl: HTMLAudioElement | null = null;
   private readonly listeners: Record<SpeechEvent, Set<Listener>> = {
     start: new Set(),
     end: new Set(),
     error: new Set(),
   };
+
+  constructor() {
+    // SSR guard: this class is instantiated once at module scope (see
+    // app-config/providers.ts's `export const speechProvider = new
+    // OpenAITTSProvider()`), which also runs during Next.js's server-side
+    // render of the "use client" page that imports it — `document` isn't
+    // defined there. Every other browser API in this file is only ever
+    // touched from inside methods, called at runtime in the browser; this
+    // constructor is the one exception, so it needs its own guard.
+    if (typeof document === "undefined") return;
+    const unlock = () => {
+      document.removeEventListener("click", unlock);
+      document.removeEventListener("touchend", unlock);
+      this.unlockAudioElement();
+    };
+    document.addEventListener("click", unlock, { once: true });
+    document.addEventListener("touchend", unlock, { once: true });
+  }
+
+  /** Standard iOS Safari unlock trick: play (and immediately pause) a
+   * silent audio file on THIS element, synchronously inside a real user
+   * gesture (see the constructor's click/touchend listener). Safari then
+   * treats this specific element as permanently allowed to autoplay for
+   * the rest of the page's lifetime, regardless of what .src it's given
+   * afterward — see playBlob, which reuses this same element every turn
+   * instead of constructing a new one. */
+  private unlockAudioElement(): void {
+    if (this.unlockedAudioEl) return;
+    const el = new Audio();
+    el.src =
+      "data:audio/mp3;base64,SUQzBAAAAAAAI1RTU0UAAAAPAAADTGF2ZjU4Ljc2LjEwMAAAAAAAAAAAAAAA//tQxAADB8AhSmxhIIEVCSiJrDCQBTcu3UrAIwUdkRgQbFAZC1CQEwTJ9mjRvBA4UOLD8nKVOWfh+UlK3z/177OXrfOdKl7pyn3Xf//WreyTRUoAWgBgkOAGbZHBgG1OF6zM82DWbZaUmMBptgQhGjsyYqc9ae9XFz280948NMBWInljyzsNRFLPWdnZGWrddDsjK1unuSrVN9jJsK8KuQtQCtMBjCEtImISdNKJOopIpBFpNSMbIHCSRpRR5iakjTiyzLhchUUBwCgyKiweBv/7UsQbg8fgCUpsYSCBFQkoiawwkAU3Lt1KwCMFHZEYEGxQGQtQkBMEyfZo0bwQOFDiw/JylTln4flJSt8/9e+zl63znSpe6cp913//1q3sk0VKAFoAYJDgBm2RwYBtThe";
+    void el.play().catch(() => {});
+    el.pause();
+    this.unlockedAudioEl = el;
+    console.log("[TTS] audioEl destravado no primeiro gesto");
+  }
 
   async speak(text: string, opts: SpeechOptions = {}): Promise<void> {
     return this.speakAtSpeed(text, 1.0, opts.lang);
@@ -143,14 +189,21 @@ export class OpenAITTSProvider implements SpeechProvider {
 
   /** Shared by speakAtSpeed (fresh /api/tts fetch) and speakBlob (already
    * have the audio) — everything from "here's a Blob" onward is identical
-   * either way: create the <audio> element, wire the same "playing"/
-   * "ended"/"error" handlers, play it. */
+   * either way: reuse (or create, as a fallback) the <audio> element, wire
+   * the same "playing"/"ended"/"error" handlers, play it. */
   private async playBlob(blob: Blob): Promise<void> {
     this.cancel();
     const url = URL.createObjectURL(blob);
     console.log("[TTS] blob criado:", url);
-    const audio = new Audio(url);
-    console.log("[TTS] audio criado:", audio);
+    // Reuse the element unlocked by the first user gesture (see
+    // unlockAudioElement) instead of `new Audio(url)` every turn — that
+    // fresh-element approach is exactly what broke autoplay on iOS after
+    // the first turn. Falls back to a throwaway fresh element only if the
+    // gesture listener somehow hasn't fired yet (shouldn't happen in
+    // practice: the whole app is gated behind the profile-picker click).
+    const audio = this.unlockedAudioEl ?? new Audio();
+    audio.src = url;
+    console.log("[TTS] audioEl reutilizado, src:", audio.src.slice(0, 40));
     this.audio = audio;
     this.currentUrl = url;
 
