@@ -1,4 +1,6 @@
-import book01unit01 from "./book01-unit01.json";
+// TODO: migrar para o novo formato JSON (book01-unit01.json) quando
+// curriculum/index.ts for refatorado para o novo shape de licao/tarefas.
+import book01unit01 from "./book01-unit01.LEGACY.json";
 
 export interface CurriculumLesson {
   id: string;
