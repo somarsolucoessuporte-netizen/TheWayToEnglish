@@ -4,9 +4,9 @@
 // demonstração para o protótipo comercial — remover quando houver login
 // real e integração com o sistema acadêmico.
 export const DEMO_STUDENTS = [
-  { id: "pedro", name: "Pedro", currentLesson: "3c", lastSession: "countries and continents" },
-  { id: "marina", name: "Marina", currentLesson: "3e", lastSession: "nationalities" },
-  { id: "lucas", name: "Lucas", currentLesson: "3g", lastSession: "wh- and yes/no questions" },
+  { id: "pedro", name: "Pedro", currentLesson: "A", lastSession: "Boas-vindas" },
+  { id: "marina", name: "Marina", currentLesson: "1A", lastSession: "Lesson 1A — Introductions" },
+  { id: "lucas", name: "Lucas", currentLesson: "1B", lastSession: "Lesson 1B — Alphabet" },
 ] as const;
 
 export type DemoStudent = (typeof DEMO_STUDENTS)[number];
