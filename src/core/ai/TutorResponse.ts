@@ -147,6 +147,33 @@ function normalizeForSchema(value: unknown): unknown {
     result.hints = [result.hint.trim()];
   }
   delete result.hint;
+
+  // persona.ts tells the model to OMIT optional fields it doesn't need,
+  // but a model shown the JSON shape sometimes includes one anyway as a
+  // null/empty placeholder — e.g. correction: {} on a turn with no error.
+  // TutorResponseSchema's .optional() only tolerates the key being ABSENT;
+  // present-but-empty still fails validation (correction's inner fields
+  // are required strings), which used to send every such turn down the
+  // generic "Desculpe..." fallback. Strip those placeholders here instead.
+  if (
+    result.correction !== undefined &&
+    (result.correction === null ||
+      typeof result.correction !== "object" ||
+      !("studentSaid" in (result.correction as object)) ||
+      !(result.correction as Record<string, unknown>).studentSaid)
+  ) {
+    delete result.correction;
+  }
+
+  if (Array.isArray(result.completedGoals) && result.completedGoals.length === 0) {
+    delete result.completedGoals;
+  }
+
+  // Note: speech.portuguese is NOT stripped when empty — unlike the fields
+  // above, it's a required string in TutorResponseSchema (english-only
+  // replies legitimately send ""), so deleting it would make the key
+  // undefined and fail validation instead of fixing it.
+
   return result;
 }
 
