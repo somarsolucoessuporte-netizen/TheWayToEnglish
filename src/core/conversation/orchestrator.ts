@@ -135,6 +135,18 @@ export class ConversationOrchestrator {
   private readonly completedGoals = new Set<string>();
   private lessonCompleteFired = false;
 
+  /** Guards startLesson() against being kicked off twice for the same
+   * session — see startLesson's doc comment. There is only one call site
+   * (page.tsx's handleStudentPick), but that caller flips its own
+   * `started` state (which hides the demo-student buttons) BEFORE this
+   * class has done anything, and only after that does it await a fixed
+   * delay and then call startLesson(). A double-click/double-tap on the
+   * same button in that window fires handleStudentPick twice before React
+   * ever re-renders to hide it, and both calls reach here — without this
+   * guard, that produced two identical kickoff turns (the "saudação
+   * duplicada" bug: the opening line pushed to history and spoken twice). */
+  private startingLesson = false;
+
   /** Cumulative time spent in "idle" (mic closed, waiting on the student)
    * since the current question was posed — ticks up only while idle,
    * PAUSES (not resets) while a nudge itself is being spoken, and is
@@ -412,21 +424,32 @@ export class ConversationOrchestrator {
     vocabulary?: string[];
     prefetched?: { response: TutorResponse; audioBlob?: Blob };
   }): Promise<void> {
-    this.studentName = opts.studentName;
-    this.currentLessonCode = opts.currentLessonCode;
-    console.log("[3 orch] enviando lessonCode:", this.currentLessonCode);
-    this.lessonGoals = opts.canDoGoals ?? [];
-    this.stt.setLessonVocabulary?.(opts.vocabulary ?? []);
-    this.completedGoals.clear();
-    this.lessonCompleteFired = false;
-    this.idleAccumulatedMs = 0;
-    this.nudgeLevelsFired.clear();
-    this.stateMachine.dispatch({ type: "STOP_LISTENING" }); // idle -> thinking
-    this.history.push({ role: "user", content: LESSON_KICKOFF_INSTRUCTION });
-    await this.runTurn({ prefetchedResponse: opts.prefetched?.response, prefetchedAudioBlob: opts.prefetched?.audioBlob });
-    // runTurn ends back on "idle" once the tutor's opening line finishes
-    // speaking. The mic stays closed until the student clicks Falar — no
-    // auto-listen here or anywhere else in this class.
+    if (this.startingLesson) {
+      console.warn(
+        "[orchestrator] startLesson() ignorado — já em andamento para esta sessão (evita saudação duplicada)"
+      );
+      return;
+    }
+    this.startingLesson = true;
+    try {
+      this.studentName = opts.studentName;
+      this.currentLessonCode = opts.currentLessonCode;
+      console.log("[3 orch] enviando lessonCode:", this.currentLessonCode);
+      this.lessonGoals = opts.canDoGoals ?? [];
+      this.stt.setLessonVocabulary?.(opts.vocabulary ?? []);
+      this.completedGoals.clear();
+      this.lessonCompleteFired = false;
+      this.idleAccumulatedMs = 0;
+      this.nudgeLevelsFired.clear();
+      this.stateMachine.dispatch({ type: "STOP_LISTENING" }); // idle -> thinking
+      this.history.push({ role: "user", content: LESSON_KICKOFF_INSTRUCTION });
+      await this.runTurn({ prefetchedResponse: opts.prefetched?.response, prefetchedAudioBlob: opts.prefetched?.audioBlob });
+      // runTurn ends back on "idle" once the tutor's opening line finishes
+      // speaking. The mic stays closed until the student clicks Falar — no
+      // auto-listen here or anywhere else in this class.
+    } finally {
+      this.startingLesson = false;
+    }
   }
 
   /**
@@ -533,6 +556,7 @@ export class ConversationOrchestrator {
     this.setBusy(false);
     this.studentName = undefined;
     this.currentLessonCode = undefined;
+    this.startingLesson = false;
     this.timeWarningActive = false;
     this.pendingCorrectionWord = undefined;
     this.correctionAttemptCount = 0;
@@ -630,10 +654,25 @@ export class ConversationOrchestrator {
    * than counted — better to under-complete than to finish a lesson on a
    * goal that was never actually assigned. */
   private updateGoalProgress(response: TutorResponse): void {
+    // DIAGNOSTIC LOGGING (progress-bar-stuck investigation — see
+    // LessonProgressBar's "Etapa X de Y", which re-derives the same count
+    // from entries independently, see its own doc comment for why). Kept
+    // active in production: this is the only place that ever sees BOTH
+    // what the model actually reported this turn and the lesson's full
+    // goal list (lessonGoals === CurriculumLesson.canDo, one taskId per
+    // task — e.g. ["task-1","task-2"]), so it's the source of truth for
+    // whether a stuck bar is the model never reporting a goal, a goal-id
+    // mismatch, or the task genuinely not finished yet (a lesson can have
+    // as few as 2 broad tasks covering many practice items each — see
+    // book01-unit01.json's Lesson A, which has exactly 2 tasks for its
+    // whole "practice every symbol" scope).
+    console.log("[progress] completedGoals:", response.completedGoals);
+    console.log("[progress] tasks da lição:", this.lessonGoals);
     if (this.lessonCompleteFired || this.lessonGoals.length === 0) return;
     for (const goal of response.completedGoals ?? []) {
       if (this.lessonGoals.includes(goal)) this.completedGoals.add(goal);
     }
+    console.log("[progress] completedGoals acumulados:", Array.from(this.completedGoals));
     if (this.completedGoals.size >= this.lessonGoals.length) {
       this.lessonCompleteFired = true;
       for (const cb of this.lessonCompleteListeners) cb();
@@ -798,17 +837,23 @@ export class ConversationOrchestrator {
         await this.enterPraiseBeforeSpeaking();
       }
 
-      // Normally English plays first, Portuguese second. A correction is the
-      // one exception: the "hear it, repeat it" flow needs the Portuguese
-      // explanation (ending in "Agora repita comigo:") to land right before
-      // the English repeat-model it's cueing up — see persona.ts's
-      // CORRECTING A MISTAKE sequence.
+      // English always plays first, Portuguese second — including during a
+      // correction (see persona.ts's OUTPUT FORMAT: speech.english carries
+      // the praise + the correct form, speech.portuguese carries ONLY the
+      // explanation). This used to be reversed for a correction turn
+      // specifically (Portuguese first, ending in "Agora repita comigo:",
+      // cueing straight into the English repeat-model) — that made the
+      // Portuguese explanation land BEFORE the correction itself, which is
+      // exactly the ordering bug reported from the real Lesson A test. The
+      // "hear it, repeat it" drill below already re-says the corrected word
+      // slowly and cues "Now you try." on its own, so it doesn't actually
+      // depend on Portuguese being spoken last to work.
       const englishPart = { text: response.speech.english, lang: "en-US" };
       const portuguesePart = { text: response.speech.portuguese, lang: "pt-BR" };
       const correction = response.correction;
       console.log("[turn] chamando speak()");
       await this.speakPartsWithReveal(
-        correction ? [portuguesePart, englishPart] : [englishPart, portuguesePart],
+        [englishPart, portuguesePart],
         entryIndex,
         response,
         correction ? { after: () => this.runPronunciationDrill(correction.corrected) } : {},
