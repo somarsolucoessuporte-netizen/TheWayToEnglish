@@ -1,0 +1,1699 @@
+{
+  "book": "Book 1",
+  "unit": "Unit 1",
+  "unitTheme": "The Alphabet; Speaking and Vocabulary; What’s your name?; Speaking; Vocabulary and Pronunciation; Countries and Continents; Grammar and Vocabulary; Speaking 1; Vocabulary 2; Grammar and Speaking; Grammar; Pronunciation",
+  "sourceFile": "book01-unit01.docx",
+  "processedAt": "2026-08-26T22:38:03.563737+00:00",
+  "globalPrinciples": [
+    "Sempre começar as lições com um cumprimento ou saudação, tipo How are you? How are you doing?",
+    "Depois da saudação, apresentar o nome da lição, tipo, This is Book 1 Lesson 1C e o nome da lição.",
+    "Sempre terminar as lições com uma expressão de despedida, tipo “OK, bye! See you on our next class. Have a nice day / evening.",
+    "A IA deverá corrigir o aluno em pronúncia, gramática, vocabulário ou quaisquer outras inadequações produzidas pelo aluno.",
+    "Dar sempre a opção para o aluno repetir o exercício, caso queira.",
+    "Informações sobre a AI Tutor: Name: Debbie Ann Pamp, Age: 28 years old, Nationality: Brazilian, Job and occupation: AI Tutor."
+  ],
+  "tutorIdentity": {
+    "name": "Debbie Ann Pamp",
+    "age": 28,
+    "nationality": "Brazilian",
+    "occupation": "AI Tutor"
+  },
+  "lessons": [
+    {
+      "code": "A",
+      "title": null,
+      "skill": null,
+      "order": 1,
+      "practiceNote": "atenção; náo precisa passar muito tempo nessa atividade. O aluno vai se acostumar com os símbolos ao longo do curso.",
+      "tasks": [
+        {
+          "order": 1,
+          "instruction": "A IA mostra as imagens e pede pro aluno repetir (1x cada símbolo)",
+          "type": "demonstrate"
+        },
+        {
+          "order": 2,
+          "instruction": "A IA pronuncia o nome de cada símbolo, mostrando as imagens e pedindo para o aluno identificar o nome e o símbolo.",
+          "type": "demonstrate"
+        }
+      ],
+      "referenceContent": {
+        "dialogues": [],
+        "vocabulary": [],
+        "grammarNotes": [
+          "Symbols used in The Way to English"
+        ],
+        "tables": [
+          {
+            "rows": [
+              [
+                "SYMBOL",
+                "SKILL",
+                "TRANSLATION"
+              ],
+              [
+                "",
+                "SPEAKING",
+                "FALA"
+              ],
+              [
+                "",
+                "LISTENING",
+                "COMPREENSÃO AUDITIVA"
+              ],
+              [
+                "",
+                "READING",
+                "LEITURA"
+              ],
+              [
+                "",
+                "WRITING",
+                "ESCRITA"
+              ],
+              [
+                "",
+                "GRAMMAR",
+                "GRAMÁTICA"
+              ],
+              [
+                "",
+                "PRONUNCIATION",
+                "PRONÚNCIA"
+              ],
+              [
+                "",
+                "VOCABULARY",
+                "VOCABULÁRIO"
+              ],
+              [
+                "",
+                "BIBLE SEARCH",
+                "PROCURA NA BÍBLIA"
+              ]
+            ],
+            "caption": "Symbols used in The Way to English"
+          }
+        ],
+        "practicePhrases": []
+      },
+      "requiresImages": true,
+      "imageNote": "A IA mostra as imagens e pede pro aluno repetir (1x cada símbolo)"
+    },
+    {
+      "code": "B",
+      "title": "The Alphabet",
+      "skill": null,
+      "order": 2,
+      "practiceNote": "Dar a opção para o aluno que quiser fazer mais. Essa atividade é importante que seja bem consolidada. A IA pode perguntar se o aluno quer repetir.",
+      "tasks": [
+        {
+          "order": 1,
+          "instruction": "A IA mostra as imagens e pede pro aluno repetir na sequência A a Z (2x cada símbolo)",
+          "type": "demonstrate"
+        },
+        {
+          "order": 2,
+          "instruction": "A IA mostra as imagens e pede pro aluno repetir em uma sequência aleatória (2x cada símbolo)",
+          "type": "demonstrate"
+        }
+      ],
+      "referenceContent": {
+        "dialogues": [],
+        "vocabulary": [
+          "A - /eI/",
+          "B - /bi:/",
+          "C - / si:/",
+          "D - / di:/",
+          "E - / i:/",
+          "F - /ef/",
+          "G - /dZi:/",
+          "H - /eitS/",
+          "I - /aI/",
+          "J - /dZeI/",
+          "K - /keI/",
+          "L - /el/",
+          "M - /em/",
+          "N - /en/",
+          "P - /pi:/",
+          "Q - /kwjU/",
+          "R - /ar/",
+          "S - /es/",
+          "T - /ti:/",
+          "U - /ju:/",
+          "V - /vi:/",
+          "W - /’dúbElju:/",
+          "X - /eks/",
+          "Y - /waI/",
+          "Z - /zi:/"
+        ],
+        "grammarNotes": [
+          "Vocabulary and Pronunciation – The English Alphabet",
+          "O - /EU/"
+        ],
+        "tables": [],
+        "practicePhrases": []
+      },
+      "requiresImages": true,
+      "imageNote": "A IA mostra as imagens e pede pro aluno repetir na sequência A a Z (2x cada símbolo)"
+    },
+    {
+      "code": "C",
+      "title": "Speaking and Vocabulary",
+      "skill": null,
+      "order": 3,
+      "practiceNote": "praticar bastante, pois essa habilidade é importante ser bem consolidada.",
+      "tasks": [
+        {
+          "order": 1,
+          "instruction": "A IA pratica o vacabulário abaixo",
+          "type": "other"
+        },
+        {
+          "order": 2,
+          "instruction": "A1. A IA mostra as palavras “first name”, “middle name” e “last name” e pede pro aluno repetir (2x cada palavra)",
+          "type": "demonstrate"
+        },
+        {
+          "order": 3,
+          "instruction": "A2. A IA pergunta What’s your first name? What’s your middle name? What’s your last name? E espera a respostas do aluno.",
+          "type": "student_answers"
+        },
+        {
+          "order": 4,
+          "instruction": "A3. A IA pergunta como soletrar cada nome. How do you spell your first name? How do you spell your middle name? How do you spell your last name?",
+          "type": "student_answers"
+        },
+        {
+          "order": 5,
+          "instruction": "Pedir para os alunos começarem o diálogo, perguntando à IA qual o seu nome e como soletrar “What’s your first name? How do you spell it? What’s your middle name? How do you spell it? What’s your last name? How do you spell it?",
+          "type": "other"
+        },
+        {
+          "order": 6,
+          "instruction": "Pedir para os alunos começarem o diálogo, perguntando à IA How do you spell your first name? How do you spell your middle name? How do you spell your last name?",
+          "type": "other"
+        },
+        {
+          "order": 7,
+          "instruction": "A IA pergunta novamente as perguntas, mas dessa vez juntando as duas perguntas.",
+          "type": "student_answers"
+        }
+      ],
+      "referenceContent": {
+        "dialogues": [],
+        "vocabulary": [],
+        "grammarNotes": [
+          "CAROLINA B. SILVA",
+          "First name – CAROLINA",
+          "Middle name B. – BEZERRA",
+          "Last name – SILVA",
+          "How do you spell your name? C-A-R-O-L-I-N-A",
+          "How do you spell your first name? C-A-R-O-L-I-N-A",
+          "How do you spell your middle name? B-E-Z-E-R-R-A",
+          "How do you spell your last name? S-I-L-V-A"
+        ],
+        "tables": [],
+        "practicePhrases": []
+      },
+      "requiresImages": false
+    },
+    {
+      "code": "1A",
+      "title": "What’s your name? – Introduce yourself",
+      "skill": null,
+      "order": 4,
+      "practiceNote": "praticar não mais do que 2x",
+      "tasks": [
+        {
+          "order": 1,
+          "instruction": "A IA inicia o diálogo abaixo",
+          "type": "demonstrate"
+        },
+        {
+          "order": 2,
+          "instruction": "A IA pede para o aluno iniciar o diálogo.",
+          "type": "student_leads"
+        }
+      ],
+      "referenceContent": {
+        "dialogues": [],
+        "vocabulary": [],
+        "grammarNotes": [
+          "Hello, my name’s _____ / I’m ______. What’s your name?",
+          "I am / I’m / My name’s _____.",
+          "Nice to meet you.",
+          "Nice to meet you too."
+        ],
+        "tables": [],
+        "practicePhrases": []
+      },
+      "requiresImages": false
+    },
+    {
+      "code": "1B",
+      "title": "Speaking – Greetings and Goodbyes",
+      "skill": "Speaking",
+      "order": 5,
+      "tasks": [
+        {
+          "order": 1,
+          "instruction": "A IA sugere vários diálogos fazendo uso das expressões abaixo., semelhantes aos exemplos dos diálogos 1 a 3.",
+          "type": "other"
+        }
+      ],
+      "referenceContent": {
+        "dialogues": [
+          [
+            "DIALOGUE 1 – GREETING AND GOODBYE",
+            "A: Hello, good morning!",
+            "B: Good morning!",
+            "A: How are you?",
+            "B: Fine. And you?",
+            "A: Not bad.",
+            "B: Well, see you. Bye.",
+            "A: See you later! Bye."
+          ],
+          [
+            "DIALOGUE 2 – GREETING AND GOODBYE",
+            "A: Hi, how are you doing?",
+            "B: Great! How are you?",
+            "A: I’m good!",
+            "B: OK, see you! Bye! Have a nice weekend!",
+            "A: You too."
+          ],
+          [
+            "DIALOGUE 3 - GOODBYE",
+            "A: Good night! Sleep well.",
+            "B: Good night. You too. See you tomorrow.",
+            "A: See you."
+          ]
+        ],
+        "vocabulary": [
+          "Greetings – cumprimentos",
+          "Goodbyes – despedidas"
+        ],
+        "grammarNotes": [
+          "EXAMPLES OF DIALOGUES",
+          "DIALOGUE 1 – GREETING AND GOODBYE",
+          "DIALOGUE 2 – GREETING AND GOODBYE",
+          "DIALOGUE 3 - GOODBYE"
+        ],
+        "tables": [
+          {
+            "rows": [
+              [
+                "GREETINGS",
+                "GOODBYES"
+              ],
+              [
+                "Hello. / Hi.",
+                "See you."
+              ],
+              [
+                "Good morning. / Good afternoon. / Good evening.",
+                "See you later."
+              ],
+              [
+                "How are you?",
+                "See you tomorrow."
+              ],
+              [
+                "How are you doing?",
+                "Bye."
+              ],
+              [
+                "A: And you? / How are YOU?\nB: (I’m) fine / good / OK. / Not bad.",
+                "A: Have a nice weekend. \nB: You too."
+              ],
+              [
+                "",
+                "Good night. Sleep well."
+              ]
+            ]
+          }
+        ],
+        "practicePhrases": []
+      },
+      "requiresImages": false
+    },
+    {
+      "code": "1C",
+      "title": "Speaking – Ask someone’s name",
+      "skill": "Speaking",
+      "order": 6,
+      "tasks": [
+        {
+          "order": 1,
+          "instruction": "A IA inicia o diálogo usando um nome diferente do nome do aluno. Após 3 tentativas, a IA pergunta o nome do aluno para ele responder Yes, I am.",
+          "type": "student_answers"
+        },
+        {
+          "order": 2,
+          "instruction": "A IA pede para o aluno iniciar o diálogo, com um nome diferente ao dele(a).",
+          "type": "student_leads"
+        }
+      ],
+      "referenceContent": {
+        "dialogues": [
+          [
+            "Quando você está procurando alguém que já sabe o nome, você pode perguntar assim:",
+            "A: Are you Piedro?",
+            "B: No, I’m not.",
+            "A: Are you Piedro?"
+          ],
+          [
+            "A: Nice to meet you.",
+            "B: Nice to meet you too."
+          ]
+        ],
+        "vocabulary": [],
+        "grammarNotes": [
+          "Quando você está procurando alguém que já sabe o nome, você pode perguntar assim:",
+          "B; Yes, I am."
+        ],
+        "tables": [],
+        "practicePhrases": []
+      },
+      "requiresImages": false
+    },
+    {
+      "code": "2B",
+      "title": "Vocabulary and Pronunciation – NUMBERS",
+      "skill": "Vocabulary and Pronunciation",
+      "order": 7,
+      "tasks": [
+        {
+          "order": 1,
+          "instruction": "A IA lê os números de 0 a 10 e pede para o aluno repetir",
+          "type": "demonstrate"
+        },
+        {
+          "order": 2,
+          "instruction": "A IA pede para o aluno ler os números de 0 a 10, corrigindo a pronúncia",
+          "type": "student_repeats"
+        },
+        {
+          "order": 3,
+          "instruction": "A IA lê os números de 11 a 19 e pede para o aluno repetir",
+          "type": "demonstrate"
+        },
+        {
+          "order": 4,
+          "instruction": "A IA pede para o aluno ler os números de 11 a 19, corrigindo a pronúncia",
+          "type": "student_repeats"
+        },
+        {
+          "order": 5,
+          "instruction": "A IA lê os números de 20 a 29 e pede para o aluno repetir",
+          "type": "demonstrate"
+        },
+        {
+          "order": 6,
+          "instruction": "A IA pede para o aluno ler os números de 20 a 29, corrigindo a pronúncia",
+          "type": "student_repeats"
+        },
+        {
+          "order": 7,
+          "instruction": "A IA lê as dezenas de 10 a 90 e pede para o aluno repetir",
+          "type": "demonstrate"
+        },
+        {
+          "order": 8,
+          "instruction": "A IA pede para o aluno ler as dezenas de 10 a 90, corrigindo a pronúncia",
+          "type": "student_repeats"
+        },
+        {
+          "order": 9,
+          "instruction": "A IA pede para os alunos lerem os teens e as dezenas e pedem para o aluno repetir",
+          "type": "student_repeats"
+        },
+        {
+          "order": 10,
+          "instruction": "A IA pede para o aluno ler as dezenas de 10 a 90, corrigindo a pronúncia",
+          "type": "student_repeats"
+        },
+        {
+          "order": 11,
+          "instruction": "A IA Lê os hundreds e pede para os alunos lerem os hundreds e pede para o aluno repetir",
+          "type": "demonstrate"
+        },
+        {
+          "order": 12,
+          "instruction": "A IA pede para o aluno ler os hundreds, corrigindo a pronúncia",
+          "type": "student_repeats"
+        },
+        {
+          "order": 13,
+          "instruction": "A IA lê os seguintes números com três dígitos e pede para os alunos repetirem",
+          "type": "demonstrate"
+        },
+        {
+          "order": 14,
+          "instruction": "A IA pede para o aluno ler números aleatórios com três dígitos, corrigindo a pronúncia",
+          "type": "student_repeats"
+        },
+        {
+          "order": 15,
+          "instruction": "A IA pede para o aluno ler números aleatórios de 1 a três dígitos, corrigindo a pronúncia. Fazer isso pelo mesno 10 vezes. Dar ao aluno a opção se o aluno quiser fazer mais vezes.",
+          "type": "student_repeats"
+        }
+      ],
+      "referenceContent": {
+        "dialogues": [],
+        "vocabulary": [
+          "1 – one",
+          "2 – two",
+          "3 – three",
+          "4 – four",
+          "5 – five",
+          "6 – six",
+          "7 – seven",
+          "8 – eight",
+          "9 – nine",
+          "10 – ten",
+          "11 – eleven",
+          "12 – twelve",
+          "13 – thirteen",
+          "14 – fourteen",
+          "15 – fifteen",
+          "16 – sixteen",
+          "17 – seventeen",
+          "18 – eighteen",
+          "19 – nineteen",
+          "From 20 to 29 – with hyphen",
+          "20 – twenty",
+          "21 – twenty-one",
+          "22 – twenty-two",
+          "23 – twenty-three",
+          "24 – twenty-four",
+          "25 – twenty-five",
+          "26 – twenty-six",
+          "27 – twenty-seven",
+          "28 – twenty-eight",
+          "29 – twenty-nine",
+          "10 – ten",
+          "20 – twenty",
+          "30 – thirty",
+          "40 – forty",
+          "50 – fifty",
+          "60 – sixty",
+          "70 – seventy",
+          "80 – eighty",
+          "90 – ninety",
+          "100 – one hundred",
+          "200 – two hundred",
+          "300 – three hundred",
+          "400 – four hundred",
+          "500 – five hundred",
+          "600 – six hundred",
+          "700 – seven hundred",
+          "800 – eight hundred",
+          "900 – nine hundred",
+          "1,000 – one thousand",
+          "567 – five hundred sixty-seven",
+          "333 – three hundred thirty-three",
+          "826 – eight hundred twenty-six"
+        ],
+        "grammarNotes": [
+          "Numbers from 0 to 10",
+          "Os números de 1 a 10 em inglês são conhecidos até por quem não estuda inglês, não é? Porém, vamos aperfeiçoar a pronúncia?0 – zero",
+          "Teen Numbers (between 11 and 19) – the strong syllable (sílaba tônica) is TEEN.",
+          "The tens – 10 to 90 – add -TY (except 10), but the strong syllable is on the first syllable.",
+          "PRONUNCIATION – STRESSED SYLLABLES IN NUMBERS",
+          "In teen numbers, the stressed syllable is TEEN.",
+          "In tens, the stressed syllable is the first one.",
+          "HUNDREDS",
+          "With three digits, read:"
+        ],
+        "tables": [
+          {
+            "rows": [
+              [
+                "TEENS (13 to 19)",
+                "TENS (10 to 90)"
+              ],
+              [
+                "11 – eleven",
+                "10 – ten"
+              ],
+              [
+                "12 – twelve",
+                "20 – TWENty"
+              ],
+              [
+                "13 – thirTEEN",
+                "30 – THIRty"
+              ],
+              [
+                "14 – fourTEEN",
+                "40 – FORty"
+              ],
+              [
+                "15 - fifTEEN",
+                "50 – FIFty"
+              ],
+              [
+                "16 - sixTEEN",
+                "60 – SIXty"
+              ],
+              [
+                "17 - sevenTEEN",
+                "70 – SEVENty"
+              ],
+              [
+                "18 - eightTEEN",
+                "80 – EIGHty"
+              ],
+              [
+                "19 - nineTEEN",
+                "– NINEty"
+              ]
+            ]
+          }
+        ],
+        "practicePhrases": []
+      },
+      "requiresImages": false
+    },
+    {
+      "code": "2D",
+      "title": "Speaking – PHONE NUMBERS",
+      "skill": "Speaking",
+      "order": 8,
+      "tasks": [
+        {
+          "order": 1,
+          "instruction": "A IA pergunta ao aluno “What’s your phone number?”, corrigindo problemas com a pronúncia e se certificando de que o aluno lê os números um a um e em caso de dois números iguais seguindo, o aluno diz “double 7”, por exemplo.",
+          "type": "student_answers"
+        },
+        {
+          "order": 2,
+          "instruction": "A IA pede para o aluno iniciar o diálogo, usando como respostas um número fictício.",
+          "type": "student_leads"
+        }
+      ],
+      "referenceContent": {
+        "dialogues": [
+          [
+            "A: What’s your phone number?",
+            "B: It’s 555-0974. (FIVE-FIVE-FIVE-OH-NINE-SEVEN-FOUR)"
+          ]
+        ],
+        "vocabulary": [
+          "Caso o aluno queira praticar mais, o a IA poderá sugerir outros números fictícios."
+        ],
+        "grammarNotes": [
+          "Quando o número é repetido, é possível falar DOUBLE X, por exemplo,",
+          "555-9974 (FIVE-FIVE-FIVE-DOUBLE NINE-SEVEN-FOUR)"
+        ],
+        "tables": [],
+        "practicePhrases": []
+      },
+      "requiresImages": false
+    },
+    {
+      "code": "2F",
+      "title": "Speaking – Ask someone’s AGE (idade)",
+      "skill": "Speaking",
+      "order": 9,
+      "tasks": [
+        {
+          "order": 1,
+          "instruction": "A IA começa falando que não se pergunta a idade de quem alguém com quem não se tem intimidade, mas que nessa lição podemos fazer isso.",
+          "type": "student_answers"
+        },
+        {
+          "order": 2,
+          "instruction": "A IA pergunta ao aluno “How old are you?”, corrigindo-o caso necessário, principalmente a resposta com I’m e não I have.",
+          "type": "student_answers"
+        },
+        {
+          "order": 3,
+          "instruction": "A IA mostra que se usa mais a pergunta sobre idades quando se fala de uma terceira pessoa.",
+          "type": "student_answers"
+        },
+        {
+          "order": 4,
+          "instruction": "A IA mostra imagens de pessoas diferentes (tabela abaixo) e pergunta “How old is he/she?”",
+          "type": "student_answers"
+        },
+        {
+          "order": 5,
+          "instruction": "A IA pede para o aluno iniciar o diálogo, tanto para praticar a pergunta e para praticar a substituição dos pronomes (usar as mesmas imagens).",
+          "type": "student_leads"
+        }
+      ],
+      "referenceContent": {
+        "dialogues": [
+          [
+            "A: How old are you?",
+            "B: I’m 25 years old."
+          ],
+          [
+            "Example:",
+            "A: How old is he?",
+            "B: He’s 10 years old."
+          ],
+          [
+            "A: How old is she?",
+            "B: She’s about 20 years old."
+          ],
+          [
+            "A: How old is she?",
+            "B: She’s (about) 20."
+          ],
+          [
+            "A: How old is Jesus in this picture?",
+            "B: He’s 33 years old.",
+            "A: How old is Jesus in this picture?",
+            "B: He’s 2 years old.",
+            "A: How old is Jesus in this picture?",
+            "B: He’s 12 (twelve) years old.",
+            "A: How old is Jesus in this picture?",
+            "B: He’s 30 (thirty) years old."
+          ]
+        ],
+        "vocabulary": [
+          "Mostra as imagens de Jesus em diferentes idades e inicia os diálogos abaixo, mostrando as imagens."
+        ],
+        "grammarNotes": [
+          "Para perguntar a idade, você usa “How old...?”",
+          "How old is she? How old is he?",
+          "Example:",
+          "Quando for a idade aproximada, você pode usar a expressão ABOUT (aproximadamente, mais ou menos).",
+          "Lembre-se de que você pode omitir a expressão “years old”.",
+          "ASK ABOUT AGE",
+          "How old is he? / How old is she?"
+        ],
+        "tables": [
+          {
+            "rows": [
+              [
+                "",
+                "Q: How old is she?\nA: She’s (about) 20."
+              ],
+              [
+                "",
+                "Q: How old is he?\nA: He’s (about) 50."
+              ],
+              [
+                "",
+                "Q: How old is he?\nA: He’s (about) 40."
+              ],
+              [
+                "",
+                "Q: How old is he?\nA: He’s (about) 80."
+              ],
+              [
+                "",
+                "Q: How old is he?\nA: She’s (about) 2."
+              ],
+              [
+                "",
+                "Q: How old is he?\nA: He’s (about) 13."
+              ],
+              [
+                "",
+                "Q: How old is she?\nA: She’s (about) 10."
+              ],
+              [
+                "",
+                "Q: How old is she?\nA: She’s (about) 18."
+              ]
+            ]
+          }
+        ],
+        "practicePhrases": []
+      },
+      "requiresImages": true,
+      "imageNote": "A IA mostra imagens de pessoas diferentes (tabela abaixo) e pergunta “How old is he/she?”"
+    },
+    {
+      "code": "3A",
+      "title": "Speaking – Where are you from? Bible characters",
+      "skill": "Speaking",
+      "order": 10,
+      "tasks": [
+        {
+          "order": 1,
+          "instruction": "A IA pergunta ao aluno de onde são alguns personagens bíblicos.",
+          "type": "student_answers"
+        },
+        {
+          "order": 2,
+          "instruction": "A IA mostra as imagens e pede para o aluno dizer de onde vem as pessoas.",
+          "type": "demonstrate"
+        },
+        {
+          "order": 3,
+          "instruction": "A IA pede para o aluno iniciar o diálogo anterior a fim de praticar como fazer a pergunta, corrigindo a gramática e a pergunta.",
+          "type": "student_leads"
+        },
+        {
+          "order": 4,
+          "instruction": "A IA pergunta ao aluno “Where are you from?”",
+          "type": "student_answers"
+        },
+        {
+          "order": 5,
+          "instruction": "A IA pede para o aluno perguntar a ela “Where are you from?”",
+          "type": "other"
+        },
+        {
+          "order": 6,
+          "instruction": "A IA pede para o aluno iniciar o diálogo e perguntar a IA de onde ela é.",
+          "type": "student_leads"
+        }
+      ],
+      "referenceContent": {
+        "dialogues": [
+          [
+            "A: Where are you from?",
+            "B: I’m from Brazil."
+          ]
+        ],
+        "vocabulary": [],
+        "grammarNotes": [
+          "Jesus is from Bethlehem.",
+          "Luke is from Antioch.",
+          "Paul is from Tarsus.",
+          "Moses is from Egypt.",
+          "David is from Bethlehem."
+        ],
+        "tables": [],
+        "practicePhrases": []
+      },
+      "requiresImages": true,
+      "imageNote": "A IA mostra as imagens e pede para o aluno dizer de onde vem as pessoas."
+    },
+    {
+      "code": "3B",
+      "title": "Countries and Continents",
+      "skill": null,
+      "order": 11,
+      "tasks": [],
+      "referenceContent": {
+        "dialogues": [],
+        "vocabulary": [],
+        "grammarNotes": [
+          "Vocabulary – CONTINENTS AND COUNTRIES",
+          "There are five continents. Each continent has several countries.",
+          "*The United States = the US = The States = America",
+          "Add more countries to this list!"
+        ],
+        "tables": [
+          {
+            "rows": [
+              [
+                "CONTINENTS",
+                "CONTINENTS",
+                "COUNTRIES"
+              ],
+              [
+                "Africa",
+                "Africa",
+                "Morocco, Egypt, South Africa, Senegal"
+              ],
+              [
+                "America",
+                "North America",
+                "The United States*, Canada"
+              ],
+              [
+                "America",
+                "Central America",
+                "Jamaica, Cuba"
+              ],
+              [
+                "America",
+                "South America",
+                "Brazil, Chile, Argentina"
+              ],
+              [
+                "Asia",
+                "Asia",
+                "China, Japan, Korea"
+              ],
+              [
+                "Australia",
+                "Australia",
+                "Australia, New Zealand"
+              ],
+              [
+                "Europe",
+                "Europe",
+                "Italy, France, Portugal, Germany"
+              ]
+            ]
+          }
+        ],
+        "practicePhrases": []
+      },
+      "requiresImages": false
+    },
+    {
+      "code": "3C",
+      "title": "Grammar and Vocabulary – VERB TO BE with WE, YOU and THEY (plural pronouns)",
+      "skill": "Grammar and Vocabulary",
+      "order": 12,
+      "tasks": [],
+      "referenceContent": {
+        "dialogues": [],
+        "vocabulary": [],
+        "grammarNotes": [
+          "ORIGINS AND NATIONALITIES",
+          "Vocês lembram que eu falei que o Verbo To be era usado para várias situações? A Lição 1 foi sobre nomes. I’m Débora. Are you Piedro? Na Lição 2 falamos sobre idades. Nessa Lição 3 vamos falar sobre nacionalidades ou origens e vamos apresentar os pronomes no plural: WE – YOU – THEY. O verb to be é o mesmo para os três pronomes – ARE.",
+          "PRONOUNS IN THE PLURAL",
+          "PRONOUNS WE, YOU, THEY (PLURAL) + CONJUGATION OF THE VERB TO BE",
+          "PRONOUNS (SINGULAR and PLURAL) + CONJUGATION OF THE VERB TO BE",
+          "Verb to be with nationalities/origins.",
+          "Where am I from? Am I from Brazil? Yes, I am. / No, I’m not.",
+          "Where are you from? Are you from Brazil? (singular) Yes, you are. / No, you’re not.",
+          "Where is he from? Is he from Brazil? Yes, he is. / No, he’s not.",
+          "Where is she from? Is she from Brazil? Yes, she is. / No, she’s not.",
+          "Where is it from? Is it from Brazil? Yes, it is. / No, it’s not.",
+          "Where are we from? Are we from Brazil? Yes, we are. / No, we’re not.",
+          "Where are you from? Are you from Brazil? (plural) Yes, you are. / No, you’re not.",
+          "Where are they from? Are they from Brazil? Yes, they are. / No, they’re not."
+        ],
+        "tables": [
+          {
+            "rows": [
+              [
+                "1st person PLURAL",
+                "1st person PLURAL",
+                "We"
+              ],
+              [
+                "2nd person PLURAL",
+                "2nd person PLURAL",
+                "You"
+              ],
+              [
+                "3rd person singular",
+                "masculine",
+                "They"
+              ],
+              [
+                "3rd person singular",
+                "Feminine",
+                "They"
+              ],
+              [
+                "3rd person singular",
+                "Neutral",
+                "They"
+              ]
+            ],
+            "caption": "PRONOUNS IN THE PLURAL"
+          },
+          {
+            "rows": [
+              [
+                "PRONOUN",
+                "AFFIRMATIVE",
+                "CONTRACTION",
+                "INTERROGATIVE",
+                "SHORT ANSWER"
+              ],
+              [
+                "we",
+                "Are",
+                "We’re",
+                "Are we...?",
+                "Yes, we are\nNo, we’re not."
+              ],
+              [
+                "you",
+                "Are",
+                "you’re",
+                "Are you...?",
+                "Yes, you are.\nNo, you’re not."
+              ],
+              [
+                "they",
+                "Are",
+                "they’re",
+                "Are they...?",
+                "Yes, they are.\nNo, they’re not."
+              ]
+            ],
+            "caption": "PRONOUNS WE, YOU, THEY (PLURAL) + CONJUGATION OF THE VERB TO BE"
+          },
+          {
+            "rows": [
+              [
+                "PRONOUN",
+                "AFFIRMATIVE",
+                "CONTRACTION",
+                "INTERROGATIVE",
+                "SHORT ANSWER"
+              ],
+              [
+                "I",
+                "Am",
+                "I’m",
+                "Am I...?",
+                "Yes, I am\nNo, I’m not."
+              ],
+              [
+                "you",
+                "Are",
+                "you’re",
+                "Are you...?",
+                "Yes, you are.\nNo, you’re not."
+              ],
+              [
+                "he",
+                "Is",
+                "he’s",
+                "Is he...?",
+                "Yes, he is.\nNo, he’s not."
+              ],
+              [
+                "she",
+                "Is",
+                "she’s",
+                "Is she...?",
+                "Yes, she is.\nNo, she’s not."
+              ],
+              [
+                "it",
+                "Is",
+                "it’s",
+                "Is it...?",
+                "Yes, it is.\nNo, it’s not."
+              ],
+              [
+                "we",
+                "Are",
+                "We’re",
+                "Are we...?",
+                "Yes, we are\nNo, we’re not."
+              ],
+              [
+                "you",
+                "Are",
+                "you’re",
+                "Are you...?",
+                "Yes, you are.\nNo, you’re not."
+              ],
+              [
+                "they",
+                "Are",
+                "they’re",
+                "Are they...?",
+                "Yes, they are.\nNo, they’re not."
+              ]
+            ],
+            "caption": "PRONOUNS (SINGULAR and PLURAL) + CONJUGATION OF THE VERB TO BE"
+          }
+        ],
+        "practicePhrases": []
+      },
+      "requiresImages": false
+    },
+    {
+      "code": "3D",
+      "title": "Speaking 1 – Where are they from?",
+      "skill": "Speaking 1",
+      "order": 13,
+      "tasks": [
+        {
+          "order": 1,
+          "instruction": "A IA pede para o aluno dizer de onde ele é, “Where are you from?”",
+          "type": "other"
+        },
+        {
+          "order": 2,
+          "instruction": "A IA pede para o aluno iniciar o diálogo.",
+          "type": "student_leads"
+        },
+        {
+          "order": 3,
+          "instruction": "A IA mostra as seguintes imagens e pergunta aos alunos de onde essas pessoa são, corrigindo-o.",
+          "type": "student_answers"
+        },
+        {
+          "order": 4,
+          "instruction": "A IA pede para o aluno iniciar o diálogo, para praticar a substituição dos pronomes e verbos.",
+          "type": "student_leads"
+        }
+      ],
+      "referenceContent": {
+        "dialogues": [
+          [
+            "Example:",
+            "A: Where are you from?",
+            "B: I’m from Brazil.",
+            "A: Where is he from?",
+            "B: He’s from Canada.",
+            "A: Where is she from?",
+            "B: She’s from Japan."
+          ]
+        ],
+        "vocabulary": [],
+        "grammarNotes": [
+          "Para perguntar de onde uma pessoa vem, você usa as perguntas.",
+          "Where are you from?",
+          "Where is he from?",
+          "Where is she from?",
+          "Where are they from?",
+          "Example:",
+          "A resposta pode ser um país ou um estado, uma cidade ou uma região."
+        ],
+        "tables": [
+          {
+            "rows": [
+              [
+                "",
+                "Where is he from?\nHe’s from China."
+              ],
+              [
+                "",
+                "Where is he from?\nHe’s from Scotland."
+              ],
+              [
+                "",
+                "Where is she from?\nShe’s from Japan."
+              ],
+              [
+                "",
+                "Where are they from?\nThey’re from China."
+              ],
+              [
+                "",
+                "Where are they from?\nThey’re from England."
+              ],
+              [
+                "",
+                "Where are they from?\nThey’re from Africa."
+              ]
+            ]
+          }
+        ],
+        "practicePhrases": []
+      },
+      "requiresImages": true,
+      "imageNote": "A IA mostra as seguintes imagens e pergunta aos alunos de onde essas pessoa são, corrigindo-o."
+    },
+    {
+      "code": "3E",
+      "title": "Vocabulary 2 – Nationalities",
+      "skill": "Vocabulary 2",
+      "order": 14,
+      "tasks": [],
+      "referenceContent": {
+        "dialogues": [],
+        "vocabulary": [
+          "-IAN – Brazilian, Argentinian, Australian",
+          "-AN – American, German, Korean",
+          "-ESE – Chinese, Japanese, Vietnamese",
+          "-ISH – British, Turkish, English, Scottish,"
+        ],
+        "grammarNotes": [
+          "This is the second vocabulary class in this lesson. It is about nationalities. Lesson 3B was about countries and continents. This is about nationalities.",
+          "I’m from Brazil. / I’m Brazilian.",
+          "He’s from the United States. He’s American.",
+          "Nationalities are simple. Just add -IAN, as in Brazilian.",
+          "Suffixes for nationalities:",
+          "Irregular – France – French / Thailand – Thai / Switzerland – Swiss / Czech Republic – Czech / Greece – Greek /",
+          "Don´t forget to do the exercises on the platform."
+        ],
+        "tables": [],
+        "practicePhrases": []
+      },
+      "requiresImages": false
+    },
+    {
+      "code": "3F",
+      "title": "Grammar and Speaking – ASK ABOUT ORIGINS AND NATIONALITIES – YES-NO QUESTIONS",
+      "skill": "Grammar and Speaking",
+      "order": 15,
+      "tasks": [
+        {
+          "order": 1,
+          "instruction": "A IA pergunta ao aluno sobre a sua nacionalidade com uma Yes-No question “Are you _______?” Usar as nacionalidades Spanish, Portuguese, Brazilian, nessa ordem.",
+          "type": "student_answers"
+        },
+        {
+          "order": 2,
+          "instruction": "A IA pede para o aluno iniciar o diálogo, perguntando a IA sobre a sua nacionalidade. A IA é “Brazilian”.",
+          "type": "student_leads"
+        },
+        {
+          "order": 3,
+          "instruction": "A IA mostra as seguintes imagens e pergunta aos alunos de onde essas pessoa são, usando as nacionalidades, corrigindo-o. Usar as nacionalidades Chinese, English, Scottish, Korean, Japanese, American, and African, numa ordem aleatória, para algumas respostas serem afirmativas e outras negativas, aleatoriamente. O aluno deve praticar as short answers.",
+          "type": "student_answers"
+        },
+        {
+          "order": 4,
+          "instruction": "A IA pede para o aluno iniciar o diálogo, para praticar a substituição dos pronomes e verbos nas perguntas Is he ___? / Is she _____ ? / Are they ____?",
+          "type": "student_leads"
+        }
+      ],
+      "referenceContent": {
+        "dialogues": [
+          [
+            "A: Are you Brazilian?",
+            "B: Yes, I am. / No, I’m not."
+          ]
+        ],
+        "vocabulary": [],
+        "grammarNotes": [],
+        "tables": [
+          {
+            "rows": [
+              [
+                "",
+                "Is he Chinese?\nYes, he is."
+              ],
+              [
+                "",
+                "Is he English?\nNo, he’s not. He’s Scottish."
+              ],
+              [
+                "",
+                "Is he Chinese?\nNo, she’s not. She’s Japanese."
+              ],
+              [
+                "",
+                "Are they American?\nNo, they’re not. They’re Chinese."
+              ],
+              [
+                "",
+                "Are they Scottish?\nNo, they’re not. They’re English."
+              ],
+              [
+                "",
+                "Are they African?\nYes, they are."
+              ]
+            ]
+          }
+        ],
+        "practicePhrases": []
+      },
+      "requiresImages": true,
+      "imageNote": "A IA mostra as seguintes imagens e pergunta aos alunos de onde essas pessoa são, usando as nacionalidades, corrigindo-o. Usar as nacionalidades Chinese, English, Scottish, Korean, Japanese, American, and African, numa ordem aleatória, para algumas respostas serem afirmativas e outras negativas, aleatoriamente. O aluno deve praticar as short answers."
+    },
+    {
+      "code": "3G",
+      "title": "Grammar – WH- vs. YES-No Questions",
+      "skill": "Grammar",
+      "order": 16,
+      "tasks": [],
+      "referenceContent": {
+        "dialogues": [],
+        "vocabulary": [],
+        "grammarNotes": [
+          "Wh- questions begin with WH- words, such as WHERE, WHAT, HOW OLD, etc.",
+          "Yes-No Questions begin with the verb and the answer is YES or NO. The answer can be a short answer, such as Yes, I am, for example."
+        ],
+        "tables": [
+          {
+            "rows": [
+              [
+                "WH-WORD",
+                "VERB TO BE",
+                "SUBJECT",
+                "COMPLEMENT"
+              ],
+              [
+                "What",
+                "is",
+                "your name?",
+                ""
+              ],
+              [
+                "How old",
+                "is",
+                "she?",
+                ""
+              ],
+              [
+                "Where",
+                "are",
+                "they",
+                "from?"
+              ]
+            ]
+          },
+          {
+            "rows": [
+              [
+                "VERB TO BE",
+                "SUBJECT",
+                "COMPLEMENT",
+                "SHORT ANSWER"
+              ],
+              [
+                "Are",
+                "you",
+                "Piedro?",
+                "Yes, I am."
+              ],
+              [
+                "Is",
+                "she",
+                "20 years old?",
+                "No, she’s not."
+              ],
+              [
+                "Are",
+                "they",
+                "Chinese?",
+                "Yes, they are."
+              ],
+              [
+                "Is",
+                "your last name",
+                "Silva?",
+                "No, it’s not."
+              ]
+            ]
+          }
+        ],
+        "practicePhrases": []
+      },
+      "requiresImages": false
+    },
+    {
+      "code": "3H",
+      "title": "Pronunciation – Rising-falling Intonation",
+      "skill": "Pronunciation",
+      "order": 17,
+      "tasks": [
+        {
+          "order": 1,
+          "instruction": "IA pede para o aluno repetir algumas frases com os dois padrões de entoação do inglês, corrigindo-o",
+          "type": "student_repeats"
+        },
+        {
+          "order": 2,
+          "instruction": "A IA apresenta as frases aleatoriamente e pede para o aluno lè-las, corrigindo-o, caso a entoação ou a pronúncia esteja incorreta.",
+          "type": "demonstrate"
+        }
+      ],
+      "referenceContent": {
+        "dialogues": [],
+        "vocabulary": [],
+        "grammarNotes": [
+          "Nessa aula nós vamos ver pela primeira vez o conceito de \"intonation\". O que é \"intonation\"? É como se fosse uma música. É a melodia da nossa voz enquanto falamos. Na \"intonation\", a nossa voz, ela sobe, ela desce. Às vezes ela é aguda, às vezes ela é grave.",
+          "Em inglês existe um padrão que é usado pras \"wh-questions\", pros \"statements\", ou seja, orações afirmativas ou negativas, e pras \"short answers\". Sempre você vai usar esse mesmo padrão.",
+          "Por exemplo:",
+          "Where are you from?",
+          "Ou seja, a sua começa baixa, ela sobe um pouquinho e depois ela desce, menos do que ela começou. É chamada de rising-falling intonation.",
+          "Where are you from?",
+          "How old are you?",
+          "What’s your name?",
+          "Você nota que a sua voz sobe e depois ela desce? Esse é o padrão de entoação usado em inglês. Normalmente a sua voz sobe no final da oração. Vamos ver mais alguns exemplos?",
+          "I’m Sarah.",
+          "I’m Debora.",
+          "I’m 25 years old.",
+          "Não esqueçam que as \"short answers\" sempre têm três sílabas.",
+          "Então vamos praticar mais? Escute o áudio, repita e compare a sua voz com a voz do áudio."
+        ],
+        "tables": [],
+        "practicePhrases": [
+          {
+            "group": "Rising-falling intonation",
+            "phrases": [
+              "How do you spell your name?",
+              "How do you spell your last name?",
+              "What’s your name?",
+              "I’m Sarah. I’m John.",
+              "Nice to meet you.",
+              "Nice to meet you too.",
+              "Hello.",
+              "Hi.",
+              "Good morning.",
+              "See you tomorrow.",
+              "See you later.",
+              "How are you?",
+              "Fine.",
+              "I’m fine.",
+              "And you?",
+              "How are you doing?",
+              "Great!",
+              "I’m good!",
+              "Have a nice weekend!",
+              "You too.",
+              "Sleep well.",
+              "How old are you?",
+              "I’m 28.",
+              "How old is she?",
+              "She’s two years old.",
+              "How old is he?",
+              "He’s 10.",
+              "Yes, I am.",
+              "No, I’m not.",
+              "Yes, he is.",
+              "No, he’s not.",
+              "What’s your phone number?",
+              "It’s 555-2278.",
+              "Where are you from?",
+              "I’m from Brazil.",
+              "Where are they from?",
+              "They’re from Portugal.",
+              "Where is she from?",
+              "She’s from Spain."
+            ]
+          },
+          {
+            "group": "Rising Intonation",
+            "phrases": [
+              "Could you spell your first name?",
+              "Could you spell your last name?",
+              "Are you John?",
+              "Are you Debbie?",
+              "Is he Chinese?",
+              "Are they Scottish?"
+            ]
+          }
+        ]
+      },
+      "requiresImages": false
+    },
+    {
+      "code": "4AB",
+      "title": "Speaking and Vocabulary – What do you do? – Jobs and Occupations",
+      "skill": "Speaking and Vocabulary",
+      "order": 18,
+      "tasks": [
+        {
+          "order": 1,
+          "instruction": "A IA mostra ao aluno as imagens dos personagens bíblicos cujas profissões estão reveladas na Bíblia e pede para o aluno completer a frase.",
+          "type": "demonstrate"
+        },
+        {
+          "order": 2,
+          "instruction": "A IA apresenta as imagens abaixo e pede para o aluno dizer a profissão, corrigindo-o.",
+          "type": "demonstrate"
+        },
+        {
+          "order": 3,
+          "instruction": "A IA pergunta ao aluno qual a sua profissão. Se não estiver na lista, a IA deverá proporcionar o vocabulário necessário",
+          "type": "student_answers"
+        }
+      ],
+      "referenceContent": {
+        "dialogues": [
+          [
+            "A: What do you do?",
+            "B: I’m a carpenter."
+          ]
+        ],
+        "vocabulary": [],
+        "grammarNotes": [
+          "a. Peter is a fisherman.",
+          "b. Matthew is a tax collector.",
+          "c. Joseph is a carpenter.",
+          "d. David is a shepherd.",
+          "More vocabulary about jobs and occupations",
+          "A typical dialogue about jobs and occupations. Para perguntar qual a profissão de alguém, veja esse diálogo:"
+        ],
+        "tables": [
+          {
+            "rows": [
+              [
+                "a teacher\na student",
+                "a waiter",
+                "a shop assistant\na clerk",
+                "a secretary",
+                "a singer"
+              ],
+              [
+                "actors\nAn actor\nAn actress",
+                "an architect",
+                "a cook\na chef",
+                "a dentist",
+                "a doctor"
+              ],
+              [
+                "an engineer",
+                "a nurse",
+                "a pastor",
+                "a police officer",
+                "a scientist"
+              ]
+            ],
+            "caption": "More vocabulary about jobs and occupations"
+          }
+        ],
+        "practicePhrases": []
+      },
+      "requiresImages": true,
+      "imageNote": "A IA mostra ao aluno as imagens dos personagens bíblicos cujas profissões estão reveladas na Bíblia e pede para o aluno completer a frase."
+    },
+    {
+      "code": "4C",
+      "title": "Grammar 1 – Indefinite articles",
+      "skill": "Grammar 1",
+      "order": 19,
+      "tasks": [
+        {
+          "order": 1,
+          "instruction": "A IA mostra ao aluno as mesmas imagens acima (4AB) e pede para o aluno completer a frase, corrigindo o uso dos artigos  A e AN.",
+          "type": "demonstrate"
+        }
+      ],
+      "referenceContent": {
+        "dialogues": [
+          [
+            "A: What do you do?",
+            "B: I’m a secretary."
+          ]
+        ],
+        "vocabulary": [],
+        "grammarNotes": [
+          "Para falar de profissões, no singular deve-se usar A ou AN antes da profissão.",
+          "I’m a teacher.",
+          "I’m an engineer.",
+          "A + consonant",
+          "An + vowel",
+          "Atenção para a pronúncia! A = schwa",
+          "Agora vamos juntar vocabulary and grammar? Observe the A or AN before the jobs or occupations.",
+          "A + consonant",
+          "a secretary",
+          "a nurse",
+          "a shop assistant",
+          "a cook",
+          "a chef",
+          "a waiter",
+          "a scientist",
+          "a doctor",
+          "a police officer",
+          "a dentist",
+          "a teacher",
+          "a singer",
+          "a dentist",
+          "AN + vowel",
+          "an actor",
+          "an actress",
+          "an engineer",
+          "an architect"
+        ],
+        "tables": [],
+        "practicePhrases": []
+      },
+      "requiresImages": true,
+      "imageNote": "A IA mostra ao aluno as mesmas imagens acima (4AB) e pede para o aluno completer a frase, corrigindo o uso dos artigos  A e AN."
+    },
+    {
+      "code": "4D",
+      "title": "Speaking Grammar and Vocabulary – He She They",
+      "skill": "Speaking Grammar and Vocabulary",
+      "order": 20,
+      "tasks": [
+        {
+          "order": 1,
+          "instruction": "A IA apresenta as imagens abaixo e pede para o aluno formar frases com he, she or they e a frase que está abaixo das imagens, juntando o conteúdos de vocabulário (as profissões), grammar (a / an, singular / plural, subject-verb agreement he/she/they + verb to be)",
+          "type": "demonstrate"
+        },
+        {
+          "order": 2,
+          "instruction": "ATENÇÃO: USAR AS MESMAS IMAGENS DO 4ABC",
+          "type": "other"
+        }
+      ],
+      "referenceContent": {
+        "dialogues": [],
+        "vocabulary": [],
+        "grammarNotes": [
+          "In Lesson C, we learned about A and AN before jobs and occupations, but that rule is only for the singular. In the plural, you do NOT use A or AN. For example:",
+          "SINGULAR\t\t\t\t\t\t\tPLURAL",
+          "She’s a secretary.\t\tShe´s a singer.\t\tThey´re shop assistants.",
+          "She´s a nurse.\t\t\tShe´s a dentist.\t\tThey´re engineers.",
+          "He´s a cook. He´s a chef.\t\t\t\t\tThey´re architects.",
+          "She´s a waiter / waitress.",
+          "He´s an actor.",
+          "She´s an actress.",
+          "He´s a scientist.",
+          "He´s a doctor.",
+          "He´s a police officer.",
+          "She´s a teacher."
+        ],
+        "tables": [],
+        "practicePhrases": []
+      },
+      "requiresImages": true,
+      "imageNote": "A IA apresenta as imagens abaixo e pede para o aluno formar frases com he, she or they e a frase que está abaixo das imagens, juntando o conteúdos de vocabulário (as profissões), grammar (a / an, singular / plural, subject-verb agreement he/she/they + verb to be)"
+    },
+    {
+      "code": "4E",
+      "title": "Grammar 2 – The Negative Form of the Verb To Be",
+      "skill": "Grammar 2",
+      "order": 21,
+      "tasks": [
+        {
+          "order": 1,
+          "instruction": "A IA apresenta as imagens abaixo e pede para o aluno formar frases com he, she or they e a frase que está abaixo das imagens, juntando o conteúdos de vocabulário (as profissões), grammar (a / an, singular / plural, subject-verb agreement he/she/they + verb to be)",
+          "type": "demonstrate"
+        },
+        {
+          "order": 2,
+          "instruction": "A IA apresenta as imagens das lições 4ABC sobre profissões de forma embaralhada e aleatória e inicia diálogos semelhantes ao que estão acima, misturando as profissões e as imagens, por exemplo,",
+          "type": "demonstrate"
+        },
+        {
+          "order": 3,
+          "instruction": "ATENÇÃO: USAR AS MESMAS IMAGENS DO 4ABC",
+          "type": "other"
+        }
+      ],
+      "referenceContent": {
+        "dialogues": [],
+        "vocabulary": [
+          "O aluno responde a pergunta formando frases negativas. Praticar pelo menos uma vez com cada imagem, corrigindo-o. Caso o aluno precise, repetir a atividade."
+        ],
+        "grammarNotes": [
+          "The negative form of the Verb To Be is simple – add the adverb NOT after the verbs AM, IS or ARE.",
+          "I’m not a teacher.",
+          "I´m not an engineer.",
+          "Peter is not a lawyer.",
+          "Sarah is not a doctor.",
+          "My parents are not engineers.",
+          "Examples from the Bible"
+        ],
+        "tables": [
+          {
+            "rows": [
+              [
+                "Is Matthew a carpenter?\nNo, he´s not a carpenter. He´s a tax collector.",
+                ""
+              ],
+              [
+                "Is David a fisherman?\nNo, he´s not a fisherman. He´s a shepherd.",
+                ""
+              ],
+              [
+                "Is Joseph a shepherd?\nNo, he´s not a shepherd. He´s a carpenter.",
+                ""
+              ],
+              [
+                "Is Peter a tax collector?\nNo, he´s not a tax collector. He´s a fisherman.",
+                ""
+              ]
+            ],
+            "caption": "Examples from the Bible"
+          },
+          {
+            "rows": [
+              [
+                "Is she a nurse?\nNo, she’s not a nurse. She’s a secretary.",
+                ""
+              ]
+            ]
+          },
+          {
+            "rows": [
+              [
+                "",
+                "",
+                "",
+                "",
+                ""
+              ],
+              [
+                "",
+                "",
+                "",
+                "",
+                ""
+              ],
+              [
+                "",
+                "",
+                "",
+                "",
+                ""
+              ],
+              [
+                "a teacher\na student \na dentist\na doctor\nan engineer \na nurse \na police officer \na scientist\na pastor\na waiter \na shop assistant\na clerk\na secretary \na singer\nactors\nan actor\nan actress\nan architect\na cook\na chef",
+                "a teacher\na student \na dentist\na doctor\nan engineer \na nurse \na police officer \na scientist\na pastor\na waiter \na shop assistant\na clerk\na secretary \na singer\nactors\nan actor\nan actress\nan architect\na cook\na chef",
+                "a teacher\na student \na dentist\na doctor\nan engineer \na nurse \na police officer \na scientist\na pastor\na waiter \na shop assistant\na clerk\na secretary \na singer\nactors\nan actor\nan actress\nan architect\na cook\na chef",
+                "a teacher\na student \na dentist\na doctor\nan engineer \na nurse \na police officer \na scientist\na pastor\na waiter \na shop assistant\na clerk\na secretary \na singer\nactors\nan actor\nan actress\nan architect\na cook\na chef",
+                "a teacher\na student \na dentist\na doctor\nan engineer \na nurse \na police officer \na scientist\na pastor\na waiter \na shop assistant\na clerk\na secretary \na singer\nactors\nan actor\nan actress\nan architect\na cook\na chef"
+              ]
+            ]
+          }
+        ],
+        "practicePhrases": []
+      },
+      "requiresImages": true,
+      "imageNote": "A IA apresenta as imagens abaixo e pede para o aluno formar frases com he, she or they e a frase que está abaixo das imagens, juntando o conteúdos de vocabulário (as profissões), grammar (a / an, singular / plural, subject-verb agreement he/she/they + verb to be)"
+    },
+    {
+      "code": "5",
+      "title": "Review",
+      "skill": null,
+      "order": 22,
+      "tasks": [
+        {
+          "order": 1,
+          "instruction": "A IA repete aleatoriamente todas as tarefas feitas nessa unidade, revisando o conteúdos, mas repetindo menos vezes. Se o aluno tiver dificuldades, sugerir retornar para as respectivas lições.",
+          "type": "other"
+        }
+      ],
+      "referenceContent": {
+        "dialogues": [],
+        "vocabulary": [],
+        "grammarNotes": [
+          "Lessons 1 to 4",
+          "Essa lição vai ser uma Review. É muito importante revisar o aprendizado, organizar os conteúdos estudados e saber o que você já aprendeu.",
+          "Grammar",
+          "·       Pronouns I, you, he, she , it, we, and they",
+          "·       Verb to be com cada um desses pronouns in the affirmative, interrogative and negative forms, assim como as respectivas short answers",
+          "·       Indefinite articles A and AN usados com jobs and occupations",
+          "Vocabulary",
+          "·       the alphabet,",
+          "·       the numbers from 1 to 100,",
+          "·       some Biblical names of and",
+          "·       some names of God,",
+          "·       countries and nationalities,",
+          "·       jobs and occupations, and",
+          "·       cognate words.",
+          "Você aprendeu cerca de pelo menos 100 palavras.",
+          "Speaking",
+          "·       Spell a name,",
+          "·       say your name and",
+          "·       introduce yourself,",
+          "·       say your age,",
+          "·       say your phone number,",
+          "·       say where you are from and",
+          "·       say your nationality, and",
+          "·       say your job and occupation.",
+          "Pronunciation",
+          "·       aprendemos 4 sons: /aI/, /eI/, /Ɵ/ e o /E/ (o schwa)",
+          "·       the intonation of short answers.",
+          "Convido você agora a fazer exercícios sobre esses assuntos que se encontram na plataforma, para consolidar mais ainda o seu conhecimento.",
+          "Ao final dos exercícios, você poderá fazer uma auto-avaliação. Assim você verá o quanto aprendeu e o quanto ainda precisa praticar."
+        ],
+        "tables": [],
+        "practicePhrases": []
+      },
+      "requiresImages": false
+    }
+  ]
+}

@@ -3,7 +3,7 @@ import { GroqAIProvider } from "@/core/ai/GroqAIProvider";
 import { OpenAIProvider } from "@/core/ai/OpenAIProvider";
 import { TutorResponseSchema, type TutorResponse } from "@/core/ai/TutorResponse";
 import { TUTOR_SYSTEM_PROMPT } from "@/app-config/persona";
-import { getCourseOverview, getLessonByCode } from "@/app-config/curriculum";
+import { getCourseOverview, getFirstLesson, getGlobalPrinciples, getLessonByCode, taskId, type CurriculumLesson } from "@/app-config/curriculum";
 import type { AIOptions, Message } from "@/core/ai/AIProvider";
 
 // The provider swap lives here, not in app-config/providers.ts: both
@@ -27,6 +27,10 @@ interface ChatRequestBody {
   detectedLanguage?: string;
   studentName?: string;
   currentLessonCode?: string;
+  /** Alias accepted for currentLessonCode — the school platform's real
+   * integration (see the ?aluno=&licao= URL contract in page.tsx) may not
+   * know our internal field name; either spelling resolves the same lesson. */
+  lessonCode?: string;
   timeWarning?: boolean;
   attemptCount?: number;
   nudge?: "gentle" | "help" | "offer" | "answer";
@@ -49,6 +53,101 @@ const NUDGE_INSTRUCTIONS: Record<NonNullable<ChatRequestBody["nudge"]>, string> 
 };
 
 const MAX_NAME_LEN = 80;
+
+/**
+ * Renders the current lesson's full roteiro (global principles + ordered
+ * task sequence + reference content) as the "CURRENT LESSON PLAN" block
+ * injected into the system prompt — this is what lets the tutor actually
+ * follow the school's real lesson script instead of improvising, and is
+ * shared verbatim by both a normal turn and the lesson-kickoff turn (see
+ * orchestrator.startLesson / greetingPrefetch.ts — both just set
+ * currentLessonCode and land here through the same code path).
+ *
+ * There's no separate wire field carrying "which task is currently in
+ * progress" (that would mean orchestrator.ts forwarding completed task
+ * ids on every request — out of scope for this change, see the task-id
+ * bracket note below). Instead the instruction block asks the model to
+ * infer the current task from the conversation history it already
+ * receives in full every turn, the same way completedGoals matching
+ * already works.
+ */
+function buildLessonPlanBlock(lesson: CurriculumLesson, principles: string[]): string {
+  const lines: string[] = ["CURRENT LESSON PLAN", "", `Book: ${lesson.book} | Lesson: ${lesson.code} — ${lesson.title}`, ""];
+
+  if (principles.length > 0) {
+    lines.push("GLOBAL PRINCIPLES (always apply):");
+    for (const p of principles) lines.push(`- ${p}`);
+    lines.push("");
+  }
+
+  if (lesson.tasks.length > 0) {
+    lines.push("YOUR TASK SEQUENCE FOR THIS SESSION:");
+    for (const t of lesson.tasks) {
+      lines.push(`${t.order}. [${taskId(t.order)}] ${t.instruction} (type: ${t.type})`);
+    }
+    lines.push("");
+  }
+
+  if (lesson.practiceNote) {
+    lines.push(`Practice note: ${lesson.practiceNote}`, "");
+  }
+
+  const ref = lesson.referenceContent;
+  const hasReference =
+    ref.dialogues.length > 0 ||
+    ref.vocabulary.length > 0 ||
+    (ref.grammarNotes?.length ?? 0) > 0 ||
+    (ref.tables?.length ?? 0) > 0 ||
+    (ref.practicePhrases?.length ?? 0) > 0;
+
+  if (hasReference) {
+    lines.push("REFERENCE CONTENT:");
+    if (ref.dialogues.length > 0) {
+      lines.push("Dialogues:");
+      for (const dialogue of ref.dialogues) {
+        for (const line of dialogue) lines.push(`- ${line}`);
+      }
+    }
+    if (ref.vocabulary.length > 0) {
+      lines.push(`Vocabulary: ${ref.vocabulary.join(", ")}`);
+    }
+    if (ref.grammarNotes && ref.grammarNotes.length > 0) {
+      lines.push("Grammar notes:");
+      for (const note of ref.grammarNotes) lines.push(`- ${note}`);
+    }
+    if (ref.tables && ref.tables.length > 0) {
+      lines.push("Tables:");
+      for (const table of ref.tables) {
+        if (table.caption) lines.push(`(${table.caption})`);
+        for (const row of table.rows) {
+          const cells = row.filter((c) => c.trim());
+          if (cells.length > 0) lines.push(`- ${cells.join(" | ")}`);
+        }
+      }
+    }
+    if (ref.practicePhrases && ref.practicePhrases.length > 0) {
+      lines.push("Practice phrases:");
+      for (const group of ref.practicePhrases) {
+        lines.push(`${group.group}: ${group.phrases.join("; ")}`);
+      }
+    }
+    lines.push("");
+  }
+
+  if (lesson.requiresImages && lesson.imageNote) {
+    lines.push(`Image note: ${lesson.imageNote}`, "");
+  }
+
+  lines.push(
+    "IMPORTANT: execute tasks IN ORDER. Use the conversation so far to tell which task is current — " +
+      "skip any task whose bracketed id (e.g. \"task-3\") you already reported in a prior completedGoals, " +
+      "and continue from the next one. Start with task 1 immediately after the opening greeting and lesson " +
+      "announcement. Do not ask the student what they want to practice — you lead the session. When a task " +
+      "is genuinely finished, include its bracketed id in completedGoals."
+  );
+
+  return lines.join("\n");
+}
 
 /** Strips accents and normalizes case/whitespace for a loose but reliable
  * substring comparison — see findLeakedAnswer. */
@@ -148,28 +247,44 @@ export async function POST(req: NextRequest) {
   }
 
   const studentName = body.studentName?.slice(0, MAX_NAME_LEN).trim();
-  const lesson = body.currentLessonCode ? getLessonByCode(body.currentLessonCode) : undefined;
+  const requestedLessonCode = body.currentLessonCode ?? body.lessonCode;
+  console.log("[4 api] body.lessonCode:", requestedLessonCode);
 
-  if (studentName || lesson) {
-    const overview = getCourseOverview()
-      .map((l) => `${l.lessonCode} — ${l.title}`)
-      .join("; ");
-
-    const lessonBlock = lesson
-      ? `Current lesson: ${lesson.lessonCode} — ${lesson.title}. ` +
-        `Vocabulary: ${lesson.vocabulary.join(", ") || "(none)"}. ` +
-        `Grammar points: ${lesson.grammarPoints.join(", ") || "(none)"}. ` +
-        `Target phrases: ${lesson.targetPhrases.join(" | ") || "(none)"}. ` +
-        `Can-do goals: ${lesson.canDo.join(", ") || "(none)"}.`
-      : "Current lesson: unknown — treat this as an open conversation, no specific lesson to teach.";
-
-    hints.push({
-      role: "system",
-      content:
-        `Student name: ${studentName || "unknown"}. ${lessonBlock} ` +
-        `Full course overview (for recognizing content from other lessons, not for teaching ahead): ${overview}.`,
-    });
+  // GARANTIA: the tutor must NEVER run a session with no roteiro — if the
+  // requested code doesn't resolve (missing, typo'd, stale demo data, a
+  // curriculum JSON that doesn't have it), fall back to the course's first
+  // lesson rather than letting the model drift into open/free conversation
+  // (see persona.ts's STRICT RULES FROM THE SCHOOL — it must always be led
+  // by a lesson plan). This was the actual production bug: the old fallback
+  // told the model to "treat this as an open conversation" whenever
+  // getLessonByCode() came back empty.
+  let lesson = requestedLessonCode ? getLessonByCode(requestedLessonCode) : undefined;
+  if (!lesson) {
+    lesson = getFirstLesson();
+    console.error(
+      "[chat] LIÇÃO NÃO ENCONTRADA para código:",
+      requestedLessonCode ?? "(nenhum enviado)",
+      "— usando fallback",
+      lesson.code
+    );
   }
+  console.log("[5 api] lição encontrada:", lesson.code);
+  console.log("[6 api] tasks:", lesson.tasks?.length);
+
+  if (studentName) {
+    hints.push({ role: "system", content: `Student name: ${studentName}.` });
+  }
+
+  const lessonPlanBlock = buildLessonPlanBlock(lesson, getGlobalPrinciples());
+  console.log("[7 api] plano injetado:", lessonPlanBlock.slice(0, 200));
+  hints.push({ role: "system", content: lessonPlanBlock });
+  const overview = getCourseOverview()
+    .map((l) => `${l.lessonCode} — ${l.title}`)
+    .join("; ");
+  hints.push({
+    role: "system",
+    content: `Full course overview (for recognizing content from other lessons, not for teaching ahead): ${overview}.`,
+  });
 
   try {
     const messages: Message[] = [{ role: "system", content: TUTOR_SYSTEM_PROMPT }, ...hints, ...conversation];
@@ -177,7 +292,7 @@ export async function POST(req: NextRequest) {
       sessionId: body.sessionId,
       detectedLanguage: body.detectedLanguage,
       studentName,
-      currentLessonCode: body.currentLessonCode,
+      currentLessonCode: requestedLessonCode,
       timeWarning: body.timeWarning,
       attemptCount: body.attemptCount,
       nudge: body.nudge,

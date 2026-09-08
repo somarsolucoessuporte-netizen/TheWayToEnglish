@@ -414,6 +414,7 @@ export class ConversationOrchestrator {
   }): Promise<void> {
     this.studentName = opts.studentName;
     this.currentLessonCode = opts.currentLessonCode;
+    console.log("[3 orch] enviando lessonCode:", this.currentLessonCode);
     this.lessonGoals = opts.canDoGoals ?? [];
     this.stt.setLessonVocabulary?.(opts.vocabulary ?? []);
     this.completedGoals.clear();

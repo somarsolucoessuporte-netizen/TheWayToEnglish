@@ -322,6 +322,9 @@ export default function Page() {
   // extra chat+tts round trips just to become usable; a cache miss just
   // means startLesson falls back to its normal live call).
   const greetingCacheRef = useRef<Map<string, PrefetchedGreeting | null>>(new Map());
+  /** Guards the ?aluno=&licao= URL auto-start (see the effect below) so it
+   * only ever fires once, even if bootState/started churn afterward. */
+  const autoStartedFromUrlRef = useRef(false);
 
   const runBoot = useCallback(() => {
     const bootStartedAt = Date.now();
@@ -607,7 +610,14 @@ export default function Page() {
         void video.play().catch((err) => debugLog(`gesture play() falhou (${video.src}): ${describeError(err)}`));
       });
     }
+    console.log("[1 demo] currentLesson:", student.currentLesson);
     const lesson = getLessonByCode(student.currentLesson);
+    console.log(
+      "[2 page] lessonCode state:",
+      student.currentLesson,
+      "-> resolvida localmente:",
+      lesson ? lesson.code : "NÃO (route.ts resolve com fallback)"
+    );
     const seconds = (lesson?.durationMinutes ?? DEFAULT_LESSON_DURATION_MIN) * 60;
     setStarted(true);
     setCurrentLesson(lesson);
@@ -631,6 +641,32 @@ export default function Page() {
       prefetched,
     });
   }
+
+  // In the real product, the school platform deep-links with
+  // ?aluno=<id>&licao=<codigo> and expects the lesson to start immediately,
+  // skipping the demo profile-selection screen entirely. Falls back to the
+  // normal manual pick (below) whenever ?licao isn't present. Fires once
+  // bootState is truly "ready" (same gate handleStudentPick itself uses) so
+  // the auto-pick behaves exactly like a real click.
+  useEffect(() => {
+    if (bootState !== "ready" || started || autoStartedFromUrlRef.current) return;
+    const params = new URLSearchParams(window.location.search);
+    const licaoParam = params.get("licao");
+    if (!licaoParam) return;
+    autoStartedFromUrlRef.current = true;
+    const alunoParam = params.get("aluno");
+    console.log("[url] parâmetros recebidos — aluno:", alunoParam, "licao:", licaoParam);
+    void handleStudentPick({
+      id: alunoParam ?? "url-student",
+      name: alunoParam ?? "Aluno",
+      currentLesson: licaoParam,
+      lastSession: "",
+    });
+    // handleStudentPick is re-created every render — depending on it would
+    // re-fire this effect on unrelated renders; autoStartedFromUrlRef
+    // already guarantees it runs at most once.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [bootState, started]);
 
   // The ONLY call site for orchestrator.startListening() in the whole app
   // — push-to-talk is a hard rule (see orchestrator.ts's comments): the
