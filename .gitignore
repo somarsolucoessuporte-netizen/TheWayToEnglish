@@ -10,9 +10,14 @@ next-env.d.ts
 npm-debug.log*
 .DS_Store
 
-# Material didático da escola — licenciado, não é código do produto.
-# Nunca deve entrar em um commit, mesmo que o repositório vire público.
-public/material_do_curso/
+# Material didático da escola — propriedade
+# da The Way To English, não versionar
+material_do_curso/originais/**/*.docx
+material_do_curso/originais/**/*.pdf
+material_do_curso/imagens/**/*
+!material_do_curso/**/
+!material_do_curso/**/.gitkeep
+!material_do_curso/LEIAME.md
 
 .vercel
 .env*
