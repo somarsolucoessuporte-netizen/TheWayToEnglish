@@ -44,7 +44,9 @@ interface ChatRequestBody {
  * stop waiting and move the lesson forward. */
 const NUDGE_INSTRUCTIONS: Record<NonNullable<ChatRequestBody["nudge"]>, string> = {
   gentle:
-    "The student has been silent for about 6 seconds. Give a short, warm encouragement in English — they may just need a moment.",
+    "The student has been silent for about 6 seconds. Do NOT ask a generic question or give vague " +
+    "encouragement — look at your own last message in the conversation and REPEAT that exact instruction " +
+    "in English, so the student knows precisely what to do (e.g. \"Let's try again. Repeat after me: READING.\").",
   help: "The student has been silent for about 14 seconds. Reformulate your last question in Portuguese and give a concrete example to help them get started.",
   offer:
     "The student has been silent for about 25 seconds. Offer, in Portuguese, to give them the answer directly so you can practice the pronunciation together.",

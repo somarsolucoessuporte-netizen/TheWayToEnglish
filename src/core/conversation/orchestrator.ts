@@ -166,6 +166,20 @@ export class ConversationOrchestrator {
    * TUTOR section). Deliberately NOT reset per-question, only by reset(). */
   private readonly usedNudgePhrases: string[] = [];
 
+  /** The tutor's speech.english from the last AI turn that actually got
+   * shown/spoken (runTurn only — scripted announcements don't touch this) —
+   * see runTurn's dedup check. Two turns landing for the same event (see
+   * the "mensagem duplicada, segunda sem voz" production report) produce
+   * near-identical responses; comparing english (always present per
+   * persona.ts) catches an exact repeat regardless of what triggered it,
+   * without having to know the trigger. Only updated on a non-empty
+   * english, so a Portuguese-only rescue turn in between doesn't erase it. */
+  private lastTutorEnglish: string | undefined;
+
+  /** Every speech.speak()/speakBlob() call is chained through here instead
+   * of firing directly — see enqueueSpeak's doc comment. */
+  private speechQueue: Promise<void> = Promise.resolve();
+
   private readonly entryListeners = new Set<EntriesListener>();
   private readonly errorListeners = new Set<ErrorListener>();
   private readonly apiStatusListeners = new Set<ApiStatusListener>();
@@ -200,9 +214,10 @@ export class ConversationOrchestrator {
       if (state !== "listening") this.setTranscribing(false);
       // Active-tutor idle nudges (see NUDGE_THRESHOLDS_MS): the clock only
       // ever runs while genuinely idle — never during listening, thinking,
-      // speaking, or the praise/correction transients.
+      // speaking, or the praise/correction transients. `state` is passed as
+      // the "motivo" for the [nudge] cancelado log (see stopIdleClock).
       if (state === "idle") this.startIdleClock();
-      else this.stopIdleClock();
+      else this.stopIdleClock(state);
     });
 
     // Dispatches SPEECH_START on the provider's real "playing" DOM event
@@ -567,6 +582,8 @@ export class ConversationOrchestrator {
     this.idleAccumulatedMs = 0;
     this.nudgeLevelsFired.clear();
     this.usedNudgePhrases.length = 0;
+    this.lastTutorEnglish = undefined;
+    this.speechQueue = Promise.resolve();
     this.stateMachine.dispatch({ type: "RESET" });
   }
 
@@ -701,10 +718,22 @@ export class ConversationOrchestrator {
    * something. 'answer' additionally resets the idle clock once it's
    * done, since giving the answer and moving on is exactly what turns
    * this into a fresh question with its own idle budget.
+   *
+   * `level` is only marked as fired (nudgeLevelsFired.add) once we're
+   * actually past the busy guard — previously it was marked by the CALLER
+   * (checkNudgeThresholds) before this even ran, so a nudge that got
+   * skipped because the tutor was still busy was permanently lost (the
+   * threshold would never be re-checked), which is one concrete way the
+   * "Debbie fica esperando o aluno" report could happen: silence ticks
+   * past a threshold, the nudge silently never fires, and nothing ever
+   * takes the initiative again for that question.
    */
   private async fireNudge(level: NudgeLevel): Promise<void> {
-    if (this.busy) return; // idle clock only runs while genuinely idle; defensive only
+    if (this.busy) return; // retried on the next 500ms tick since `level` isn't marked fired yet
+    this.nudgeLevelsFired.add(level);
+    console.log("[nudge] disparado", level);
     this.stateMachine.dispatch({ type: "STOP_LISTENING" }); // idle -> thinking
+    console.log("[nudge] enviando com lessonCode:", this.currentLessonCode);
     await this.runTurn({ nudge: level });
     if (level === "answer") {
       this.idleAccumulatedMs = 0;
@@ -719,16 +748,23 @@ export class ConversationOrchestrator {
    * flight while any non-idle state is active. */
   private startIdleClock(): void {
     this.stopIdleClock();
+    const next = NUDGE_THRESHOLDS_MS.find((t) => !this.nudgeLevelsFired.has(t.level));
+    if (next) console.log("[nudge] agendado", next.ms);
     this.idleTickHandle = setInterval(() => {
       this.idleAccumulatedMs += this.IDLE_TICK_MS;
       void this.checkNudgeThresholds();
     }, this.IDLE_TICK_MS);
   }
 
-  private stopIdleClock(): void {
+  /** `motivo`, when given, is logged as why the clock stopped (e.g. the
+   * character state that was just entered) — omitted for the internal
+   * clear-before-restart call inside startIdleClock, which isn't a real
+   * cancellation. */
+  private stopIdleClock(motivo?: string): void {
     if (this.idleTickHandle !== null) {
       clearInterval(this.idleTickHandle);
       this.idleTickHandle = null;
+      if (motivo) console.log("[nudge] cancelado", motivo);
     }
   }
 
@@ -741,7 +777,6 @@ export class ConversationOrchestrator {
     for (let i = NUDGE_THRESHOLDS_MS.length - 1; i >= 0; i--) {
       const { level, ms: threshold } = NUDGE_THRESHOLDS_MS[i];
       if (ms >= threshold && !this.nudgeLevelsFired.has(level)) {
-        this.nudgeLevelsFired.add(level);
         await this.fireNudge(level);
         return;
       }
@@ -814,6 +849,24 @@ export class ConversationOrchestrator {
         busy: this.busy,
       });
       this.setApiStatus(true);
+
+      // Two turns landing for the same event (see the "mensagem duplicada"
+      // production report) come back with the same speech.english — discard
+      // the repeat entirely (no entry, no history push, no speech) instead
+      // of ever showing/speaking it a second time. Comparing english only
+      // (always present per persona.ts) rather than the whole response
+      // tolerates the two calls resolving with slightly different
+      // correction/completedGoals metadata and still catches the repeat.
+      const normalizedEnglish = response.speech.english.trim();
+      if (normalizedEnglish && normalizedEnglish === this.lastTutorEnglish) {
+        console.warn(
+          `[turn] duplicata descartada — mesmo speech.english da fala anterior da tutora: "${normalizedEnglish.slice(0, 60)}"`
+        );
+        this.stateMachine.dispatch({ type: "RESET" });
+        return;
+      }
+      if (normalizedEnglish) this.lastTutorEnglish = normalizedEnglish;
+
       this.updateCorrectionAttemptTracking(response);
       this.updateGoalProgress(response);
 
@@ -975,10 +1028,33 @@ export class ConversationOrchestrator {
     }
 
     for (const part of nonEmpty) {
-      await this.speech.speak(part.text, { lang: part.lang });
+      await this.enqueueSpeak(() => this.speech.speak(part.text, { lang: part.lang }));
     }
     if (opts.after) await opts.after();
     this.stateMachine.dispatch({ type: "SPEECH_END" });
+  }
+
+  /**
+   * Chains every speech.speak()/speakBlob() call through a single promise
+   * instead of firing directly — see OpenAITTSProvider.playBlob, which
+   * calls cancel() on the CURRENT audio at the start of every new call. If
+   * two turns ever end up speaking around the same time (the exact
+   * "mensagem duplicada" production report's mechanism: a second turn's
+   * speak() cancels the first turn's audio before its "start" event ever
+   * fires), speakOnePartWithReveal's own `finally` still force-reveals the
+   * full text once speak() settles — producing a chat bubble that reads as
+   * fully "spoken" even though no audio ever played for it. Queuing means
+   * the second call simply waits for the first's real 'end'/'error'
+   * instead of cutting it off, so every tutor message that's ever shown
+   * has actually been given a real, uninterrupted chance to play.
+   */
+  private enqueueSpeak(task: () => Promise<void>): Promise<void> {
+    const run = this.speechQueue.then(task, task);
+    this.speechQueue = run.then(
+      () => undefined,
+      () => undefined
+    );
+    return run;
   }
 
   /**
@@ -1097,10 +1173,11 @@ export class ConversationOrchestrator {
     });
 
     try {
-      if (prefetchedAudioBlob && this.speech.speakBlob) {
-        await this.speech.speakBlob(prefetchedAudioBlob);
+      const speakBlob = this.speech.speakBlob;
+      if (prefetchedAudioBlob && speakBlob) {
+        await this.enqueueSpeak(() => speakBlob(prefetchedAudioBlob));
       } else {
-        await this.speech.speak(part.text, { lang: part.lang });
+        await this.enqueueSpeak(() => this.speech.speak(part.text, { lang: part.lang }));
       }
     } finally {
       unsubscribeStart(); // in case "start" never fired at all (e.g. an immediate error)
