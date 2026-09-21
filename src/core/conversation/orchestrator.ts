@@ -853,15 +853,25 @@ export class ConversationOrchestrator {
       });
       this.setApiStatus(true);
 
-      // Suppress repeated idle nudges only. Every new student answer needs
-      // a reply, even if the model happens to reuse its previous wording.
+      // NOTE: this used to silently discard a nudge whose speech.english
+      // matched the previous tutor line. That's no longer safe to do: the
+      // route.ts NUDGE_INSTRUCTIONS for the first ("gentle") nudge
+      // explicitly tells the model to REPEAT its last instruction verbatim
+      // ("look at your own last message... REPEAT that exact instruction")
+      // — so a compliant nudge reply is SUPPOSED to equal lastTutorEnglish.
+      // Discarding it meant the very first idle-nudge went completely
+      // silent (RESET with no speech, no entry) whenever the model did
+      // exactly what it was told, which reads to a student as the app
+      // freezing right after their last answer. The original "mensagem
+      // duplicada" bug this was defending against (two turns racing to
+      // speak the same response) had its actual root cause fixed instead —
+      // see enqueueSpeak and the this.speech.speakBlob binding fix — so
+      // this only logs now, it never suppresses a real reply.
       const normalizedEnglish = response.speech.english.trim();
       if (opts.nudge && normalizedEnglish && normalizedEnglish === this.lastTutorEnglish) {
-        console.warn(
-          `[turn] duplicata descartada — mesmo speech.english da fala anterior da tutora: "${normalizedEnglish.slice(0, 60)}"`
+        console.log(
+          `[turn] nudge repetiu a última fala verbatim (esperado para o primeiro nudge): "${normalizedEnglish.slice(0, 60)}"`
         );
-        this.stateMachine.dispatch({ type: "RESET" });
-        return;
       }
       if (normalizedEnglish) this.lastTutorEnglish = normalizedEnglish;
 

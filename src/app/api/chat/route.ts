@@ -291,7 +291,20 @@ export async function POST(req: NextRequest) {
 
   try {
     const introduction = !body.nudge ? introductionReply(lesson.code, conversation) : undefined;
-    if (introduction) return NextResponse.json(introduction);
+    if (introduction) {
+      // DIAGNOSTIC LOGGING (temporary — investigating the "trava depois do
+      // checkmark verde" report on 1A's introduction exchange): confirms
+      // the exact shape sent to the client on this bypass path, same as
+      // TutorResponseSchema.parse(await provider.send(...)) below would log
+      // via [turn] resposta on the client. This response is NOT re-parsed
+      // through TutorResponseSchema server-side (it's already known-shaped,
+      // built by introductionReply itself), but the client's
+      // HttpAIProvider.send() still runs it through the same schema.parse()
+      // as any other /api/chat reply — so a shape problem here would throw
+      // there and surface as a normal chat error, not a silent freeze.
+      console.log("[introReply] resposta:", JSON.stringify(introduction));
+      return NextResponse.json(introduction);
+    }
     const messages: Message[] = [{ role: "system", content: TUTOR_SYSTEM_PROMPT }, ...hints, ...conversation];
     const sendOptions: AIOptions = {
       sessionId: body.sessionId,
