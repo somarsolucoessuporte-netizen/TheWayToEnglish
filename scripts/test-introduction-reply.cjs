@@ -13,7 +13,11 @@ const reply = (text, code = '1A', prior = "Hello, my name's Debbie. What's your 
     { role: 'assistant', content: prior }, { role: 'user', content: text },
   ]);
 for (const text of ['My name is Francisco.', 'My name\u2019s Francisco.',
-  'Hello, my name is Francisco.', "I'm Francisco."]) {
+  'Hello, my name is Francisco.', "I'm Francisco.",
+  // Whisper routinely punctuates the spoken pause after "Hello" as a full
+  // stop, not a comma \u2014 this must still be recognized as an introduction.
+  'Hello. My name is Francisco.', 'Hi. My name is Francisco.',
+  'Hello! My name is Francisco.']) {
   const result = reply(text);
   assert.ok(result, text);
   assert.equal(result.praise, true);
