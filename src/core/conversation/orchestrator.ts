@@ -913,6 +913,14 @@ export class ConversationOrchestrator {
       const portuguesePart = { text: response.speech.portuguese, lang: "pt-BR" };
       const correction = response.correction;
       console.log("[turn] chamando speak()");
+      // DIAGNOSTIC LOGGING (temporary — investigating the "sessão trava,
+      // busy nunca volta a false" report): `busy` itself is always true at
+      // both of these points (it's only cleared in this method's own
+      // `finally`, below) — the actual signal is whether the SECOND line
+      // ever prints at all. If it's missing from a production trace, the
+      // hang is inside speakPartsWithReveal (a speak()/speakBlob() call
+      // that never settles) rather than after it.
+      console.log("[state] busy antes de falar:", this.busy);
       await this.speakPartsWithReveal(
         [englishPart, portuguesePart],
         entryIndex,
@@ -921,6 +929,7 @@ export class ConversationOrchestrator {
         opts.prefetchedAudioBlob,
         readyAt
       );
+      console.log("[state] busy após falar:", this.busy);
       // speakPartsWithReveal has already brought the state machine back to
       // idle by the time it resolves — correction now overlays on top of
       // that idle state and reverts back to it on its own after ~1.5s.
@@ -943,6 +952,7 @@ export class ConversationOrchestrator {
         }
       }
     } finally {
+      console.log("[orchestrator] fim do turno, busy → false");
       this.setBusy(false);
       console.log("[turn] fim, busy →", this.busy);
     }

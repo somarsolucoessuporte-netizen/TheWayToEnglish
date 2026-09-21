@@ -18,6 +18,16 @@ const TTS_FETCH_TIMEOUT_MS = 15000;
  * connection mid-download. Without this, playBlob's promise (and whatever
  * called speak()) waits forever with no error and no way out. */
 const PLAYBACK_START_TIMEOUT_MS = 10000;
+/** Same guarantee as PLAYBACK_START_TIMEOUT_MS, for fallbackSpeak: browser
+ * speechSynthesis is known to sometimes never fire onstart/onend/onerror
+ * for a given utterance (notably Safari/iOS, or before its voice list has
+ * finished loading) — without this, a student whose PRIMARY /api/tts call
+ * failed for any reason (a transient network blip, an OpenAI TTS error)
+ * would fall into a fallback call that itself never settles, leaving
+ * runTurn's `finally` (busy = false) unreachable — the exact "digitou/
+ * ouviu a fala mas a sessão trava, o botão Falar não responde mais"
+ * production report. */
+const FALLBACK_SPEECH_TIMEOUT_MS = 8000;
 
 /**
  * Speaks by requesting audio from /api/tts (a server route that holds the
@@ -165,12 +175,30 @@ export class OpenAITTSProvider implements SpeechProvider {
       const u = new SpeechSynthesisUtterance(text);
       u.lang = lang || "en-US";
       u.rate = rate;
+      let settled = false;
+      const timer = window.setTimeout(() => {
+        if (settled) return;
+        settled = true;
+        console.error(
+          `[TTS] fallback watchdog: speechSynthesis não disparou onstart/onend/onerror em ${FALLBACK_SPEECH_TIMEOUT_MS}ms — cancelando`
+        );
+        window.speechSynthesis.cancel();
+        reject(new Error("speechSynthesis fallback timeout"));
+      }, FALLBACK_SPEECH_TIMEOUT_MS);
       u.onstart = () => this.emit("start");
       u.onend = () => {
+        if (settled) return;
+        settled = true;
+        window.clearTimeout(timer);
         this.emit("end");
         resolve();
       };
-      u.onerror = (e) => reject(e);
+      u.onerror = (e) => {
+        if (settled) return;
+        settled = true;
+        window.clearTimeout(timer);
+        reject(e);
+      };
       window.speechSynthesis.speak(u);
     });
   }
