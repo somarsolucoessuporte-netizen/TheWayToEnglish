@@ -1173,9 +1173,25 @@ export class ConversationOrchestrator {
     });
 
     try {
-      const speakBlob = this.speech.speakBlob;
-      if (prefetchedAudioBlob && speakBlob) {
-        await this.enqueueSpeak(() => speakBlob(prefetchedAudioBlob));
+      // Calling `this.speech.speakBlob(...)` directly here — NOT destructured
+      // into a bare `const speakBlob = this.speech.speakBlob` first — matters:
+      // OpenAITTSProvider.speakBlob reads `this.playBlob`/`this.emit`
+      // internally, so a detached reference loses that binding and throws
+      // "Cannot read properties of undefined" the moment it's invoked (this
+      // is exactly the production kickoff crash — a bare reference was taken
+      // here in the enqueueSpeak change and lost `this`).
+      if (prefetchedAudioBlob && this.speech.speakBlob) {
+        try {
+          await this.enqueueSpeak(() => this.speech.speakBlob!(prefetchedAudioBlob));
+        } catch (err) {
+          // The prefetched blob can fail for reasons unrelated to the normal
+          // TTS path (a stale/corrupt blob, a revoked URL) — falling back to
+          // a fresh /api/tts call here, instead of letting the error
+          // propagate to runTurn's catch, is what keeps a bad prefetch from
+          // ever taking the whole session to the ERROR state.
+          console.warn("[TTS] blob pré-carregado falhou, tentando TTS normal:", err);
+          await this.enqueueSpeak(() => this.speech.speak(part.text, { lang: part.lang }));
+        }
       } else {
         await this.enqueueSpeak(() => this.speech.speak(part.text, { lang: part.lang }));
       }
