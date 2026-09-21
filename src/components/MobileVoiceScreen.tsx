@@ -11,6 +11,7 @@ import { ChatLog } from "./ChatLog";
 import { LessonCompleteCard } from "./LessonCompleteCard";
 import { LessonTimer } from "./LessonTimer";
 import { TipsPanel, type TipsAttention } from "./TipsPanel";
+import { CurrentLessonLabel } from "./CurrentLessonLabel";
 
 /** Imperative handle so page.tsx's single page-level Falar button (see
  * .force-send-btn-dock in globals.css) can still close this screen's
@@ -343,6 +344,7 @@ export const MobileVoiceScreen = forwardRef<
       <div className="mobile-float-header">
         <div className="mobile-float-title">{branding.productName}</div>
         {started && <LessonTimer totalSeconds={totalSeconds} remainingSeconds={remainingSeconds} />}
+        {started && <CurrentLessonLabel lesson={currentLesson} />}
       </div>
 
       {started && showTimeUpNotice && !lessonComplete && (

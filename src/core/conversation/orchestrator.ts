@@ -653,7 +653,7 @@ export class ConversationOrchestrator {
       this.correctionAttemptCount = 0;
       return;
     }
-    const word = response.correction.corrected.trim().toLowerCase();
+    const word = response.correction.corrected.toLowerCase().replace(/[^\p{L}\p{N}\s]/gu, "").replace(/\s+/g, " ").trim();
     if (word && word === this.pendingCorrectionWord) {
       this.correctionAttemptCount += 1;
     } else {
@@ -811,6 +811,7 @@ export class ConversationOrchestrator {
     // stays stuck on its "..." typing indicator forever, which is what
     // actually reads as a freeze to the student.
     let entryIndex: number | undefined;
+    let awaitingChatResponse = false;
     try {
       let response: TutorResponse;
       // Marks "the reply is ready to be spoken" — for a live call this is
@@ -826,6 +827,7 @@ export class ConversationOrchestrator {
       } else {
         const messages: Message[] = [{ role: "system", content: this.systemPrompt }, ...this.history];
         const chatRequestStart = performance.now();
+        awaitingChatResponse = true;
         response = await this.ai.send(messages, {
           sessionId: this.sessionId,
           detectedLanguage: opts.detectedLanguage,
@@ -836,6 +838,7 @@ export class ConversationOrchestrator {
           nudge: opts.nudge,
           usedNudges: this.usedNudgePhrases,
         });
+        awaitingChatResponse = false;
         readyAt = performance.now();
         console.log(
           `[latency] /api/chat respondeu em ${Math.round(readyAt - chatRequestStart)}ms` +
@@ -850,15 +853,10 @@ export class ConversationOrchestrator {
       });
       this.setApiStatus(true);
 
-      // Two turns landing for the same event (see the "mensagem duplicada"
-      // production report) come back with the same speech.english — discard
-      // the repeat entirely (no entry, no history push, no speech) instead
-      // of ever showing/speaking it a second time. Comparing english only
-      // (always present per persona.ts) rather than the whole response
-      // tolerates the two calls resolving with slightly different
-      // correction/completedGoals metadata and still catches the repeat.
+      // Suppress repeated idle nudges only. Every new student answer needs
+      // a reply, even if the model happens to reuse its previous wording.
       const normalizedEnglish = response.speech.english.trim();
-      if (normalizedEnglish && normalizedEnglish === this.lastTutorEnglish) {
+      if (opts.nudge && normalizedEnglish && normalizedEnglish === this.lastTutorEnglish) {
         console.warn(
           `[turn] duplicata descartada — mesmo speech.english da fala anterior da tutora: "${normalizedEnglish.slice(0, 60)}"`
         );
@@ -919,7 +917,9 @@ export class ConversationOrchestrator {
       // Praise already happened above, before speaking.
       if (correction) this.stateMachine.dispatch({ type: "CORRECTION" });
     } catch (err) {
-      this.setApiStatus(false);
+      // Audio and rendering failures do not mean the chat request failed.
+      if (awaitingChatResponse) this.setApiStatus(false);
+      console.error(awaitingChatResponse ? "[turn] chat failed:" : "[turn] response processing failed:", err);
       this.emitError(errorMessage(err));
       this.stateMachine.dispatch({ type: "ERROR" });
       // See entryIndex's doc comment above — without this, a pending

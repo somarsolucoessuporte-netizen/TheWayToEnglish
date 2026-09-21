@@ -233,6 +233,7 @@ body {
 
 .chat-header {
   display: flex;
+  flex-wrap: wrap;
   align-items: flex-start;
   justify-content: space-between;
   gap: 10px;
@@ -243,6 +244,23 @@ body {
 
 .chat-title {
   font-weight: 800;
+}
+
+.current-lesson-label {
+  flex: 0 0 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding-top: 4px;
+  text-align: center;
+  font-size: 13px;
+  line-height: 1.5;
+  color: inherit;
+}
+
+.current-lesson-label strong {
+  font-weight: 700;
 }
 
 .chat-subtitle {
@@ -1204,6 +1222,7 @@ body {
   right: 0;
   z-index: 6;
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   gap: 10px;
   padding: calc(env(safe-area-inset-top, 0px) + 10px) 14px 10px;
@@ -1235,7 +1254,7 @@ body {
 
 .mobile-time-notice-float {
   position: absolute;
-  top: 52px;
+  top: calc(env(safe-area-inset-top, 0px) + 88px);
   left: 14px;
   right: 14px;
   z-index: 5;

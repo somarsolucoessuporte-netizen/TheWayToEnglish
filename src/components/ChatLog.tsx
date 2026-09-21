@@ -116,25 +116,10 @@ export function ChatLog({ entries, compact = false }: { entries: ChatEntry[]; co
         return (
           <div key={i} style={{ display: "flex", flexDirection: "column", gap: 8 }}>
             <div className="msg bot">
-              {/* Text order mirrors spoken order: normally English-then-
-                  Portuguese, but reversed for a correction so the on-screen
-                  text doesn't read backwards from what the student just
-                  heard (see orchestrator's correction-aware speakParts
-                  ordering). Each half is only as much of the full line as
-                  has been revealed so far — see revealedText. */}
-              {entry.response.correction ? (
-                <>
-                  {portugueseShown && <span className="msg-pt">{portugueseShown}</span>}
-                  {englishShown && portugueseShown && <br />}
-                  {englishShown}
-                </>
-              ) : (
-                <>
-                  {englishShown}
-                  {englishShown && portugueseShown && <br />}
-                  {portugueseShown && <span className="msg-pt">{portugueseShown}</span>}
-                </>
-              )}
+              {/* Match the spoken order for both normal replies and corrections. */}
+              {englishShown}
+              {englishShown && portugueseShown && <br />}
+              {portugueseShown && <span className="msg-pt">{portugueseShown}</span>}
             </div>
             {entry.response.correction &&
               (compact ? (

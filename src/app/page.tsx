@@ -27,6 +27,7 @@ import { LoadingScreen } from "@/components/LoadingScreen";
 import { MobileVoiceScreen, type MobileVoiceScreenHandle } from "@/components/MobileVoiceScreen";
 import { StatusPills } from "@/components/StatusPills";
 import { TipsPanel, type TipsAttention } from "@/components/TipsPanel";
+import { CurrentLessonLabel } from "@/components/CurrentLessonLabel";
 import { useIsMobile } from "@/components/useIsMobile";
 
 /** Lessons without an explicit durationMinutes (shouldn't happen with the
@@ -865,6 +866,7 @@ export default function Page() {
                     attention={tipsAttention}
                     onBlinkEnd={() => setTipsAttention("expanded")}
                   />
+                  {started && <CurrentLessonLabel lesson={currentLesson} />}
                 </div>
 
                 {started && <LessonTimer totalSeconds={totalSeconds} remainingSeconds={remainingSeconds} />}

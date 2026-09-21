@@ -5,6 +5,7 @@ import { TutorResponseSchema, type TutorResponse } from "@/core/ai/TutorResponse
 import { TUTOR_SYSTEM_PROMPT } from "@/app-config/persona";
 import { getCourseOverview, getFirstLesson, getGlobalPrinciples, getLessonByCode, taskId, type CurriculumLesson } from "@/app-config/curriculum";
 import type { AIOptions, Message } from "@/core/ai/AIProvider";
+import { introductionReply } from "@/core/conversation/introductionReply";
 
 // The provider swap lives here, not in app-config/providers.ts: both
 // providers hold an API key server-side (GROQ_API_KEY / OPENAI_API_KEY),
@@ -289,6 +290,8 @@ export async function POST(req: NextRequest) {
   });
 
   try {
+    const introduction = !body.nudge ? introductionReply(lesson.code, conversation) : undefined;
+    if (introduction) return NextResponse.json(introduction);
     const messages: Message[] = [{ role: "system", content: TUTOR_SYSTEM_PROMPT }, ...hints, ...conversation];
     const sendOptions: AIOptions = {
       sessionId: body.sessionId,

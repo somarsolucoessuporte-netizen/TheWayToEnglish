@@ -166,7 +166,14 @@ function toCurriculumLesson(plan: RawLessonPlan): CurriculumLesson {
     title,
     type: plan.skill ?? "practice",
     durationMinutes: DEFAULT_DURATION_MINUTES,
-    vocabulary: plan.referenceContent.vocabulary.map(headword),
+    vocabulary: Array.from(new Set([
+      ...plan.referenceContent.vocabulary.map(headword),
+      // Symbol names live in the SKILL column, not the vocabulary array.
+      ...(plan.referenceContent.tables ?? []).flatMap((table) => {
+        const column = table.rows[0]?.findIndex((cell) => cell.trim().toUpperCase() === "SKILL") ?? -1;
+        return column < 0 ? [] : table.rows.slice(1).map((row) => row[column]?.trim()).filter((word): word is string => !!word);
+      }),
+    ])),
     grammarPoints: plan.referenceContent.grammarNotes ?? [],
     targetPhrases: exchanges.map((e) => e.q),
     canDo: plan.tasks.map((t) => taskId(t.order)),

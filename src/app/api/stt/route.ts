@@ -26,8 +26,7 @@ const LANGUAGE_NAME_TO_CODE: Record<string, string> = {
 // half of this — appended below when the client sends it.
 const BASE_PROMPT =
   "English lesson for Brazilian students. Student speaks Brazilian Portuguese and " +
-  "English with Brazilian accent. Common words: continents, countries, Africa, Europe, " +
-  "Asia, America, Australia, Morocco, Senegal, France.";
+  "English with Brazilian accent.";
 
 /**
  * Backs WhisperSTTProvider. Proxies a single recorded utterance to

@@ -34,21 +34,14 @@ const GET_USER_MEDIA_TIMEOUT_MS = 5000;
 const STT_FETCH_TIMEOUT_MS = 15000;
 /** Minimum recording length worth sending to Whisper at all — anything
  * shorter is almost certainly a stray click/tap, never real speech. Paired
- * with MIN_AVERAGE_RMS_TO_TRANSCRIBE below (see transcribeAndFinish's
+ * with MIN_SPEECH_SAMPLES below (see transcribeAndFinish's
  * discard check) — this alone catches the "opened and immediately closed
  * the mic" case even if that instant happened to be loud (a door slam,
  * a cough right at the mic). */
 const MIN_RECORDING_MS_TO_TRANSCRIBE = 500;
-/** Minimum AVERAGE (not peak) RMS across the whole recording for it to be
- * worth sending to Whisper. A recording that never gets meaningfully
- * louder than SILENCE_THRESHOLD_RMS on average is background noise or
- * near-silence, not speech — and Whisper is known to hallucinate
- * plausible-sounding but unrelated sentences ("This text might not meet
- * the needs of the entire class...") out of exactly that kind of input
- * instead of returning an empty transcript. Reuses SILENCE_THRESHOLD_RMS
- * since both checks are answering the same question ("is this actually
- * voice?"), just averaged over the whole clip instead of sampled live. */
-const MIN_AVERAGE_RMS_TO_TRANSCRIBE = SILENCE_THRESHOLD_RMS;
+/** Require several voice samples to reject brief clicks without averaging
+ * real speech together with the student's thinking/trailing silence. */
+const MIN_SPEECH_SAMPLES = 3;
 
 /**
  * STT via OpenAI's Whisper-1 endpoint (server-side proxy at /api/stt —
@@ -121,12 +114,7 @@ export class WhisperSTTProvider implements SpeechToTextProvider {
    * start(), right after recorder.start()) — used by transcribeAndFinish's
    * discard check (MIN_RECORDING_MS_TO_TRANSCRIBE). */
   private recordingStartedAt = 0;
-  /** Running sum/count of every RMS sample sampled during the current
-   * recording (see startSilenceWatch's interval) — averaged in
-   * transcribeAndFinish (MIN_AVERAGE_RMS_TO_TRANSCRIBE) to decide whether
-   * the clip was ever actually voice, as opposed to the live per-tick `rms`
-   * above which only drives the silence-based auto-stop VAD. */
-  private rmsSum = 0;
+  private speechSampleCount = 0;
   private rmsSampleCount = 0;
 
   private readonly listeners: Record<STTEvent, Set<Listener>> = {
@@ -144,7 +132,7 @@ export class WhisperSTTProvider implements SpeechToTextProvider {
     this.aborted = false;
     this.hasDetectedSpeech = false;
     this.lastLoudAt = 0;
-    this.rmsSum = 0;
+    this.speechSampleCount = 0;
     this.rmsSampleCount = 0;
 
     // If the student already dismissed the permission prompt without
@@ -305,6 +293,9 @@ export class WhisperSTTProvider implements SpeechToTextProvider {
       source.connect(analyser);
       this.audioCtx = audioCtx;
       this.analyser = analyser;
+      if (audioCtx.state === "suspended") {
+        void audioCtx.resume().catch((err) => console.warn("[WhisperSTT] analyser resume failed:", err));
+      }
     } catch (err) {
       console.error("[WhisperSTT] falha ao criar AnalyserNode — sem auto-stop por silêncio:", err);
       return;
@@ -314,7 +305,7 @@ export class WhisperSTTProvider implements SpeechToTextProvider {
     const data = new Uint8Array(analyser.frequencyBinCount);
 
     this.sampleIntervalHandle = setInterval(() => {
-      if (this.finished) return;
+      if (this.finished || this.audioCtx?.state !== "running") return;
       analyser.getByteTimeDomainData(data);
       let sumSquares = 0;
       for (let i = 0; i < data.length; i++) {
@@ -323,11 +314,11 @@ export class WhisperSTTProvider implements SpeechToTextProvider {
       }
       const rms = Math.sqrt(sumSquares / data.length);
       this.emit("amplitude", rms);
-      this.rmsSum += rms;
       this.rmsSampleCount += 1;
 
       const now = performance.now();
       if (rms >= SILENCE_THRESHOLD_RMS) {
+        this.speechSampleCount += 1;
         this.hasDetectedSpeech = true;
         this.lastLoudAt = now;
         return;
@@ -383,18 +374,13 @@ export class WhisperSTTProvider implements SpeechToTextProvider {
     this.chunks = []; // drop our reference immediately — nothing here is persisted
 
     const recordingDurationMs = performance.now() - this.recordingStartedAt;
-    const averageRms = this.rmsSampleCount > 0 ? this.rmsSum / this.rmsSampleCount : 0;
-
-    // Discard without ever calling /api/stt: too short to be real speech,
-    // or never meaningfully louder than ambient noise on average (see the
-    // constants' doc comments — this is what stopped Whisper hallucinating
-    // unrelated sentences out of silence/background noise). A manual
-    // stop()/force-send with nothing said, or a stray click, both land here.
-    if (recordingDurationMs < MIN_RECORDING_MS_TO_TRANSCRIBE || averageRms < MIN_AVERAGE_RMS_TO_TRANSCRIBE) {
+    // No usable analyser samples means measurement is unavailable, not silence.
+    // Preserve manual/30s recording delivery in browsers without working Web Audio.
+    const noSpeech = this.rmsSampleCount > 0 && this.speechSampleCount < MIN_SPEECH_SAMPLES;
+    if (blob.size === 0 || recordingDurationMs < MIN_RECORDING_MS_TO_TRANSCRIBE || noSpeech) {
       console.warn(
-        `[WhisperSTT] gravação descartada sem enviar ao Whisper — duração ${Math.round(recordingDurationMs)}ms ` +
-          `(mínimo ${MIN_RECORDING_MS_TO_TRANSCRIBE}ms), RMS médio ${averageRms.toFixed(4)} ` +
-          `(mínimo ${MIN_AVERAGE_RMS_TO_TRANSCRIBE}) — provável silêncio/ruído, não fala real`
+        `[WhisperSTT] recording discarded: duration=${Math.round(recordingDurationMs)}ms, ` +
+          `voiceSamples=${this.speechSampleCount}, samples=${this.rmsSampleCount}, bytes=${blob.size}`
       );
       this.recorder = null;
       this.stream = null;
