@@ -658,24 +658,6 @@ export default function Page() {
     });
   }
 
-  // LessonGrid's card click (see components/LessonGrid) — "test mode":
-  // jump straight into a lesson by code, same synthetic-student shape the
-  // ?licao=-only URL auto-start (below) already uses, since there's no
-  // real student identity behind a grid click either.
-  function handleLessonPick(lesson: CurriculumLesson) {
-    void handleStudentPick({
-      id: `lesson-${lesson.code}`,
-      // No real student identity in test mode — leave the name blank so
-      // the persona never addresses/praises with a placeholder. 1A is the
-      // one exception: it captures the student's real name itself, mid-
-      // lesson (see introductionReply.ts), and already expects a
-      // starting placeholder to sit alongside that flow — left as-is.
-      name: lesson.code.toLowerCase() === "1a" ? "Aluno" : "",
-      currentLesson: lesson.code,
-      lastSession: "",
-    });
-  }
-
   // In the real product, the school platform deep-links with
   // ?aluno=<id>&licao=<codigo> and expects the lesson to start immediately,
   // skipping the demo profile-selection screen entirely. Falls back to the
@@ -812,7 +794,7 @@ export default function Page() {
       {(bootState === "fading" || bootState === "ready") && (
         <div className={`app-shell${bootState === "fading" ? " app-fade-in" : ""}`}>
           {!started ? (
-            <LessonGrid lessons={allLessons} onPick={handleLessonPick} />
+            <LessonGrid lessons={allLessons} />
           ) : (
           <>
           {/* Mobile renders its own floating header over the full-screen

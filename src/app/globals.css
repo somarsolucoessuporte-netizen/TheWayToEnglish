@@ -149,147 +149,142 @@ body {
 
 /* Initial "pick a lesson" screen (see components/LessonGrid.tsx) —
    replaces .app-shell's other content entirely while `!started`, on both
-   desktop and mobile (LessonGrid itself is responsive, not two separate
-   layouts). */
-.lesson-grid-screen {
+   desktop and mobile. Centered card: logo, three dependent dropdowns
+   (Book/Unit/Lesson), Start button. */
+.lesson-select-screen {
   flex: 1;
   min-height: 0;
   overflow-y: auto;
   display: flex;
-  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 24px 16px;
+  background: var(--bg-page);
 }
 
-.lesson-grid-header {
+.lesson-select-card {
+  width: 100%;
+  max-width: 640px;
   display: flex;
-  flex-wrap: wrap;
+  flex-direction: column;
+  align-items: center;
+  gap: 28px;
+}
+
+.lesson-select-brand {
+  justify-content: center;
+}
+
+.lesson-select-dropdowns {
+  width: 100%;
+  display: flex;
+  gap: 14px;
+}
+
+@media (max-width: 640px) {
+  .lesson-select-dropdowns {
+    flex-direction: column;
+  }
+}
+
+.lesson-dropdown {
+  position: relative;
+  flex: 1;
+  min-width: 0;
+}
+
+.lesson-dropdown-trigger {
+  width: 100%;
+  display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 12px;
-  padding: 14px 16px;
-  border-bottom: 1px solid var(--stroke);
-  background: var(--bg-surface);
-}
-
-/* One cascading filter step at a time (Book, then Unit — see
-   LessonGrid's `step` state) — never both rows at once, per the FLUXO:
-   pick a book, see that book's units, pick a unit, see its lessons. */
-.filter-step {
-  padding: 20px 20px 4px;
-}
-
-.filter-chip-row {
-  display: flex;
-  gap: 10px;
-  flex-wrap: wrap;
-}
-
-.filter-chip {
-  border: 1px solid var(--border);
-  background: transparent;
-  color: var(--text-secondary);
-  padding: 10px 18px;
-  border-radius: 999px;
-  font-weight: 700;
-  font-size: 14px;
-  cursor: pointer;
-}
-
-.filter-chip:hover {
-  border-color: var(--accent-soft);
-}
-
-/* Solid fill in the project's primary color — same token .btn-primary
-   uses — once a chip is chosen, including on returning to a step whose
-   pick is still remembered (see LessonGrid's doc comment). */
-.filter-chip.active {
-  border-color: var(--accent);
-  background: var(--accent);
-  color: #fff;
-}
-
-.lesson-grid-breadcrumb {
-  display: flex;
-  align-items: center;
   gap: 8px;
-  padding: 20px 20px 0;
-  font-size: 14px;
-  color: var(--text-secondary);
-}
-
-.breadcrumb-link {
-  border: none;
-  background: none;
-  padding: 0;
-  color: var(--accent);
-  font-weight: 700;
-  font-size: 14px;
-  cursor: pointer;
-}
-
-.breadcrumb-link:hover {
-  text-decoration: underline;
-}
-
-.breadcrumb-sep {
-  color: var(--text-muted);
-}
-
-.breadcrumb-current {
-  font-weight: 700;
-  color: var(--text-primary);
-}
-
-.lesson-grid {
-  flex: 1;
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 14px;
-  padding: 20px;
-  align-content: start;
-}
-
-@media (max-width: 1100px) {
-  .lesson-grid {
-    grid-template-columns: repeat(3, 1fr);
-  }
-}
-
-@media (max-width: 767px) {
-  .lesson-grid {
-    grid-template-columns: repeat(2, 1fr);
-    gap: 10px;
-    padding: 14px;
-  }
-}
-
-.lesson-card {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-  text-align: left;
   background: var(--bg-surface);
   border: 1px solid var(--border);
-  border-radius: 14px;
-  padding: 16px;
+  border-radius: 10px;
+  padding: 12px 14px;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-primary);
   cursor: pointer;
-  transition: border-color 150ms ease, transform 150ms ease;
+  text-align: left;
 }
 
-.lesson-card:hover {
+.lesson-dropdown-trigger span:first-child {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.lesson-dropdown-trigger:hover:not(:disabled) {
   border-color: var(--accent-soft);
-  transform: translateY(-2px);
 }
 
-.lesson-card-code {
-  font-weight: 800;
-  font-size: 15px;
+.lesson-dropdown-trigger:disabled {
+  cursor: not-allowed;
+  color: var(--text-muted);
+  background: var(--bg-page);
+}
+
+.lesson-dropdown-placeholder {
+  color: var(--text-muted);
+  font-weight: 500;
+}
+
+.lesson-dropdown-caret {
+  flex: none;
+  color: var(--text-muted);
+  font-size: 12px;
+}
+
+.lesson-dropdown-list {
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 0;
+  right: 0;
+  z-index: 10;
+  margin: 0;
+  padding: 6px;
+  list-style: none;
+  max-height: 280px;
+  overflow-y: auto;
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+}
+
+.lesson-dropdown-option {
+  width: 100%;
+  text-align: left;
+  background: none;
+  border: none;
+  border-radius: 8px;
+  padding: 9px 10px;
+  font-size: 14px;
+  color: var(--text-primary);
+  cursor: pointer;
+}
+
+.lesson-dropdown-option:hover {
+  background: var(--bg-page);
+}
+
+.lesson-dropdown-option.selected {
+  background: color-mix(in srgb, var(--accent) 14%, transparent);
   color: var(--accent);
+  font-weight: 700;
 }
 
-.lesson-card-title {
-  font-size: 13px;
-  color: var(--text-secondary);
-  line-height: 1.4;
+.lesson-select-start {
+  width: 100%;
+  padding: 13px;
+  font-size: 15px;
+}
+
+.lesson-select-start:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
 }
 
 .main {
