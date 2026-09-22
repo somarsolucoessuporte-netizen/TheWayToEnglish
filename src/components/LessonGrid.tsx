@@ -4,14 +4,28 @@ import { useMemo, useState } from "react";
 import { branding } from "@/app-config/branding";
 import type { CurriculumLesson } from "@/app-config/curriculum";
 
+/** First-appearance order (not alphabetical) — matches the curriculum
+ * data's own sequence, which already reflects course order. */
+function uniqueInOrder(values: string[]): string[] {
+  const seen: string[] = [];
+  for (const value of values) if (!seen.includes(value)) seen.push(value);
+  return seen;
+}
+
+type Step = "book" | "unit" | "lessons";
+
 /**
  * Initial "pick a lesson" screen (see page.tsx) — the entry point at "/"
- * whenever there's no ?licao= in the URL, replacing the old flat list of
- * demo-student names with a real grid of every lesson in the curriculum,
- * grouped by book. Every label rendered here (book name, lesson code,
- * lesson title) is exactly what app-config/curriculum already carries —
- * `lesson.book` / `lesson.code` / `lesson.title` — never translated or
- * reformatted, so this never drifts from the curriculum's own naming.
+ * whenever there's no ?licao= in the URL. Cascading filters: Book, then
+ * Unit within that book, then the lesson grid for that unit — every
+ * label (`lesson.book` / `lesson.unit` / `lesson.code` / `lesson.title`)
+ * is exactly what app-config/curriculum already carries, never
+ * translated or reformatted.
+ *
+ * `book`/`unit` stay remembered even after stepping back to an earlier
+ * filter (see backToUnitStep) — that's what lets the previously chosen
+ * chip still render `.active` (solid fill) on return, instead of the
+ * filter looking reset. Only `step` actually decides what's on screen.
  */
 export function LessonGrid({
   lessons,
@@ -20,22 +34,34 @@ export function LessonGrid({
   lessons: CurriculumLesson[];
   onPick: (lesson: CurriculumLesson) => void;
 }) {
-  // Preserves first-appearance order from the curriculum data rather than
-  // sorting alphabetically — there's currently exactly one book, but this
-  // stays correct the moment a second book's JSON is added to
-  // app-config/curriculum/index.ts.
-  const books = useMemo(() => {
-    const seen: string[] = [];
-    for (const lesson of lessons) if (!seen.includes(lesson.book)) seen.push(lesson.book);
-    return seen;
-  }, [lessons]);
+  const books = useMemo(() => uniqueInOrder(lessons.map((lesson) => lesson.book)), [lessons]);
 
-  const [activeBook, setActiveBook] = useState(books[0]);
-  // Falls back to the first book if `activeBook` ever isn't in the current
-  // list (only possible if `lessons` itself changes shape at runtime,
-  // which it doesn't today) — avoids rendering an empty grid.
-  const currentBook = books.includes(activeBook) ? activeBook : books[0];
-  const visibleLessons = lessons.filter((lesson) => lesson.book === currentBook);
+  // Auto-select and skip straight to the unit filter when there's only
+  // one book — nothing to actually filter there.
+  const [step, setStep] = useState<Step>(books.length === 1 ? "unit" : "book");
+  const [book, setBook] = useState<string | undefined>(books.length === 1 ? books[0] : undefined);
+  const [unit, setUnit] = useState<string | undefined>(undefined);
+
+  const units = useMemo(
+    () => (book ? uniqueInOrder(lessons.filter((lesson) => lesson.book === book).map((lesson) => lesson.unit)) : []),
+    [lessons, book]
+  );
+
+  const visibleLessons = useMemo(
+    () => (book && unit ? lessons.filter((lesson) => lesson.book === book && lesson.unit === unit) : []),
+    [lessons, book, unit]
+  );
+
+  function pickBook(nextBook: string) {
+    setBook(nextBook);
+    setUnit(undefined);
+    setStep("unit");
+  }
+
+  function pickUnit(nextUnit: string) {
+    setUnit(nextUnit);
+    setStep("lessons");
+  }
 
   return (
     <div className="lesson-grid-screen">
@@ -47,35 +73,61 @@ export function LessonGrid({
             <div className="subtitle">{branding.companyName}</div>
           </div>
         </div>
-        {books.length > 1 && (
-          <div className="book-tabs">
-            {books.map((book) => (
+      </header>
+
+      {step === "book" && (
+        <div className="filter-step">
+          <div className="filter-chip-row">
+            {books.map((b) => (
               <button
-                key={book}
+                key={b}
                 type="button"
-                className={`book-tab${book === currentBook ? " active" : ""}`}
-                onClick={() => setActiveBook(book)}
+                className={`filter-chip${b === book ? " active" : ""}`}
+                onClick={() => pickBook(b)}
               >
-                {book}
+                {b}
               </button>
             ))}
           </div>
-        )}
-      </header>
+        </div>
+      )}
 
-      <div className="lesson-grid">
-        {visibleLessons.map((lesson) => (
-          <button
-            key={lesson.code}
-            type="button"
-            className="lesson-card"
-            onClick={() => onPick(lesson)}
-          >
-            <span className="lesson-card-code">{lesson.code}</span>
-            <span className="lesson-card-title">{lesson.title}</span>
-          </button>
-        ))}
-      </div>
+      {step === "unit" && (
+        <div className="filter-step">
+          <div className="filter-chip-row">
+            {units.map((u) => (
+              <button
+                key={u}
+                type="button"
+                className={`filter-chip${u === unit ? " active" : ""}`}
+                onClick={() => pickUnit(u)}
+              >
+                {u}
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {step === "lessons" && book && unit && (
+        <>
+          <div className="lesson-grid-breadcrumb">
+            <button type="button" className="breadcrumb-link" onClick={() => setStep("unit")}>
+              {book}
+            </button>
+            <span className="breadcrumb-sep">›</span>
+            <span className="breadcrumb-current">{unit}</span>
+          </div>
+          <div className="lesson-grid">
+            {visibleLessons.map((lesson) => (
+              <button key={lesson.code} type="button" className="lesson-card" onClick={() => onPick(lesson)}>
+                <span className="lesson-card-code">{lesson.code}</span>
+                <span className="lesson-card-title">{lesson.title}</span>
+              </button>
+            ))}
+          </div>
+        </>
+      )}
     </div>
   );
 }
