@@ -292,9 +292,30 @@ export class OpenAITTSProvider implements SpeechProvider {
         this.revokeCurrentUrl();
         finish();
       };
+      // REJECTS (not finish()/resolve) — matching onerror/the watchdog
+      // above, not the old behavior here. A rejected play() (autoplay
+      // blocked, or an AbortError from calling .play() again before the
+      // browser finished settling a previous .src swap/pause on this same
+      // reused element — see playBlob's own doc comment on reusing
+      // unlockedAudioEl across every turn) used to call finish(), which
+      // RESOLVES this promise as if playback had succeeded: no error ever
+      // reached speakAtSpeed's catch, so its speechSynthesis fallback
+      // never ran, and nothing was ever logged — the exact "aparece na
+      // tela mas não fala, sem nenhum erro" production reports kept
+      // describing, including "funciona na primeira tarefa, para na
+      // segunda" (later play() calls on the same reused element are where
+      // an AbortError like this actually shows up).
       void audio.play().catch((err) => {
+        console.error("[TTS] audio.play() rejeitado:", err);
+        window.clearTimeout(startWatchdog);
+        this.speaking = false;
+        this.pendingResolve = null;
+        audio.onplaying = null;
+        audio.onended = null;
+        audio.onerror = null;
         this.emit("error", err);
-        finish();
+        this.revokeCurrentUrl();
+        reject(err instanceof Error ? err : new Error(String(err)));
       });
     });
   }
