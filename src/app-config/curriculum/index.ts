@@ -214,6 +214,15 @@ export function getCourseOverview(): { lessonCode: string; title: string }[] {
   return ALL_LESSON_PLANS.map((l) => ({ lessonCode: l.code, title: l.title ?? l.skill ?? `Lesson ${l.code}` }));
 }
 
+/** Every lesson in the course, fully resolved (book/unit/code/title and
+ * everything else CurriculumLesson carries) — for UI that needs to group
+ * or display lessons using the curriculum's own fields (see
+ * components/LessonGrid.tsx), as opposed to getCourseOverview's
+ * lessonCode+title-only shape (built for injecting into the AI prompt). */
+export function getAllLessons(): CurriculumLesson[] {
+  return ALL_LESSON_PLANS.map(toCurriculumLesson);
+}
+
 /** The lesson immediately after `code` in the curriculum's own array order
  * (book01-unit01.json's sequence) — not a prerequisite-based recommendation,
  * just positional order. undefined if `code` isn't found or is the last

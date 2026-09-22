@@ -3,7 +3,6 @@
 import { forwardRef, useEffect, useImperativeHandle, useMemo, useRef, useState } from "react";
 import { branding } from "@/app-config/branding";
 import type { CurriculumLesson } from "@/app-config/curriculum";
-import type { DemoStudent } from "@/app-config/demo-students";
 import type { AvatarEngine } from "@/core/avatar-engine/AvatarEngine";
 import type { ChatEntry } from "@/core/conversation/orchestrator";
 import { Avatar } from "./Avatar";
@@ -106,8 +105,10 @@ export const MobileVoiceScreen = forwardRef<
   {
     avatarEngine: AvatarEngine;
     started: boolean;
-    demoStudents: readonly DemoStudent[];
-    onStudentPick: (student: DemoStudent) => void;
+    /** Test-mode only (see components/LessonGrid and page.tsx's
+     * hasAlunoParam) — a real ?aluno= session hides this. */
+    showLessonsButton: boolean;
+    onBackToLessons: () => void;
     totalSeconds: number;
     remainingSeconds: number;
     showTimeUpNotice: boolean;
@@ -129,8 +130,8 @@ export const MobileVoiceScreen = forwardRef<
   {
     avatarEngine,
     started,
-    demoStudents,
-    onStudentPick,
+    showLessonsButton,
+    onBackToLessons,
     totalSeconds,
     remainingSeconds,
     showTimeUpNotice,
@@ -345,28 +346,17 @@ export const MobileVoiceScreen = forwardRef<
         <div className="mobile-float-title">{branding.productName}</div>
         {started && <LessonTimer totalSeconds={totalSeconds} remainingSeconds={remainingSeconds} />}
         {started && <CurrentLessonLabel lesson={currentLesson} />}
+        {/* Test mode only (see components/LessonGrid) — a real ?aluno=
+            session has no "back to the grid" concept. */}
+        {showLessonsButton && (
+          <button type="button" className="btn btn-ghost lessons-back-btn" onClick={onBackToLessons}>
+            ← Lessons
+          </button>
+        )}
       </div>
 
       {started && showTimeUpNotice && !lessonComplete && (
         <div className="mobile-time-notice-float">{branding.copy.sessionTimeUpNotice}</div>
-      )}
-
-      {!started && (
-        <div className="mobile-login">
-          <div className="intro-title">{branding.copy.demoLoginTitle}</div>
-          <div className="unit-list">
-            {demoStudents.map((student) => (
-              <button
-                key={student.id}
-                type="button"
-                className="btn btn-ghost unit-btn"
-                onClick={() => onStudentPick(student)}
-              >
-                {student.name}
-              </button>
-            ))}
-          </div>
-        </div>
       )}
 
       {started && (

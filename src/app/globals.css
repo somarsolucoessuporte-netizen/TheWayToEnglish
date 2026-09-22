@@ -117,6 +117,17 @@ body {
   opacity: 0.85;
 }
 
+.topbar-right {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.lessons-back-btn {
+  font-size: 13px;
+  padding: 8px 12px;
+}
+
 .app-shell {
   height: 100%;
   display: flex;
@@ -134,6 +145,105 @@ body {
   to {
     opacity: 1;
   }
+}
+
+/* Initial "pick a lesson" screen (see components/LessonGrid.tsx) —
+   replaces .app-shell's other content entirely while `!started`, on both
+   desktop and mobile (LessonGrid itself is responsive, not two separate
+   layouts). */
+.lesson-grid-screen {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+}
+
+.lesson-grid-header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 14px 16px;
+  border-bottom: 1px solid var(--stroke);
+  background: var(--bg-surface);
+}
+
+.book-tabs {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.book-tab {
+  border: 1px solid var(--border);
+  background: var(--bg-page);
+  color: var(--text-secondary);
+  padding: 8px 14px;
+  border-radius: 999px;
+  font-weight: 700;
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.book-tab.active {
+  border-color: var(--accent-soft);
+  background: color-mix(in srgb, var(--accent) 16%, transparent);
+  color: var(--accent);
+}
+
+.lesson-grid {
+  flex: 1;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 14px;
+  padding: 20px;
+  align-content: start;
+}
+
+@media (max-width: 1100px) {
+  .lesson-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+@media (max-width: 767px) {
+  .lesson-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+    padding: 14px;
+  }
+}
+
+.lesson-card {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  text-align: left;
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 16px;
+  cursor: pointer;
+  transition: border-color 150ms ease, transform 150ms ease;
+}
+
+.lesson-card:hover {
+  border-color: var(--accent-soft);
+  transform: translateY(-2px);
+}
+
+.lesson-card-code {
+  font-weight: 800;
+  font-size: 15px;
+  color: var(--accent);
+}
+
+.lesson-card-title {
+  font-size: 13px;
+  color: var(--text-secondary);
+  line-height: 1.4;
 }
 
 .main {
@@ -1201,20 +1311,6 @@ body {
   animation: none;
 }
 
-/* Pre-lesson demo-login screen, shown over the avatar photo — part of the
-   avatar panel's own dark chrome (see .stage), not the app's light theme. */
-.mobile-login {
-  position: absolute;
-  inset: 0;
-  z-index: 5;
-  display: flex;
-  flex-direction: column;
-  justify-content: flex-end;
-  padding: 18px;
-  background: linear-gradient(rgba(0, 0, 0, 0), rgba(0, 0, 0, 0.6) 70%);
-  color: var(--avatar-text);
-}
-
 .mobile-float-header {
   position: absolute;
   top: 0;
@@ -1489,64 +1585,6 @@ body {
   display: flex;
   gap: 6px;
   flex: none;
-}
-
-/* Lesson-intro card, shown over the avatar panel before the student picks
-   who they are — dark glass, same family as .mobile-login. */
-.intro-overlay {
-  position: absolute;
-  inset: 0;
-  display: flex;
-  align-items: flex-end;
-  justify-content: flex-start;
-  padding: 18px;
-  z-index: 5;
-}
-
-.intro-card {
-  width: min(420px, 92vw);
-  background: var(--bg-surface);
-  border: 1px solid var(--border);
-  border-radius: 12px;
-  padding: 16px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-}
-
-.intro-title {
-  color: var(--brand-navy);
-  font-size: 14px;
-  font-weight: 600;
-  margin-bottom: 6px;
-}
-
-.intro-text {
-  font-size: 13px;
-  color: var(--text-secondary);
-  line-height: 1.4;
-  margin-bottom: 12px;
-}
-
-.unit-list {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
-.unit-btn {
-  text-align: left;
-  width: 100%;
-  background: var(--bg-surface);
-  border: 2px solid var(--brand-navy);
-  color: var(--brand-navy);
-  border-radius: 8px;
-  padding: 12px 20px;
-  font-weight: 600;
-  transition: background 150ms ease, color 150ms ease;
-}
-
-.unit-btn:hover {
-  background: var(--brand-navy);
-  color: var(--bg-surface);
 }
 
 /* On-screen diagnostics for the iOS splash-freeze investigation (see

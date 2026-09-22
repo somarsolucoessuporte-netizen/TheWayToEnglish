@@ -4,7 +4,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { branding } from "@/app-config/branding";
 import { TUTOR_SYSTEM_PROMPT } from "@/app-config/persona";
 import { DEMO_STUDENTS, type DemoStudent } from "@/app-config/demo-students";
-import { getLessonByCode, getNextLesson, type CurriculumLesson } from "@/app-config/curriculum";
+import { getAllLessons, getLessonByCode, getNextLesson, type CurriculumLesson } from "@/app-config/curriculum";
 import { aiProvider, speechProvider, sttProvider } from "@/app-config/providers";
 import { AvatarEngine } from "@/core/avatar-engine/AvatarEngine";
 import { preloadAllAvatarVideos } from "@/core/avatar-engine/preloadAvatarAssets";
@@ -21,6 +21,7 @@ import { ChatLog } from "@/components/ChatLog";
 import { ErrorToast } from "@/components/ErrorToast";
 import { ForceSendButton } from "@/components/ForceSendButton";
 import { LessonCompleteCard } from "@/components/LessonCompleteCard";
+import { LessonGrid } from "@/components/LessonGrid";
 import { LessonProgressBar } from "@/components/LessonProgressBar";
 import { LessonTimer } from "@/components/LessonTimer";
 import { LoadingScreen } from "@/components/LoadingScreen";
@@ -229,6 +230,20 @@ export default function Page() {
   // the school's academic system are wired in.
   const [started, setStarted] = useState(false);
   const [currentLesson, setCurrentLesson] = useState<CurriculumLesson | undefined>(undefined);
+  // Every lesson in the curriculum, for the initial "pick a lesson" grid
+  // (see components/LessonGrid) — static data, computed once.
+  const allLessons = useMemo(() => getAllLessons(), []);
+  // Whether this page load's URL carried ?aluno= — the real-student deep
+  // link (see the ?aluno=&licao= effect below). The "← Lessons" header
+  // button only makes sense in test mode (no real student identity tied
+  // to the URL); a real student session hides it. Starts false (matching
+  // what the server renders) and is set for real on mount, same pattern
+  // as `debugEnabled` above — avoids a hydration mismatch, at the cost of
+  // the button being briefly absent on first paint for a genuine test URL.
+  const [hasAlunoParam, setHasAlunoParam] = useState(false);
+  useEffect(() => {
+    setHasAlunoParam(new URLSearchParams(window.location.search).has("aluno"));
+  }, []);
   // Only for display on the lesson-complete card (see LessonCompleteCard) —
   // the orchestrator already tracks this itself for the session's own use.
   const [currentStudentName, setCurrentStudentName] = useState<string | undefined>(undefined);
@@ -643,6 +658,19 @@ export default function Page() {
     });
   }
 
+  // LessonGrid's card click (see components/LessonGrid) — "test mode":
+  // jump straight into a lesson by code, same synthetic-student shape the
+  // ?licao=-only URL auto-start (below) already uses, since there's no
+  // real student identity behind a grid click either.
+  function handleLessonPick(lesson: CurriculumLesson) {
+    void handleStudentPick({
+      id: `lesson-${lesson.code}`,
+      name: "Aluno",
+      currentLesson: lesson.code,
+      lastSession: "",
+    });
+  }
+
   // In the real product, the school platform deep-links with
   // ?aluno=<id>&licao=<codigo> and expects the lesson to start immediately,
   // skipping the demo profile-selection screen entirely. Falls back to the
@@ -776,6 +804,10 @@ export default function Page() {
 
       {(bootState === "fading" || bootState === "ready") && (
         <div className={`app-shell${bootState === "fading" ? " app-fade-in" : ""}`}>
+          {!started ? (
+            <LessonGrid lessons={allLessons} onPick={handleLessonPick} />
+          ) : (
+          <>
           {/* Mobile renders its own floating header over the full-screen
               avatar (see MobileVoiceScreen) — this bar would otherwise eat
               into the 100dvh the avatar is supposed to fill entirely. */}
@@ -788,7 +820,17 @@ export default function Page() {
                   <div className="subtitle">{branding.companyName}</div>
                 </div>
               </div>
-              <StatusPills connected={connected} stateLabel={stateLabel} />
+              <div className="topbar-right">
+                {/* Test mode only (see LessonGrid) — a real ?aluno= session
+                    has no "back to the grid" concept, since a real student
+                    never picked a lesson off it in the first place. */}
+                {!hasAlunoParam && (
+                  <button type="button" className="btn btn-ghost lessons-back-btn" onClick={handleEndLesson}>
+                    ← Lessons
+                  </button>
+                )}
+                <StatusPills connected={connected} stateLabel={stateLabel} />
+              </div>
             </header>
           )}
 
@@ -797,8 +839,8 @@ export default function Page() {
               ref={mobileVoiceScreenRef}
               avatarEngine={avatarEngine}
               started={started}
-              demoStudents={DEMO_STUDENTS}
-              onStudentPick={handleStudentPick}
+              showLessonsButton={!hasAlunoParam}
+              onBackToLessons={handleEndLesson}
               totalSeconds={totalSeconds}
               remainingSeconds={remainingSeconds}
               showTimeUpNotice={showTimeUpNotice}
@@ -823,26 +865,6 @@ export default function Page() {
             <div className="main">
               <section className="stage">
                 <Avatar engine={avatarEngine} />
-
-                {!started && (
-                  <div className="intro-overlay">
-                    <div className="intro-card">
-                      <div className="intro-title">{branding.copy.demoLoginTitle}</div>
-                      <div className="unit-list">
-                        {DEMO_STUDENTS.map((student) => (
-                          <button
-                            key={student.id}
-                            type="button"
-                            className="btn btn-ghost unit-btn"
-                            onClick={() => handleStudentPick(student)}
-                          >
-                            {student.name}
-                          </button>
-                        ))}
-                      </div>
-                    </div>
-                  </div>
-                )}
 
                 {/* Absolute within .stage (not the page-level fixed dock
                     mobile uses below) — desktop's avatar only occupies
@@ -910,6 +932,8 @@ export default function Page() {
                 <footer className="footer">{branding.copy.footer}</footer>
               </section>
             </div>
+          )}
+          </>
           )}
         </div>
       )}
