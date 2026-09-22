@@ -641,7 +641,6 @@ export class ConversationOrchestrator {
    */
   reset(): void {
     this.speech.cancel();
-    this.stopIdleClock();
     this.history = [];
     this.entries = [];
     for (const cb of this.entryListeners) cb(this.entries);
@@ -662,7 +661,20 @@ export class ConversationOrchestrator {
     this.usedNudgePhrases.length = 0;
     this.lastTutorEnglish = undefined;
     this.speechQueue = Promise.resolve();
+    // Dispatched BEFORE stopIdleClock, not after: RESET always transitions
+    // to "idle" (see CharacterStateMachine.dispatch), and the constructor's
+    // stateMachine.subscribe hook starts the idle clock the instant ANY
+    // state becomes "idle" — including this one. Calling stopIdleClock()
+    // first (the old order) stopped a clock that, at that point, wasn't
+    // running yet (state was still whatever it was before reset()), and
+    // then this dispatch immediately restarted a brand new one that
+    // nothing afterward ever stopped — every "Encerrar" silently left the
+    // idle-nudge clock ticking forever on a cleared session (empty
+    // history, no lesson code), firing real /api/chat nudge calls against
+    // nothing in the background. stopIdleClock() now runs AFTER, so it
+    // actually cancels the clock this dispatch just started.
     this.stateMachine.dispatch({ type: "RESET" });
+    this.stopIdleClock();
   }
 
   /**
@@ -988,21 +1000,25 @@ export class ConversationOrchestrator {
         await this.enterPraiseBeforeSpeaking();
       }
 
-      // English always plays first, Portuguese second — including during a
-      // correction (see persona.ts's OUTPUT FORMAT: speech.english carries
-      // the praise + the correct form, speech.portuguese carries ONLY the
-      // explanation). This used to be reversed for a correction turn
-      // specifically (Portuguese first, ending in "Agora repita comigo:",
-      // cueing straight into the English repeat-model) — that made the
-      // Portuguese explanation land BEFORE the correction itself, which is
-      // exactly the ordering bug reported from the real Lesson A test. The
-      // "hear it, repeat it" drill below already re-says the corrected word
-      // slowly and cues "Now you try." on its own, so it doesn't actually
-      // depend on Portuguese being spoken last to work.
+      // English always plays first, Portuguese second — EXCEPT for a
+      // correction, where Portuguese is never spoken at all, only shown
+      // (see the ✗/✓ card in ChatLog.tsx): a correction turn is longer,
+      // mixes English and Portuguese, and often carries an ALL-CAPS
+      // vocabulary word (see normalizeForSpeech) — the exact profile of
+      // the "aparece na tela mas não é falada" production report. Debbie
+      // only ever needs to be HEARD explaining in English (the "hear it,
+      // repeat it" drill below re-says the corrected word slowly on its
+      // own); the Portuguese explanation is there for the student to
+      // READ, matching persona.ts's own framing of it as a written aid,
+      // not a spoken one. Every other turn (including a correction's own
+      // ATTEMPT-BASED ESCALATION explanations) keeps speaking both parts,
+      // English first — see persona.ts's OUTPUT FORMAT for why the order
+      // itself still matters when Portuguese IS spoken.
       const englishPart = { text: response.speech.english, lang: "en-US" };
       const portuguesePart = { text: response.speech.portuguese, lang: "pt-BR" };
       const correction = response.correction;
-      console.log("[turn] chamando speak()");
+      const partsToSpeak = correction ? [englishPart] : [englishPart, portuguesePart];
+      console.log("[turn] chamando speak()", correction ? "(correção — só inglês)" : "");
       // DIAGNOSTIC LOGGING (temporary — investigating the "sessão trava,
       // busy nunca volta a false" report): `busy` itself is always true at
       // both of these points (it's only cleared in this method's own
@@ -1012,7 +1028,7 @@ export class ConversationOrchestrator {
       // that never settles) rather than after it.
       console.log("[state] busy antes de falar:", this.busy);
       await this.speakPartsWithReveal(
-        [englishPart, portuguesePart],
+        partsToSpeak,
         entryIndex,
         response,
         correction ? { after: () => this.runPronunciationDrill(correction.corrected) } : {},
@@ -1139,7 +1155,10 @@ export class ConversationOrchestrator {
 
     try {
       for (const part of nonEmpty) {
-        await this.enqueueSpeak(() => this.speech.speak(part.text, { lang: part.lang }));
+        const spokenText = normalizeForSpeech(part.text);
+        console.log(`[TTS] tentando falar: "${spokenText}"`);
+        await this.enqueueSpeak(() => this.speech.speak(spokenText, { lang: part.lang }));
+        console.log("[TTS] concluído");
       }
       if (opts.after) await opts.after();
     } catch (err) {
@@ -1340,20 +1359,26 @@ export class ConversationOrchestrator {
           // propagate to runTurn's catch, is what keeps a bad prefetch from
           // ever taking the whole session to the ERROR state.
           console.warn("[TTS] blob pré-carregado falhou, tentando TTS normal:", err);
-          await this.enqueueSpeak(() => this.speech.speak(part.text, { lang: part.lang }));
+          const fallbackText = normalizeForSpeech(part.text);
+          console.log(`[TTS] tentando falar: "${fallbackText}"`);
+          await this.enqueueSpeak(() => this.speech.speak(fallbackText, { lang: part.lang }));
+          console.log("[TTS] concluído");
         }
       } else {
-        // DIAGNOSTIC LOGGING (temporary — production report: "trava depois
-        // de 'Nice to meet you, Francisco!...'"). Bracketing the actual
-        // speak() call this tightly (not just before/after the whole
-        // multi-part turn — see runTurn's own busy logs) pins down whether
-        // a hang is inside THIS call specifically. `part.text` naturally
-        // includes whatever was interpolated (e.g. the student's name from
-        // introductionReply.ts) without this needing to know that turn's
-        // origin — it's the same log for every English part.
-        console.log("[introReply] iniciando TTS com nome:", part.text.slice(0, 80));
-        await this.enqueueSpeak(() => this.speech.speak(part.text, { lang: part.lang }));
-        console.log("[introReply] TTS concluído, busy →", this.busy);
+        // DIAGNOSTIC LOGGING (temporary — production reports of a turn's
+        // text showing but never being spoken, most recently correction
+        // turns specifically). Bracketing the actual speak() call this
+        // tightly (not just before/after the whole multi-part turn — see
+        // runTurn's own busy logs) pins down whether a given part's TTS
+        // call was ever actually reached, and whether it settled — the
+        // exact text logged is what actually gets sent, AFTER
+        // normalizeForSpeech (see its own doc comment), not `part.text`
+        // itself, so this also confirms/denies the CAPS-word hypothesis
+        // directly from the log rather than needing to re-derive it.
+        const spokenText = normalizeForSpeech(part.text);
+        console.log(`[TTS] tentando falar: "${spokenText}"`);
+        await this.enqueueSpeak(() => this.speech.speak(spokenText, { lang: part.lang }));
+        console.log("[TTS] concluído");
       }
     } catch (err) {
       // Belt-and-suspenders on top of OpenAITTSProvider's own fetch
@@ -1460,10 +1485,11 @@ export class ConversationOrchestrator {
    * has actually run.
    */
   private async runPronunciationDrill(word: string): Promise<void> {
-    const trimmed = word.trim();
+    const trimmed = normalizeForSpeech(word.trim());
     if (!trimmed) return;
     console.log("[speakParts] início (drill: devagar -> pausa -> now you try)");
     try {
+      console.log(`[TTS] tentando falar: "${trimmed}"`);
       console.log("[speakParts] parte 1 (devagar) start");
       await this.speakDrillPart(trimmed, DRILL_SLOW_TIMEOUT_MS, true);
       console.log("[speakParts] parte 1 (devagar) end");
@@ -1505,6 +1531,28 @@ export class ConversationOrchestrator {
 
 function errorMessage(err: unknown): string {
   return err instanceof Error ? err.message : String(err);
+}
+
+/**
+ * Some TTS engines (both OpenAI's and browsers' speechSynthesis fallback)
+ * are known to read an ALL-CAPS word as a spelled-out acronym instead of
+ * pronouncing it normally — e.g. "LISTENING" as "L, I, S, T, E, N, I, N,
+ * G" rather than the word. Vocabulary words throughout this app's
+ * curriculum are stored in all caps (LISTENING, SPEAKING, READING — see
+ * app-config/curriculum/book01-unit01.json's SKILL column), and the
+ * persona echoes that exact casing into speech.english for a correction
+ * ("The correct way is: LISTENING.") and into correction.corrected (fed
+ * to the pronunciation drill) — this is what surfaced as "a correção
+ * aparece na tela mas não é falada" in production.
+ *
+ * Normalizes every all-caps word of 2+ letters to Title Case for the TTS
+ * INPUT only — callers keep using the original, unmodified text for
+ * anything visual (the chat bubble, the correction card, the reveal word
+ * count), so the student still SEES "LISTENING" exactly as the curriculum
+ * writes it; only what's actually sent to speak() changes.
+ */
+function normalizeForSpeech(text: string): string {
+  return text.replace(/\b[A-Z]{2,}\b/g, (word) => word[0] + word.slice(1).toLowerCase());
 }
 
 function sleep(ms: number): Promise<void> {
