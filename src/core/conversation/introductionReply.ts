@@ -27,11 +27,17 @@ export function introductionReply(lessonCode: string, messages: Message[]): Tuto
     /^(?:(?:hello|hi)[,.!…]*\s+)?(?:my name is|my name['’]s|i am|i['’]m)\s+([\p{L}][\p{L}'’\-]*(?:\s+[\p{L}][\p{L}'’\-]*){0,3})[.!]?$/iu
   );
   if (!match) return;
-  // Defensive: the regex above already restricts this to letters/'/-, but
-  // normalize whitespace and cap length before it ever reaches TTS — a
-  // transcript artifact (extra spaces, an unreasonably long capture) has
-  // no business making it into spoken text unmodified.
-  const name = match[1].trim().replace(/\s+/g, " ").slice(0, 40);
+  // Defensive: the regex above already restricts the captured group to
+  // letters/'/-/space, so punctuation (periods, commas, double spaces from
+  // a messy transcript) can't actually appear here — but strip anything
+  // outside that set anyway, normalize whitespace, and cap length before
+  // this ever reaches TTS, so this stays true even if the regex above is
+  // ever loosened later.
+  const name = match[1]
+    .replace(/[^\p{L}\s'’-]/gu, "")
+    .trim()
+    .replace(/\s+/g, " ")
+    .slice(0, 40);
   if (!name) return;
   return {
     speech: {

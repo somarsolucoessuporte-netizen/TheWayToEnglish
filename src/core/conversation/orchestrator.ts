@@ -1124,7 +1124,23 @@ export class ConversationOrchestrator {
     // the full text (and no more pending/typing state) must be visible
     // now that speaking is genuinely over.
     this.replaceEntry(entryIndex, { role: "tutor", response });
-    this.stateMachine.dispatch({ type: "SPEECH_END" });
+    // SPEECH_END only has a defined transition FROM "speaking" (see
+    // PERSISTENT_TRANSITIONS) — that's only reached once some part's
+    // "start" event actually fired. If EVERY part's speak() failed and was
+    // swallowed (see speakOnePartWithReveal's own catch — TTS failures no
+    // longer propagate up to here), the state machine is still sitting on
+    // "thinking", and dispatching SPEECH_END there is a silent no-op:
+    // stuck on "thinking" forever, with the STT "final" handler's `if
+    // (state !== "listening") return` then discarding every future answer
+    // the student gives, since startListening() can never legitimately
+    // reach "listening" from a wedged "thinking". RESET is the one
+    // transition guaranteed to work from any state — use it whenever we
+    // never actually got to "speaking".
+    if (this.stateMachine.getState() === "speaking") {
+      this.stateMachine.dispatch({ type: "SPEECH_END" });
+    } else {
+      this.stateMachine.dispatch({ type: "RESET" });
+    }
   }
 
   /**
@@ -1213,8 +1229,39 @@ export class ConversationOrchestrator {
           await this.enqueueSpeak(() => this.speech.speak(part.text, { lang: part.lang }));
         }
       } else {
+        // DIAGNOSTIC LOGGING (temporary — production report: "trava depois
+        // de 'Nice to meet you, Francisco!...'"). Bracketing the actual
+        // speak() call this tightly (not just before/after the whole
+        // multi-part turn — see runTurn's own busy logs) pins down whether
+        // a hang is inside THIS call specifically. `part.text` naturally
+        // includes whatever was interpolated (e.g. the student's name from
+        // introductionReply.ts) without this needing to know that turn's
+        // origin — it's the same log for every English part.
+        console.log("[introReply] iniciando TTS com nome:", part.text.slice(0, 80));
         await this.enqueueSpeak(() => this.speech.speak(part.text, { lang: part.lang }));
+        console.log("[introReply] TTS concluído, busy →", this.busy);
       }
+    } catch (err) {
+      // Belt-and-suspenders on top of OpenAITTSProvider's own fetch
+      // timeout / playback watchdog / fallbackSpeak watchdog (all three
+      // already guarantee speak() itself always settles) — if a genuinely
+      // exhausted TTS attempt still throws here for any reason, it must
+      // NEVER take the whole turn down with it. Swallowing it (not
+      // rethrowing) means runTurn's own try/catch never sees this at all:
+      // no ERROR state, no dead mic — the entry's full text is still
+      // shown (see the `finally` below) and the student can just keep
+      // going, losing only the audio for this one line. This is the
+      // general form of "if TTS fails for this phrase, don't freeze" —
+      // it isn't specific to the name being interpolated (a plain name
+      // like "Francisco" has nothing OpenAI's TTS or the browser's
+      // speechSynthesis would choke on) since any turn's speech can fail
+      // this way, not just introductionReply's.
+      console.error("[TTS] falhou definitivamente para esta fala — seguindo sem áudio:", err);
+      // Still surface it as a toast (same message a propagated error would
+      // have produced) — the student should know the voice dropped once —
+      // just without the ERROR state or dead mic that letting this
+      // propagate to runTurn's catch used to cause.
+      this.emitError(errorMessage(err));
     } finally {
       unsubscribeStart(); // in case "start" never fired at all (e.g. an immediate error)
       stopTimer();
