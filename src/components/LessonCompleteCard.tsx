@@ -43,7 +43,7 @@ export function LessonCompleteCard({
       <div className="lesson-complete-card">
         <div className="lesson-complete-title">Lição concluída!</div>
         <div className="lesson-complete-lesson">
-          {studentName}, você completou:
+          {studentName ? `${studentName}, você` : "Você"} completou:
           <br />
           Lição {lessonCode} — {lessonTitle}
         </div>

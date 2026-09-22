@@ -565,10 +565,6 @@ export default function Page() {
       if (awaitingRepeatTimeoutRef.current !== null) clearTimeout(awaitingRepeatTimeoutRef.current);
       awaitingRepeatTimeoutRef.current = setTimeout(() => setAwaitingRepeat(false), 3000);
     });
-    // Keeps LessonCompleteCard's studentName from staying stuck on the
-    // "Aluno" placeholder once startLesson's captureNameFirst prompt (see
-    // handleStudentPick) resolves with a real name.
-    const unsubStudentName = orchestrator.onStudentNameChange(setCurrentStudentName);
 
     return () => {
       unsubEntries();
@@ -578,7 +574,6 @@ export default function Page() {
       unsubTranscribing();
       unsubAmplitude();
       unsubAwaitingRepeat();
-      unsubStudentName();
       if (toastTimeoutRef.current !== null) clearTimeout(toastTimeoutRef.current);
       if (awaitingRepeatTimeoutRef.current !== null) clearTimeout(awaitingRepeatTimeoutRef.current);
     };
@@ -654,28 +649,12 @@ export default function Page() {
     // live call, not replay an increasingly stale prefetched greeting.
     const prefetched = greetingCacheRef.current.get(student.id) ?? undefined;
     greetingCacheRef.current.delete(student.id);
-    // Test mode (no ?aluno= — see hasAlunoParam) has no real student
-    // identity, so `student.name` is always the "Aluno" placeholder (see
-    // LessonGrid's onPick / the ?licao=-only URL auto-start below) —
-    // asking the student their name before the lesson itself is what
-    // fixes Debbie calling every test session "Aluno" throughout. 1A is
-    // excluded: its own script already captures the name mid-lesson (see
-    // introductionReply.ts), so asking again up front would be redundant.
-    // A ?aluno=ID session always skips this — that name is assumed to
-    // come from the school's real integration (phase 2).
-    const captureNameFirst = !hasAlunoParam && lesson?.code.toLowerCase() !== "1a";
     await orchestrator.startLesson({
       studentName: student.name,
       currentLessonCode: student.currentLesson,
       canDoGoals: lesson?.canDo,
       vocabulary: lesson?.vocabulary,
-      // The prefetched greeting (if any) was fetched under the OLD name —
-      // only ever populated for the fixed DEMO_STUDENTS ids reached via
-      // ?aluno=, which is exactly the case captureNameFirst is false for,
-      // so this exclusion is a no-op guard in practice, not a real
-      // tradeoff — see greetingPrefetch.ts / runBoot.
-      prefetched: captureNameFirst ? undefined : prefetched,
-      captureNameFirst,
+      prefetched,
     });
   }
 
@@ -686,7 +665,12 @@ export default function Page() {
   function handleLessonPick(lesson: CurriculumLesson) {
     void handleStudentPick({
       id: `lesson-${lesson.code}`,
-      name: "Aluno",
+      // No real student identity in test mode — leave the name blank so
+      // the persona never addresses/praises with a placeholder. 1A is the
+      // one exception: it captures the student's real name itself, mid-
+      // lesson (see introductionReply.ts), and already expects a
+      // starting placeholder to sit alongside that flow — left as-is.
+      name: lesson.code.toLowerCase() === "1a" ? "Aluno" : "",
       currentLesson: lesson.code,
       lastSession: "",
     });
@@ -708,7 +692,9 @@ export default function Page() {
     console.log("[url] parâmetros recebidos — aluno:", alunoParam, "licao:", licaoParam);
     void handleStudentPick({
       id: alunoParam ?? "url-student",
-      name: alunoParam ?? "Aluno",
+      // Same placeholder rule as LessonGrid's onPick (see handleLessonPick)
+      // — no name for test mode (?licao= alone), except 1A.
+      name: alunoParam ?? (licaoParam.toLowerCase() === "1a" ? "Aluno" : ""),
       currentLesson: licaoParam,
       lastSession: "",
     });

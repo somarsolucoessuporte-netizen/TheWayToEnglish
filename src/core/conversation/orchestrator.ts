@@ -5,7 +5,6 @@ import type { TutorResponse } from "../ai/TutorResponse";
 import type { AvatarEngine } from "../avatar-engine/AvatarEngine";
 import { playCorrectSound } from "../audio/playCorrectSound";
 import { CharacterStateMachine, type CharacterState } from "../character-state-machine/stateMachine";
-import { extractIntroducedName } from "./introductionReply";
 
 export interface ConversationOrchestratorOptions {
   speech: SpeechProvider;
@@ -32,7 +31,6 @@ export type ChatEntry =
   | { role: "tutor"; response: TutorResponse; pending?: boolean; reveal?: RevealState };
 
 type EntriesListener = (entries: ChatEntry[]) => void;
-type StudentNameListener = (name: string) => void;
 type ErrorListener = (message: string) => void;
 type ApiStatusListener = (online: boolean) => void;
 type TranscribingListener = (transcribing: boolean) => void;
@@ -149,13 +147,6 @@ export class ConversationOrchestrator {
    * duplicada" bug: the opening line pushed to history and spoken twice). */
   private startingLesson = false;
 
-  /** True between startLesson's scripted "what's your name?" prompt (see
-   * captureNameFirst) and the student's answer — handleUserMessage routes
-   * to handleNameCaptureAnswer instead of the normal AI-driven runTurn
-   * while this is set, and fireNudge no-ops (there's no real lesson
-   * context yet for a nudge to react to — see fireNudge's own check). */
-  private awaitingNameCapture = false;
-
   /** Cumulative time spent in "idle" (mic closed, waiting on the student)
    * since the current question was posed — ticks up only while idle,
    * PAUSES (not resets) while a nudge itself is being spoken, and is
@@ -190,7 +181,6 @@ export class ConversationOrchestrator {
   private speechQueue: Promise<void> = Promise.resolve();
 
   private readonly entryListeners = new Set<EntriesListener>();
-  private readonly studentNameListeners = new Set<StudentNameListener>();
   private readonly errorListeners = new Set<ErrorListener>();
   private readonly apiStatusListeners = new Set<ApiStatusListener>();
   private readonly transcribingListeners = new Set<TranscribingListener>();
@@ -304,17 +294,6 @@ export class ConversationOrchestrator {
   onEntriesChange(cb: EntriesListener): () => void {
     this.entryListeners.add(cb);
     return () => this.entryListeners.delete(cb);
-  }
-
-  /** Fires whenever the tracked student name changes — including the
-   * initial placeholder passed to startLesson(), and again with the real
-   * name once startLesson's captureNameFirst prompt resolves (see
-   * handleNameCaptureAnswer). page.tsx uses this to keep its own
-   * currentStudentName (shown on LessonCompleteCard) from staying stuck
-   * on the placeholder for the rest of the session. */
-  onStudentNameChange(cb: StudentNameListener): () => void {
-    this.studentNameListeners.add(cb);
-    return () => this.studentNameListeners.delete(cb);
   }
 
   onError(cb: ErrorListener): () => void {
@@ -459,15 +438,6 @@ export class ConversationOrchestrator {
      * /api/stt/route.ts). */
     vocabulary?: string[];
     prefetched?: { response: TutorResponse; audioBlob?: Blob };
-    /** True when `studentName` is only a placeholder (test mode, no real
-     * student identity — see page.tsx's hasAlunoParam) AND this lesson
-     * doesn't already capture the student's name as part of its own
-     * script (1A's introductionReply.ts exchange is left untouched — see
-     * page.tsx's captureNameFirst computation, which excludes it). Runs a
-     * short scripted "what's your name?" exchange first — see
-     * handleNameCaptureAnswer — and only starts the real lesson once
-     * that's resolved, one way or another. */
-    captureNameFirst?: boolean;
   }): Promise<void> {
     if (this.startingLesson) {
       console.warn(
@@ -477,7 +447,7 @@ export class ConversationOrchestrator {
     }
     this.startingLesson = true;
     try {
-      this.setStudentName(opts.studentName);
+      this.studentName = opts.studentName;
       this.currentLessonCode = opts.currentLessonCode;
       console.log("[3 orch] enviando lessonCode:", this.currentLessonCode);
       this.lessonGoals = opts.canDoGoals ?? [];
@@ -487,29 +457,6 @@ export class ConversationOrchestrator {
       this.idleAccumulatedMs = 0;
       this.nudgeLevelsFired.clear();
       this.stateMachine.dispatch({ type: "STOP_LISTENING" }); // idle -> thinking
-
-      if (opts.captureNameFirst) {
-        // Scripted, not AI-generated — the exact line the client asked
-        // for, and nothing for the model to get wrong. Deliberately never
-        // touches `this.history`, same as announceTimeWarning/
-        // announceLessonComplete's other scripted beats: the real lesson
-        // conversation (started by handleNameCaptureAnswer below) begins
-        // clean, exactly as if this exchange had never happened — the
-        // captured name reaches the model through the ordinary
-        // `studentName` system hint, not through a Q&A pair sitting in
-        // its context.
-        this.awaitingNameCapture = true;
-        const response: TutorResponse = {
-          speech: { english: "Hi! Before we start — what's your name?", portuguese: "" },
-        };
-        this.pushEntry({ role: "tutor", response });
-        await this.forceAnnounce([{ text: response.speech.english, lang: "en-US" }]);
-        // Mic stays closed — the student clicks Falar when ready, same as
-        // any other tutor turn. handleUserMessage (via
-        // handleNameCaptureAnswer) picks up once they answer.
-        return;
-      }
-
       this.history.push({ role: "user", content: LESSON_KICKOFF_INSTRUCTION });
       await this.runTurn({ prefetchedResponse: opts.prefetched?.response, prefetchedAudioBlob: opts.prefetched?.audioBlob });
       // runTurn ends back on "idle" once the tutor's opening line finishes
@@ -518,30 +465,6 @@ export class ConversationOrchestrator {
     } finally {
       this.startingLesson = false;
     }
-  }
-
-  /**
-   * Handles the student's answer to startLesson's scripted "what's your
-   * name?" prompt (see captureNameFirst) — called from handleUserMessage
-   * instead of the normal AI-driven path while awaitingNameCapture is set.
-   * Extracts a name with the exact same pattern introductionReply.ts uses
-   * for 1A's own in-lesson version of this exchange (see
-   * extractIntroducedName), then runs the REAL lesson kickoff. An
-   * unparseable answer (STT noise, a full sentence instead of just a
-   * name, "I'd rather not say") never loops back to ask again — it just
-   * keeps whatever placeholder name startLesson was originally given,
-   * rather than risk stalling the whole session on a repeat question.
-   */
-  private async handleNameCaptureAnswer(text: string): Promise<void> {
-    this.pushEntry({ role: "user", text });
-    this.awaitingNameCapture = false;
-    const name = extractIntroducedName(text);
-    if (name) this.setStudentName(name);
-    this.idleAccumulatedMs = 0;
-    this.nudgeLevelsFired.clear();
-    this.stateMachine.dispatch({ type: "STOP_LISTENING" }); // idle -> thinking
-    this.history.push({ role: "user", content: LESSON_KICKOFF_INSTRUCTION });
-    await this.runTurn({});
   }
 
   /**
@@ -648,7 +571,6 @@ export class ConversationOrchestrator {
     this.studentName = undefined;
     this.currentLessonCode = undefined;
     this.startingLesson = false;
-    this.awaitingNameCapture = false;
     this.timeWarningActive = false;
     this.pendingCorrectionWord = undefined;
     this.correctionAttemptCount = 0;
@@ -787,10 +709,6 @@ export class ConversationOrchestrator {
   }
 
   private async handleUserMessage(text: string, detectedLanguage?: string): Promise<void> {
-    if (this.awaitingNameCapture) {
-      await this.handleNameCaptureAnswer(text);
-      return;
-    }
     this.pushEntry({ role: "user", text });
     this.history.push({ role: "user", content: text });
     // A real student turn always supersedes whatever nudge escalation was
@@ -824,14 +742,6 @@ export class ConversationOrchestrator {
    */
   private async fireNudge(level: NudgeLevel): Promise<void> {
     if (this.busy) return; // retried on the next 500ms tick since `level` isn't marked fired yet
-    // No real lesson context exists yet while waiting on startLesson's
-    // "what's your name?" answer (see awaitingNameCapture's doc comment)
-    // — an AI-driven nudge here would call the model with an empty
-    // history and no idea a question was even asked. Silently skipping
-    // is an accepted tradeoff (no escalating reminder for this one
-    // scripted question) rather than building a second, parallel nudge
-    // path just for it.
-    if (this.awaitingNameCapture) return;
     this.nudgeLevelsFired.add(level);
     console.log("[nudge] disparado", level);
     this.stateMachine.dispatch({ type: "STOP_LISTENING" }); // idle -> thinking
@@ -1521,11 +1431,6 @@ export class ConversationOrchestrator {
 
   private setTranscribing(transcribing: boolean): void {
     for (const cb of this.transcribingListeners) cb(transcribing);
-  }
-
-  private setStudentName(name: string): void {
-    this.studentName = name;
-    for (const cb of this.studentNameListeners) cb(name);
   }
 }
 
