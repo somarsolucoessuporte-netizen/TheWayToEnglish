@@ -17,7 +17,10 @@ export interface SpeechOptions {
  */
 export interface SpeechProvider {
   speak(text: string, opts?: SpeechOptions): Promise<void>;
-  cancel(): void;
+  /** Stops speech now and settles any pending speak() promise. `fadeMs`
+   * (optional, providers may ignore it) ramps the volume down first — see
+   * OpenAITTSProvider.cancel. */
+  cancel(fadeMs?: number): void;
   isSpeaking(): boolean;
   on(event: SpeechEvent, cb: (e?: unknown) => void): () => void;
   /**

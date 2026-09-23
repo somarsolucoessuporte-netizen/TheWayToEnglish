@@ -690,14 +690,17 @@ export default function Page() {
   // — push-to-talk is a hard rule (see orchestrator.ts's comments): the
   // microphone opens on this explicit click and never on its own.
   async function handleTalkClick() {
-    const isListening = characterState === "listening";
+    // "listening" while `transcribing` is a recording already sent off for
+    // transcription — nothing left to force-send. Falar then means "let me
+    // say it again": startListening() drops that upload and reopens the mic.
+    const isListening = characterState === "listening" && !transcribing;
     if (isListening) {
       await orchestrator.stopListening(); // force-send early
     } else {
-      // startListening() returns false when the click was a no-op (the
-      // orchestrator is busy with something else) — see its doc comment.
-      // A shake makes that "not yet" visible instead of the click just
-      // silently doing nothing, which reads identically to a frozen app.
+      // startListening() never refuses because the tutor is busy — it
+      // interrupts her (see its doc comment). It only returns false for a
+      // double tap while a start() is already in flight; the shake keeps
+      // that visible instead of the click appearing to do nothing.
       const started = await orchestrator.startListening();
       if (!started) {
         // DIAGNOSTIC LOGGING (temporary — see the Falar-button-freeze
@@ -763,7 +766,6 @@ export default function Page() {
       listeningLabel={branding.copy.forceSendWhileListening}
       isListening={characterState === "listening"}
       processing={transcribing}
-      hidden={characterState === "speaking"}
       awaitingRepeat={awaitingRepeat}
       onClick={handleGlobalTalkClick}
       onLongPress={handleForceReset}

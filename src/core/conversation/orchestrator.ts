@@ -47,21 +47,24 @@ type AwaitingRepeatListener = () => void;
 const DRILL_SLOW_TIMEOUT_MS = 8000;
 const DRILL_NORMAL_TIMEOUT_MS = 6000;
 
-/** Hard ceiling on how long a single enqueueSpeak() task may occupy the
- * shared speech queue before it's forced to release it regardless of what
- * it's doing — see enqueueSpeak/runQueuedSpeak. This is deliberately NOT
- * 15s: OpenAITTSProvider's own worst case is fetch timeout (15s) THEN
- * playback-start watchdog (10s) THEN, only once both of those have
- * genuinely failed, the speechSynthesis fallback's own watchdog (8s) —
- * 33s stacked. Anything shorter than that risks THIS watchdog firing
- * while a legitimate primary-then-fallback recovery is still correctly
- * in progress, which would let the NEXT queued turn start speaking over
- * it — the exact "duplicada" failure mode enqueueSpeak exists to
- * prevent in the first place. This is purely a last-resort net for a
- * task that never settles at all (all of OpenAITTSProvider's own
- * watchdogs already guarantee settlement well inside this window in
- * every case they're designed for) — see runQueuedSpeak's doc comment. */
-const SPEAK_QUEUE_WATCHDOG_MS = 34000;
+/** Queue watchdog (see runQueuedSpeak): a queued speech task whose audio
+ * hasn't STARTED within this long is cancelled and the queue moves on.
+ * Once audio does start, the ceiling is re-armed to that clip's real
+ * duration + SPEAK_QUEUE_PLAYBACK_MARGIN_MS instead — a long reply must
+ * never be cut off mid-sentence just because it runs past 15s. The
+ * watchdog CANCELS the stuck call (speech.cancel()) before releasing the
+ * queue, so a late fetch can't start talking over the next turn. */
+const SPEAK_QUEUE_START_WATCHDOG_MS = 15000;
+const SPEAK_QUEUE_PLAYBACK_MARGIN_MS = 5000;
+/** Used for the playing-phase ceiling when the clip's duration is unknown
+ * (speechSynthesis fallback, no real <audio> element). */
+const SPEAK_QUEUE_UNKNOWN_DURATION_MS = 30000;
+/** How long the "error" state may persist before the tutor drops back to
+ * idle on her own — the Falar button must never be left facing a dead end. */
+const ERROR_AUTO_RECOVER_MS = 3000;
+/** Fade applied to the tutor's voice when the student interrupts her by
+ * pressing Falar — see interruptTutor. */
+const INTERRUPT_FADE_MS = 120;
 
 /** Escalating idle-silence reactions — see the idle clock fields below and
  * persona.ts's ACTIVE TUTOR section. 'answer' is the 40s-total resolution
@@ -202,6 +205,19 @@ export class ConversationOrchestrator {
    * exactly which call in the queue stalled, not just which AI turn it
    * came from. */
   private speakCallCounter = 0;
+  /** How many enqueueSpeak() calls are queued or running right now — the
+   * "chain state" in the [TTS] logs (a Promise's own state isn't
+   * inspectable, this is). */
+  private speakQueueDepth = 0;
+  /** Bumped at the start of every runTurn()/forceAnnounce() and by every
+   * interruptTutor(). Anything carrying an older value is a turn the
+   * student already talked over: it must stop speaking, must not push
+   * state transitions, and must not clear `busy` for whatever turn
+   * replaced it. See isStale(). */
+  private turnGeneration = 0;
+  /** Aborts the in-flight /api/chat request of the current turn, if any. */
+  private chatAbort: AbortController | null = null;
+  private errorRecoverTimer: ReturnType<typeof setTimeout> | null = null;
 
   private readonly entryListeners = new Set<EntriesListener>();
   private readonly errorListeners = new Set<ErrorListener>();
@@ -241,6 +257,21 @@ export class ConversationOrchestrator {
       // the "motivo" for the [nudge] cancelado log (see stopIdleClock).
       if (state === "idle") this.startIdleClock();
       else this.stopIdleClock(state);
+      // The "error" state is never a place to stay: after
+      // ERROR_AUTO_RECOVER_MS it drops back to idle on its own.
+      if (this.errorRecoverTimer !== null) {
+        clearTimeout(this.errorRecoverTimer);
+        this.errorRecoverTimer = null;
+      }
+      if (state === "error") {
+        this.errorRecoverTimer = setTimeout(() => {
+          this.errorRecoverTimer = null;
+          if (this.stateMachine.getState() === "error") {
+            console.log("[state] erro -> idle automático");
+            this.stateMachine.dispatch({ type: "RESET" });
+          }
+        }, ERROR_AUTO_RECOVER_MS);
+      }
     });
 
     // Dispatches SPEECH_START on the provider's real "playing" DOM event
@@ -381,23 +412,22 @@ export class ConversationOrchestrator {
   }
 
   /**
-   * Returns false when the click was a no-op (the orchestrator is busy
-   * doing something else, or a start() call is already in flight) instead
-   * of just silently doing nothing — page.tsx uses this to give the
-   * student a visible "not yet" signal (a brief shake on the button)
-   * rather than a click that appears to do absolutely nothing, which is
-   * indistinguishable from a genuinely frozen app.
+   * The Falar button's action — it is NEVER refused. Whatever the tutor is
+   * doing, the student pressing Falar wins: if she's speaking she stops
+   * (INTERRUPT_FADE_MS fade), if she's waiting on /api/chat that request is
+   * aborted, if a previous answer is still being transcribed that upload is
+   * dropped — and the mic opens. The interrupted turn goes quiet on its own
+   * (see turnGeneration/isStale). Returns false only in the one case where
+   * there's genuinely nothing to do: a start() already in flight from a
+   * double tap.
    */
   async startListening(): Promise<boolean> {
-    if (this.busy || this.listeningStartInFlight) {
-      console.log(
-        `[state] click ignorado — busy=${this.busy} listeningStartInFlight=${this.listeningStartInFlight}`
-      );
+    if (this.listeningStartInFlight) {
+      console.log("[state] click ignorado — start() já em andamento");
       return false;
     }
-    if (this.stateMachine.getState() === "listening") return true; // already listening, nothing to do
+    this.interruptTutor();
     this.listeningStartInFlight = true;
-    this.setTranscribing(false);
     try {
       await this.stt.start();
       this.stateMachine.dispatch({ type: "START_LISTENING" });
@@ -408,6 +438,45 @@ export class ConversationOrchestrator {
       this.listeningStartInFlight = false;
     }
     return true;
+  }
+
+  /**
+   * Stops everything the tutor is doing in favor of the student: fades out
+   * current speech, aborts an in-flight /api/tts and /api/chat, drops any
+   * still-queued speech, abandons a pending transcription, and releases
+   * `busy`. Bumping turnGeneration is what makes the interrupted turn's
+   * own code (still suspended on some await) bail out quietly when it
+   * resumes instead of speaking its next part, running the drill, or
+   * resetting the state machine out from under the new recording. A no-op
+   * when the tutor is already idle with nothing queued.
+   */
+  private interruptTutor(): void {
+    const state = this.stateMachine.getState();
+    if (!this.busy && state === "idle" && this.speakQueueDepth === 0) return;
+    console.log(`[state] Falar interrompe a tutora — estado=${state} busy=${this.busy} fila=${this.speakQueueDepth}`);
+    this.turnGeneration++;
+    this.chatAbort?.abort();
+    this.chatAbort = null;
+    this.speech.cancel(INTERRUPT_FADE_MS);
+    // "listening" here can only be a recording still uploading/being
+    // transcribed (a live one is handled by the caller as force-send) —
+    // drop it; the student is starting over.
+    if (state === "listening") {
+      if (this.stt.abort) this.stt.abort();
+      else void this.stt.stop().catch(() => {});
+    }
+    this.setTranscribing(false);
+    this.setBusy(false);
+    // RESET works from every state (praise/correction transients
+    // included, which ignore START_LISTENING) — leaves a clean idle for
+    // the START_LISTENING that follows.
+    this.stateMachine.dispatch({ type: "RESET" });
+  }
+
+  /** True once the turn that captured `generation` has been superseded —
+   * see turnGeneration. */
+  private isStale(generation: number): boolean {
+    return generation !== this.turnGeneration;
   }
 
   /**
@@ -428,7 +497,8 @@ export class ConversationOrchestrator {
 
   async sendTextMessage(text: string): Promise<void> {
     const trimmed = text.trim();
-    if (!trimmed || this.busy) return;
+    if (!trimmed) return;
+    this.interruptTutor();
     this.stateMachine.dispatch({ type: "STOP_LISTENING" }); // idle -> thinking
     await this.handleUserMessage(trimmed);
   }
@@ -565,17 +635,20 @@ export class ConversationOrchestrator {
     parts: { text: string; lang: string }[],
     opts: { praiseFirst?: boolean } = {}
   ): Promise<void> {
+    const generation = ++this.turnGeneration;
     this.setBusy(true);
     try {
       if (this.stateMachine.getState() === "listening") {
         await this.stt.stop().catch(() => {});
       }
+      if (this.isStale(generation)) return;
       this.stateMachine.dispatch({ type: "RESET" }); // -> idle, from any state
       this.stateMachine.dispatch({ type: "STOP_LISTENING" }); // idle -> thinking
       if (opts.praiseFirst) await this.enterPraiseBeforeSpeaking();
-      await this.speakParts(parts);
+      if (this.isStale(generation)) return;
+      await this.speakParts(parts, generation);
     } finally {
-      this.setBusy(false);
+      if (!this.isStale(generation)) this.setBusy(false);
     }
   }
 
@@ -586,6 +659,9 @@ export class ConversationOrchestrator {
    * previous lesson's chat history and entries into the new session.
    */
   reset(): void {
+    this.turnGeneration++;
+    this.chatAbort?.abort();
+    this.chatAbort = null;
     this.speech.cancel();
     this.history = [];
     this.entries = [];
@@ -606,6 +682,7 @@ export class ConversationOrchestrator {
     this.usedNudgePhrases.length = 0;
     this.lastTutorEnglish = undefined;
     this.speechQueue = Promise.resolve();
+    this.speakQueueDepth = 0;
     // Dispatched BEFORE stopIdleClock, not after: RESET always transitions
     // to "idle" (see CharacterStateMachine.dispatch), and the constructor's
     // stateMachine.subscribe hook starts the idle clock the instant ANY
@@ -636,6 +713,9 @@ export class ConversationOrchestrator {
    */
   forceReset(): void {
     console.log("[state] forceReset() — escape hatch acionado");
+    this.turnGeneration++;
+    this.chatAbort?.abort();
+    this.chatAbort = null;
     this.speech.cancel();
     // Prefer the provider's own abort() (see SpeechToTextProvider.abort's
     // doc comment) — it can tear down an in-flight getUserMedia/upload
@@ -835,6 +915,7 @@ export class ConversationOrchestrator {
     prefetchedResponse?: TutorResponse;
     prefetchedAudioBlob?: Blob;
   } = {}): Promise<void> {
+    const generation = ++this.turnGeneration;
     this.setBusy(true);
     // Hoisted out of the try block so the catch below can still find and
     // resolve THIS turn's pending chat bubble (see pushPendingTutorEntry)
@@ -863,7 +944,10 @@ export class ConversationOrchestrator {
         const messages: Message[] = [{ role: "system", content: this.systemPrompt }, ...this.history];
         const chatRequestStart = performance.now();
         awaitingChatResponse = true;
+        const chatAbort = new AbortController();
+        this.chatAbort = chatAbort;
         response = await this.ai.send(messages, {
+          signal: chatAbort.signal,
           sessionId: this.sessionId,
           detectedLanguage: opts.detectedLanguage,
           studentName: this.studentName,
@@ -874,11 +958,18 @@ export class ConversationOrchestrator {
           usedNudges: this.usedNudgePhrases,
         });
         awaitingChatResponse = false;
+        if (this.chatAbort === chatAbort) this.chatAbort = null;
         readyAt = performance.now();
         console.log(
           `[latency] /api/chat respondeu em ${Math.round(readyAt - chatRequestStart)}ms` +
             (opts.nudge ? ` (nudge: ${opts.nudge})` : "")
         );
+      }
+      // The student pressed Falar while this reply was on its way — it's
+      // obsolete; they've already moved on. Drop it without a trace.
+      if (this.isStale(generation)) {
+        console.log("[turn] resposta descartada — o aluno interrompeu");
+        return;
       }
       console.log("[turn] resposta:", {
         hasSpeech: !!response.speech,
@@ -931,6 +1022,7 @@ export class ConversationOrchestrator {
       if (response.praise) {
         playCorrectSound();
         await this.enterPraiseBeforeSpeaking();
+        if (this.isStale(generation)) return;
       }
 
       // English always plays first, Portuguese second — EXCEPT for a
@@ -964,17 +1056,31 @@ export class ConversationOrchestrator {
         partsToSpeak,
         entryIndex,
         response,
-        correction ? { after: () => this.runPronunciationDrill(correction.corrected) } : {},
+        generation,
+        correction ? { after: () => this.runPronunciationDrill(correction.corrected, generation) } : {},
         opts.prefetchedAudioBlob,
         readyAt
       );
       console.log("[state] busy após falar:", this.busy);
+      if (this.isStale(generation)) return;
       // speakPartsWithReveal has already brought the state machine back to
       // idle by the time it resolves — correction now overlays on top of
       // that idle state and reverts back to it on its own after ~1.5s.
       // Praise already happened above, before speaking.
       if (correction) this.stateMachine.dispatch({ type: "CORRECTION" });
     } catch (err) {
+      if (this.isStale(generation)) {
+        // An aborted /api/chat (or anything else) from a turn the student
+        // already interrupted is not an error — they chose to cut it off.
+        console.log("[turn] turno interrompido pelo aluno:", errorMessage(err));
+        if (entryIndex !== undefined) {
+          const orphaned = this.entries[entryIndex];
+          if (orphaned?.role === "tutor" && orphaned.pending) {
+            this.replaceEntry(entryIndex, { role: "tutor", response: orphaned.response });
+          }
+        }
+        return;
+      }
       // Audio and rendering failures do not mean the chat request failed.
       if (awaitingChatResponse) this.setApiStatus(false);
       console.error(awaitingChatResponse ? "[turn] chat failed:" : "[turn] response processing failed:", err);
@@ -991,8 +1097,12 @@ export class ConversationOrchestrator {
         }
       }
     } finally {
-      console.log("[orchestrator] fim do turno, busy → false");
-      this.setBusy(false);
+      // An interrupted turn must not clear `busy` — interruptTutor already
+      // did, and by now it may belong to the turn that replaced this one.
+      if (!this.isStale(generation)) {
+        console.log("[orchestrator] fim do turno, busy → false");
+        this.setBusy(false);
+      }
       console.log("[turn] fim, busy →", this.busy);
     }
     // Mic stays closed once the tutor's done — push-to-talk only. The
@@ -1073,6 +1183,7 @@ export class ConversationOrchestrator {
    */
   private async speakParts(
     parts: { text: string; lang: string }[],
+    generation: number,
     opts: { after?: () => Promise<void> } = {}
   ): Promise<void> {
     const nonEmpty = parts.filter((p) => p.text.trim().length > 0);
@@ -1088,11 +1199,13 @@ export class ConversationOrchestrator {
 
     try {
       for (const part of nonEmpty) {
+        if (this.isStale(generation)) return;
         const spokenText = normalizeForSpeech(part.text);
         console.log(`[TTS] tentando falar: "${spokenText}"`);
-        await this.enqueueSpeak(() => this.speech.speak(spokenText, { lang: part.lang }), spokenText);
+        await this.enqueueSpeak(() => this.speech.speak(spokenText, { lang: part.lang }), spokenText, generation);
         console.log("[TTS] concluído");
       }
+      if (this.isStale(generation)) return;
       if (opts.after) await opts.after();
     } catch (err) {
       // Same guarantee as speakOnePartWithReveal's own catch (see its doc
@@ -1105,6 +1218,7 @@ export class ConversationOrchestrator {
       console.error("[TTS] falhou definitivamente para esta fala — seguindo sem áudio:", err);
       this.emitError(errorMessage(err));
     }
+    if (this.isStale(generation)) return;
     // SPEECH_END only has a defined transition FROM "speaking" (see
     // PERSISTENT_TRANSITIONS) — reached only once some part's "start"
     // event actually fired. If every part's speak() failed (swallowed
@@ -1134,66 +1248,96 @@ export class ConversationOrchestrator {
    * instead of cutting it off, so every tutor message that's ever shown
    * has actually been given a real, uninterrupted chance to play.
    *
-   * A REJECTED task was already safe before this — `this.speechQueue`'s
-   * own continuation below has always swallowed it
-   * (`.then(() => undefined, () => undefined)`), so one failed turn's
-   * speech was never enough by itself to jam every later one. The gap was
-   * a task that never SETTLES AT ALL: `this.speechQueue` only advances
-   * once `run` (task()'s own promise) actually settles one way or the
-   * other, so a genuine hang inside `task()` — anywhere OpenAITTSProvider
-   * doesn't already have its own watchdog covering it — left `run`
-   * (and everything chained after it, forever) waiting. `label` is
-   * whatever text this call is about, purely for the requested
-   * "[TTS] turno N | enfileirado" log — enqueueSpeak's own caller always
-   * knows it; this method has no other way to see inside the closure.
+   * The chain itself can never die: a rejected task is swallowed by the
+   * `.catch` on `this.speechQueue` (the rejection still reaches THIS
+   * call's own caller, which handles it), and a task that never settles is
+   * cut off by runQueuedSpeak's watchdog. `generation` is the owning
+   * turn's turnGeneration — a line whose turn the student interrupted is
+   * skipped when its slot comes up. `label` is only for the logs.
    */
-  private enqueueSpeak(task: () => Promise<void>, label: string): Promise<void> {
+  private enqueueSpeak(task: () => Promise<void>, label: string, generation: number): Promise<void> {
     const callNumber = ++this.speakCallCounter;
+    this.speakQueueDepth++;
     console.log(`[TTS] turno ${callNumber} | enfileirado:`, JSON.stringify(label));
-    const bounded = this.speechQueue.then(() => this.runQueuedSpeak(task, callNumber));
-    this.speechQueue = bounded.then(
-      () => undefined,
-      () => undefined
-    );
+    console.log(`[TTS] turno ${callNumber} | chain state: ${this.speakQueueDepth - 1} à frente na fila`);
+    const bounded = this.speechQueue.then(() => {
+      // Queued behind a turn the student interrupted (or queued BY one):
+      // skip it outright instead of speaking a line nobody's waiting for.
+      if (this.isStale(generation)) {
+        console.log(`[TTS] turno ${callNumber} | resultado: pulado (turno interrompido)`);
+        return;
+      }
+      return this.runQueuedSpeak(task, callNumber);
+    });
+    // Mandatory swallow: the chain itself must NEVER reject, or one failed
+    // line would kill every line after it for the rest of the session.
+    this.speechQueue = bounded
+      .catch((err) => {
+        console.error(`[TTS] turno ${callNumber} | falha, seguindo fila:`, err);
+      })
+      .finally(() => {
+        this.speakQueueDepth = Math.max(0, this.speakQueueDepth - 1);
+      });
     return bounded;
   }
 
   /**
-   * Runs one enqueueSpeak() task under a hard ceiling (see
-   * SPEAK_QUEUE_WATCHDOG_MS's own doc comment for why it's sized the way
-   * it is) so the shared queue can never stall forever behind a call that
-   * neither resolves nor rejects — every one of OpenAITTSProvider's own
-   * internal timeouts should already prevent that for anything it's
-   * designed to handle, but this is the backstop for whatever isn't. On a
-   * genuine timeout this RESOLVES (not rejects) — the queue must move on
-   * regardless, exactly as if that one turn's speech had simply failed
-   * and been logged, which is what a real (non-hung) failure already does
-   * via the reject path below.
+   * Runs one enqueueSpeak() task under a watchdog so the shared queue can
+   * never stall behind a call that neither resolves nor rejects: if audio
+   * hasn't STARTED within SPEAK_QUEUE_START_WATCHDOG_MS, or hasn't ENDED
+   * within its own real duration + margin once it has, the call is
+   * cancelled (speech.cancel() — so it can't start playing later over the
+   * next line) and this RESOLVES, exactly as if that one line had simply
+   * failed. Every path here settles the returned promise exactly once.
    */
   private runQueuedSpeak(task: () => Promise<void>, callNumber: number): Promise<void> {
     return new Promise<void>((resolve, reject) => {
       let settled = false;
-      const timer = setTimeout(() => {
-        if (settled) return;
-        settled = true;
-        console.error(
-          `[TTS] turno ${callNumber} | watchdog: não concluiu em ${SPEAK_QUEUE_WATCHDOG_MS}ms — liberando a fila à força`
-        );
-        resolve();
-      }, SPEAK_QUEUE_WATCHDOG_MS);
-      task().then(
-        () => {
+      let timer: ReturnType<typeof setTimeout> | null = null;
+      const arm = (ms: number, phase: string) => {
+        if (timer !== null) clearTimeout(timer);
+        timer = setTimeout(() => {
           if (settled) return;
           settled = true;
-          clearTimeout(timer);
-          console.log(`[TTS] turno ${callNumber} | play resolvido`);
+          unsubscribeStart();
+          console.error(`[TTS] turno ${callNumber} | watchdog: ${phase} em ${ms}ms — cancelando e liberando a fila`);
+          console.log(`[TTS] turno ${callNumber} | resultado: watchdog`);
+          this.speech.cancel();
+          resolve();
+        }, ms);
+      };
+      const unsubscribeStart = this.speech.on("start", () => {
+        if (settled) return;
+        const duration = this.speech.getAudioElement?.()?.duration;
+        const playingMs =
+          duration !== undefined && Number.isFinite(duration) && duration > 0
+            ? duration * 1000
+            : SPEAK_QUEUE_UNKNOWN_DURATION_MS;
+        arm(playingMs + SPEAK_QUEUE_PLAYBACK_MARGIN_MS, "não terminou de tocar");
+      });
+      arm(SPEAK_QUEUE_START_WATCHDOG_MS, "áudio não começou");
+      const done = () => {
+        settled = true;
+        if (timer !== null) clearTimeout(timer);
+        unsubscribeStart();
+      };
+      let running: Promise<void>;
+      try {
+        running = task();
+      } catch (err) {
+        running = Promise.reject(err);
+      }
+      running.then(
+        () => {
+          if (settled) return;
+          done();
+          console.log(`[TTS] turno ${callNumber} | resultado: ok`);
           resolve();
         },
         (err) => {
           if (settled) return;
-          settled = true;
-          clearTimeout(timer);
-          console.error(`[TTS] turno ${callNumber} | play rejeitado:`, err);
+          done();
+          console.error(`[TTS] turno ${callNumber} | resultado: erro`, err);
           reject(err);
         }
       );
@@ -1212,6 +1356,7 @@ export class ConversationOrchestrator {
     parts: { text: string; lang: string }[],
     entryIndex: number,
     response: TutorResponse,
+    generation: number,
     opts: { after?: () => Promise<void> } = {},
     prefetchedAudioBlob?: Blob,
     readyAt?: number
@@ -1230,6 +1375,7 @@ export class ConversationOrchestrator {
     }
 
     for (let i = 0; i < nonEmpty.length; i++) {
+      if (this.isStale(generation)) break;
       // The prefetched blob (if any) only ever corresponds to the FIRST
       // part of a fresh greeting — see startLesson. Same for readyAt: only
       // the very first part's "start" is the number requirement (f) cares
@@ -1238,15 +1384,19 @@ export class ConversationOrchestrator {
         nonEmpty[i],
         entryIndex,
         response,
+        generation,
         i === 0 ? prefetchedAudioBlob : undefined,
         i === 0 ? readyAt : undefined
       );
     }
-    if (opts.after) await opts.after();
+    if (opts.after && !this.isStale(generation)) await opts.after();
     // Final safety net: whatever the per-part reveal timers left showing,
     // the full text (and no more pending/typing state) must be visible
     // now that speaking is genuinely over.
     this.replaceEntry(entryIndex, { role: "tutor", response });
+    // Interrupted: the state machine now belongs to the student's new
+    // recording — touching it here would knock them out of "listening".
+    if (this.isStale(generation)) return;
     // SPEECH_END only has a defined transition FROM "speaking" (see
     // PERSISTENT_TRANSITIONS) — that's only reached once some part's
     // "start" event actually fired. If EVERY part's speak() failed and was
@@ -1293,6 +1443,7 @@ export class ConversationOrchestrator {
     part: { text: string; lang: string },
     entryIndex: number,
     response: TutorResponse,
+    generation: number,
     prefetchedAudioBlob?: Blob,
     readyAt?: number
   ): Promise<void> {
@@ -1341,7 +1492,7 @@ export class ConversationOrchestrator {
       // here in the enqueueSpeak change and lost `this`).
       if (prefetchedAudioBlob && this.speech.speakBlob) {
         try {
-          await this.enqueueSpeak(() => this.speech.speakBlob!(prefetchedAudioBlob), "(blob pré-carregado)");
+          await this.enqueueSpeak(() => this.speech.speakBlob!(prefetchedAudioBlob), "(blob pré-carregado)", generation);
         } catch (err) {
           // The prefetched blob can fail for reasons unrelated to the normal
           // TTS path (a stale/corrupt blob, a revoked URL) — falling back to
@@ -1349,9 +1500,10 @@ export class ConversationOrchestrator {
           // propagate to runTurn's catch, is what keeps a bad prefetch from
           // ever taking the whole session to the ERROR state.
           console.warn("[TTS] blob pré-carregado falhou, tentando TTS normal:", err);
+          if (this.isStale(generation)) return;
           const fallbackText = normalizeForSpeech(part.text);
           console.log(`[TTS] tentando falar: "${fallbackText}"`);
-          await this.enqueueSpeak(() => this.speech.speak(fallbackText, { lang: part.lang }), fallbackText);
+          await this.enqueueSpeak(() => this.speech.speak(fallbackText, { lang: part.lang }), fallbackText, generation);
           console.log("[TTS] concluído");
         }
       } else {
@@ -1367,7 +1519,7 @@ export class ConversationOrchestrator {
         // directly from the log rather than needing to re-derive it.
         const spokenText = normalizeForSpeech(part.text);
         console.log(`[TTS] tentando falar: "${spokenText}"`);
-        await this.enqueueSpeak(() => this.speech.speak(spokenText, { lang: part.lang }), spokenText);
+        await this.enqueueSpeak(() => this.speech.speak(spokenText, { lang: part.lang }), spokenText, generation);
         console.log("[TTS] concluído");
       }
     } catch (err) {
@@ -1474,20 +1626,23 @@ export class ConversationOrchestrator {
    * flipping it false before speakPartsWithReveal's post-drill cleanup
    * has actually run.
    */
-  private async runPronunciationDrill(word: string): Promise<void> {
+  private async runPronunciationDrill(word: string, generation: number): Promise<void> {
     const trimmed = normalizeForSpeech(word.trim());
     if (!trimmed) return;
     console.log("[speakParts] início (drill: devagar -> pausa -> now you try)");
     try {
+      if (this.isStale(generation)) return;
       console.log(`[TTS] tentando falar: "${trimmed}"`);
       console.log("[speakParts] parte 1 (devagar) start");
       await this.speakDrillPart(trimmed, DRILL_SLOW_TIMEOUT_MS, true);
       console.log("[speakParts] parte 1 (devagar) end");
       console.log("[speakParts] pausa 600ms");
       await sleep(600);
+      if (this.isStale(generation)) return;
       console.log("[speakParts] parte 2 (now you try) start");
       await this.speakDrillPart("Now you try.", DRILL_NORMAL_TIMEOUT_MS, false);
       console.log("[speakParts] parte 2 (now you try) end");
+      if (this.isStale(generation)) return;
       for (const cb of this.awaitingRepeatListeners) cb();
     } catch (err) {
       console.warn("[drill] erro inesperado no drill:", err);

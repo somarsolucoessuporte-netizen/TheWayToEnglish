@@ -20,6 +20,8 @@ export class HttpAIProvider implements AIProvider {
   async send(messages: Message[], opts?: AIOptions): Promise<TutorResponse> {
     const controller = new AbortController();
     const timeoutId = window.setTimeout(() => controller.abort(), CHAT_TIMEOUT_MS);
+    const onExternalAbort = () => controller.abort();
+    opts?.signal?.addEventListener("abort", onExternalAbort);
 
     let response: Response;
     try {
@@ -40,12 +42,14 @@ export class HttpAIProvider implements AIProvider {
         signal: controller.signal,
       });
     } catch (err) {
+      if (opts?.signal?.aborted) throw new Error("Chat interrompido pelo aluno");
       if ((err as Error).name === "AbortError") {
         throw new Error("Chat timeout: /api/chat não respondeu a tempo");
       }
       throw err;
     } finally {
       window.clearTimeout(timeoutId);
+      opts?.signal?.removeEventListener("abort", onExternalAbort);
     }
 
     if (!response.ok) {

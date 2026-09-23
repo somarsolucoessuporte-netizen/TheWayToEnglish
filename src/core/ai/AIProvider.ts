@@ -40,6 +40,9 @@ export interface AIOptions {
    * can avoid repeating one — see orchestrator's usedNudgePhrases. Only
    * meaningful alongside `nudge`, but harmless to send otherwise. */
   usedNudges?: string[];
+  /** Aborts the request — the Falar button interrupting a turn that's
+   * still waiting on the model (see orchestrator.interruptTutor). */
+  signal?: AbortSignal;
 }
 
 export interface AIProvider {

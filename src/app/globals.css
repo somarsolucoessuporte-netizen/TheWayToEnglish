@@ -1164,7 +1164,7 @@ body {
   border-color: var(--brand-gray);
   color: #fff;
   text-shadow: none;
-  cursor: not-allowed;
+  cursor: pointer;
   animation: none;
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.28);
 }

@@ -29,41 +29,51 @@ const PLAYBACK_START_TIMEOUT_MS = 10000;
  * production report. */
 const FALLBACK_SPEECH_TIMEOUT_MS = 8000;
 
+/** Tiny silent MP3 played (and immediately paused) on the shared element
+ * inside a real user gesture — see unlockAudioElement. */
+const SILENT_MP3 =
+  "data:audio/mp3;base64,SUQzBAAAAAAAI1RTU0UAAAAPAAADTGF2ZjU4Ljc2LjEwMAAAAAAAAAAAAAAA//tQxAADB8AhSmxhIIEVCSiJrDCQBTcu3UrAIwUdkRgQbFAZC1CQEwTJ9mjRvBA4UOLD8nKVOWfh+UlK3z/177OXrfOdKl7pyn3Xf//WreyTRUoAWgBgkOAGbZHBgG1OF6zM82DWbZaUmMBptgQhGjsyYqc9ae9XFz280948NMBWInljyzsNRFLPWdnZGWrddDsjK1unuSrVN9jJsK8KuQtQCtMBjCEtImISdNKJOopIpBFpNSMbIHCSRpRR5iakjTiyzLhchUUBwCgyKiweBv/7UsQbg8fgCUpsYSCBFQkoiawwkAU3Lt1KwCMFHZEYEGxQGQtQkBMEyfZo0bwQOFDiw/JylTln4flJSt8/9e+zl63znSpe6cp913//1q3sk0VKAFoAYJDgBm2RwYBtThe";
+
 /**
  * Speaks by requesting audio from /api/tts (a server route that holds the
  * OPENAI_API_KEY secret and calls OpenAI's /v1/audio/speech) and playing
  * the returned MP3 through a real <audio> element.
  */
 export class OpenAITTSProvider implements SpeechProvider {
-  /** The <audio> element for whichever playBlob() call is currently in
-   * flight — a BRAND NEW element every call (see playBlob), not reused
-   * across turns. Reuse was tried first (to work around an even earlier
-   * iOS autoplay issue — see unlockAudioElement's doc comment) but turned
-   * out to have its own failure mode: reassigning .src and calling
-   * .play() again on the SAME element, turn after turn, can throw
-   * AbortError once enough turns accumulate in a session — and that
-   * rejection used to be silently swallowed as "success" (fixed in
-   * a1f77b5), but even with that fixed, an AbortError itself is a real,
-   * avoidable failure, not just a symptom to handle gracefully. A fresh
-   * element every time has nothing previous to abort. Kept only for
-   * cancel() to reach the element currently playing. */
-  private currentAudio: HTMLAudioElement | null = null;
+  /** The ONE <audio> element every playBlob() call plays through, for the
+   * whole page lifetime. iOS Safari grants "may play with sound" per
+   * ELEMENT, and only to an element that played inside a real user gesture
+   * (see unlockAudioElement) — a `new Audio()` created later, on a turn
+   * with no gesture behind it (every turn after the kickoff: the Falar
+   * click is long gone by the time /api/chat + /api/tts come back), has
+   * its play() rejected with NotAllowedError. That is exactly what
+   * cd4e323 (a fresh element per call) caused: turn 1 spoke, every later
+   * turn only showed text, for the rest of the session. The AbortError
+   * that commit was trying to avoid only happens when .src is swapped
+   * while a previous play() is still pending — impossible here, since
+   * every call is serialized through the orchestrator's speech queue and
+   * playBlob fully stops the previous playback first; a genuine AbortError
+   * still gets one retry (see playBlob). Created lazily (SSR has no Audio). */
+  private audioEl: HTMLAudioElement | null = null;
   private currentUrl: string | null = null;
   private speaking = false;
-  /** Resolver for the in-flight speakAtSpeed() promise, if any — cancel()
-   * calls this so an interruption (orchestrator.reset() / forceAnnounce())
-   * can't leave a previous speak() call awaiting forever on an "ended"
-   * event that a paused, abandoned <audio> element will never fire. */
+  /** True while fallbackSpeak (browser speechSynthesis) is the one talking
+   * — getAudioElement() then returns null, since the shared element's
+   * `.duration` still belongs to the previous clip. */
+  private usingFallback = false;
+  /** Resolver for the in-flight playBlob() promise, if any — cancel()
+   * calls this so an interruption (the Falar button, orchestrator.reset(),
+   * a queue watchdog) can't leave a previous speak() call awaiting forever
+   * on an "ended" event that a paused element will never fire. */
   private pendingResolve: (() => void) | null = null;
-  /** Throwaway element that plays (and immediately pauses) a silent clip
-   * synchronously inside the first real user gesture — see
-   * unlockAudioElement. NOT reused for real playback (see currentAudio):
-   * this is a best-effort nudge for browsers (notably iOS Safari in some
-   * versions) that grant "this page may autoplay audio with sound" more
-   * broadly once ANY element has played during a genuine gesture, rather
-   * than requiring that exact element forever after. Cheap and harmless
-   * either way, so it stays even though playback no longer depends on it. */
-  private unlockedAudioEl: HTMLAudioElement | null = null;
+  /** Bumped by every cancel() — a speakAtSpeed() call that sees it change
+   * across one of its awaits was cancelled mid-flight (mid-fetch, usually)
+   * and must stop there: no playback, no fallback, just resolve. */
+  private cancelGeneration = 0;
+  /** The in-flight /api/tts fetch, so cancel() can abort it outright
+   * instead of letting it finish and play over whatever came next. */
+  private fetchController: AbortController | null = null;
+  private fadeTimer: ReturnType<typeof setInterval> | null = null;
   private readonly listeners: Record<SpeechEvent, Set<Listener>> = {
     start: new Set(),
     end: new Set(),
@@ -79,31 +89,35 @@ export class OpenAITTSProvider implements SpeechProvider {
     // touched from inside methods, called at runtime in the browser; this
     // constructor is the one exception, so it needs its own guard.
     if (typeof document === "undefined") return;
-    const unlock = () => {
-      document.removeEventListener("click", unlock);
-      document.removeEventListener("touchend", unlock);
-      this.unlockAudioElement();
-    };
-    document.addEventListener("click", unlock, { once: true });
-    document.addEventListener("touchend", unlock, { once: true });
+    // Re-unlocks on EVERY gesture, not just the first: cheap, and it means
+    // the shared element is re-blessed by each Falar tap too, not only by
+    // the lesson pick. Skipped while something is actually playing — see
+    // unlockAudioElement.
+    const unlock = () => this.unlockAudioElement();
+    document.addEventListener("click", unlock, true);
+    document.addEventListener("touchend", unlock, true);
+  }
+
+  private getAudioEl(): HTMLAudioElement {
+    if (!this.audioEl) this.audioEl = new Audio();
+    return this.audioEl;
   }
 
   /** Standard iOS Safari unlock trick: play (and immediately pause) a
-   * silent audio file on THIS element, synchronously inside a real user
+   * silent clip on the SHARED element, synchronously inside a real user
    * gesture (see the constructor's click/touchend listener). Safari then
-   * treats this specific element as permanently allowed to autoplay for
-   * the rest of the page's lifetime, regardless of what .src it's given
-   * afterward — see playBlob, which reuses this same element every turn
-   * instead of constructing a new one. */
-  private unlockAudioElement(): void {
-    if (this.unlockedAudioEl) return;
-    const el = new Audio();
-    el.src =
-      "data:audio/mp3;base64,SUQzBAAAAAAAI1RTU0UAAAAPAAADTGF2ZjU4Ljc2LjEwMAAAAAAAAAAAAAAA//tQxAADB8AhSmxhIIEVCSiJrDCQBTcu3UrAIwUdkRgQbFAZC1CQEwTJ9mjRvBA4UOLD8nKVOWfh+UlK3z/177OXrfOdKl7pyn3Xf//WreyTRUoAWgBgkOAGbZHBgG1OF6zM82DWbZaUmMBptgQhGjsyYqc9ae9XFz280948NMBWInljyzsNRFLPWdnZGWrddDsjK1unuSrVN9jJsK8KuQtQCtMBjCEtImISdNKJOopIpBFpNSMbIHCSRpRR5iakjTiyzLhchUUBwCgyKiweBv/7UsQbg8fgCUpsYSCBFQkoiawwkAU3Lt1KwCMFHZEYEGxQGQtQkBMEyfZo0bwQOFDiw/JylTln4flJSt8/9e+zl63znSpe6cp913//1q3sk0VKAFoAYJDgBm2RwYBtThe";
-    void el.play().catch(() => {});
-    el.pause();
-    this.unlockedAudioEl = el;
-    console.log("[TTS] audioEl destravado no primeiro gesto");
+   * lets this specific element play with sound afterward, whatever .src
+   * it's given — which is why playBlob reuses it instead of creating a new
+   * one per call. Public so a caller with its own gesture handler can
+   * call it directly too. */
+  unlockAudioElement(): void {
+    if (this.speaking || this.pendingResolve) return; // never clobber real speech
+    const el = this.getAudioEl();
+    el.src = SILENT_MP3;
+    void el.play().then(
+      () => el.pause(),
+      () => {}
+    );
   }
 
   async speak(text: string, opts: SpeechOptions = {}): Promise<void> {
@@ -116,9 +130,12 @@ export class OpenAITTSProvider implements SpeechProvider {
   }
 
   private async speakAtSpeed(text: string, speed: number, lang?: string): Promise<void> {
+    const generation = this.cancelGeneration;
+    const cancelled = () => generation !== this.cancelGeneration;
     try {
       console.log("[TTS] iniciando...");
       const controller = new AbortController();
+      this.fetchController = controller;
       const timeoutId = window.setTimeout(() => controller.abort(), TTS_FETCH_TIMEOUT_MS);
       let response: Response;
       try {
@@ -129,21 +146,27 @@ export class OpenAITTSProvider implements SpeechProvider {
           signal: controller.signal,
         });
       } catch (fetchErr) {
+        if (cancelled()) return;
         if ((fetchErr as Error).name === "AbortError") {
           throw new Error("TTS timeout: /api/tts não respondeu a tempo");
         }
         throw fetchErr;
       } finally {
         window.clearTimeout(timeoutId);
+        if (this.fetchController === controller) this.fetchController = null;
       }
+      if (cancelled()) return;
       console.log("[TTS] status:", response.status);
       if (!response.ok) throw new Error(`TTS HTTP ${response.status}`);
 
       const arrayBuffer = await response.arrayBuffer();
+      if (cancelled()) return;
       console.log("[TTS] blob size:", arrayBuffer.byteLength);
-      console.log("[TTS] novo Audio criado para:", text.slice(0, 50));
       await this.playBlob(new Blob([arrayBuffer], { type: "audio/mpeg" }));
     } catch (err) {
+      // Cancelled while failing (e.g. the student pressed Falar mid-fetch):
+      // nothing to fall back to — the interruption was the point.
+      if (cancelled()) return;
       // Explicit, not silent: log here AND rethrow so the orchestrator's
       // existing error handling (ERROR state, error toast) actually fires
       // instead of the conversation quietly proceeding as if nothing
@@ -162,6 +185,7 @@ export class OpenAITTSProvider implements SpeechProvider {
         await this.fallbackSpeak(text, lang, speed);
         return;
       } catch (fallbackErr) {
+        if (cancelled()) return;
         console.error("[TTS] fallback também falhou:", fallbackErr);
         this.emit("error", err);
         throw err;
@@ -188,27 +212,50 @@ export class OpenAITTSProvider implements SpeechProvider {
       u.lang = lang || "en-US";
       u.rate = rate;
       let settled = false;
+      const settle = () => {
+        settled = true;
+        window.clearTimeout(timer);
+        this.usingFallback = false;
+        this.speaking = false;
+        if (this.pendingResolve === finish) this.pendingResolve = null;
+      };
+      // cancel() (see its doc comment) resolves whatever's pending — the
+      // fallback registers itself the same way playBlob does so an
+      // interruption stops the robot voice too, not only the MP3 path.
+      const finish = () => {
+        if (settled) return;
+        settle();
+        window.speechSynthesis.cancel();
+        resolve();
+      };
+      this.pendingResolve = finish;
+      this.usingFallback = true;
       const timer = window.setTimeout(() => {
         if (settled) return;
-        settled = true;
+        settle();
         console.error(
           `[TTS] fallback watchdog: speechSynthesis não disparou onstart/onend/onerror em ${FALLBACK_SPEECH_TIMEOUT_MS}ms — cancelando`
         );
         window.speechSynthesis.cancel();
         reject(new Error("speechSynthesis fallback timeout"));
       }, FALLBACK_SPEECH_TIMEOUT_MS);
-      u.onstart = () => this.emit("start");
+      u.onstart = () => {
+        if (settled) return;
+        // Once it's genuinely talking, the "never started" watchdog has
+        // done its job — a long sentence must not be cut at 8s.
+        window.clearTimeout(timer);
+        this.speaking = true;
+        this.emit("start");
+      };
       u.onend = () => {
         if (settled) return;
-        settled = true;
-        window.clearTimeout(timer);
+        settle();
         this.emit("end");
         resolve();
       };
       u.onerror = (e) => {
         if (settled) return;
-        settled = true;
-        window.clearTimeout(timer);
+        settle();
         reject(e);
       };
       window.speechSynthesis.speak(u);
@@ -219,7 +266,7 @@ export class OpenAITTSProvider implements SpeechProvider {
    * (e.g. from a boot-time greeting prefetch) with no network round trip. */
   async speakBlob(blob: Blob): Promise<void> {
     try {
-      console.log("[TTS] novo Audio criado para: (blob pré-carregado)");
+      console.log("[TTS] tocando blob pré-carregado");
       await this.playBlob(blob);
     } catch (err) {
       console.error("[OpenAI TTS] erro (blob pré-carregado):", err);
@@ -230,46 +277,56 @@ export class OpenAITTSProvider implements SpeechProvider {
 
   /** Shared by speakAtSpeed (fresh /api/tts fetch) and speakBlob (already
    * have the audio) — everything from "here's a Blob" onward is identical
-   * either way: create a fresh <audio> element (see currentAudio's doc
-   * comment for why this is no longer reused across calls), wire the
-   * same "playing"/"ended"/"error" handlers, play it. */
+   * either way. Plays through the shared, gesture-unlocked element (see
+   * audioEl's doc comment). EVERY path out of the inner promise settles
+   * it exactly once: onended/onerror/cancel() resolve, the start watchdog
+   * and a (non-retried) play() rejection reject — there is no exit that
+   * leaves it pending. */
   private async playBlob(blob: Blob): Promise<void> {
-    this.cancel();
+    this.stopPlayback();
     const url = URL.createObjectURL(blob);
-    console.log("[TTS] blob criado:", url);
-    const audio = new Audio();
+    const audio = this.getAudioEl();
+    audio.volume = 1;
     audio.src = url;
-    this.currentAudio = audio;
     this.currentUrl = url;
+    console.log("[TTS] tocando no elemento compartilhado:", url);
 
     await new Promise<void>((resolve, reject) => {
+      let settled = false;
+      const detach = () => {
+        window.clearTimeout(startWatchdog);
+        audio.onplaying = null;
+        audio.onended = null;
+        audio.onerror = null;
+        if (this.pendingResolve === finish) this.pendingResolve = null;
+      };
       // Wrapping resolve so cancel() can also settle this promise (and
       // clear the ref) if it interrupts before "ended"/"error" ever fire.
       const finish = () => {
-        window.clearTimeout(startWatchdog);
-        this.pendingResolve = null;
+        if (settled) return;
+        settled = true;
+        detach();
         resolve();
+      };
+      const fail = (err: unknown) => {
+        if (settled) return;
+        settled = true;
+        detach();
+        this.speaking = false;
+        this.revokeCurrentUrl();
+        reject(err instanceof Error ? err : new Error(String(err)));
       };
       this.pendingResolve = finish;
 
       // Watchdog for the case where audio.play() resolved (autoplay was
       // permitted) but "playing" never actually fires — a stalled decode,
-      // a dead connection mid-download, or (notably on iOS Safari) the
-      // platform's autoplay policy silently blocking playback even
-      // though .play() itself didn't reject. REJECTS (not resolves) so
-      // speakAtSpeed's catch can fall back to speechSynthesis — this is
-      // the one settling path here that means "the student heard nothing
-      // at all", unlike onended/onerror/cancel() below, which all follow
-      // some real audio activity having happened.
+      // or (notably on iOS Safari) the autoplay policy silently blocking
+      // playback even though .play() itself didn't reject. REJECTS (not
+      // resolves) so speakAtSpeed's catch can fall back to speechSynthesis.
       const startWatchdog = window.setTimeout(() => {
         console.error("[TTS] watchdog: 'playing' não disparou em", PLAYBACK_START_TIMEOUT_MS, "ms");
-        this.speaking = false;
-        this.pendingResolve = null;
-        audio.onplaying = null;
-        audio.onended = null;
-        audio.onerror = null;
-        this.revokeCurrentUrl();
-        reject(new Error("TTS playback watchdog timeout"));
+        audio.pause();
+        fail(new Error("TTS playback watchdog timeout"));
       }, PLAYBACK_START_TIMEOUT_MS);
 
       // "playing" fires when the browser actually has audible frames
@@ -299,55 +356,97 @@ export class OpenAITTSProvider implements SpeechProvider {
         this.revokeCurrentUrl();
         finish();
       };
-      // REJECTS (not finish()/resolve) — matching onerror/the watchdog
-      // above, not the old behavior here. A rejected play() (autoplay
-      // blocked, or an AbortError from calling .play() again before the
-      // browser finished settling a previous .src swap/pause on this same
-      // reused element — see playBlob's own doc comment on reusing
-      // unlockedAudioEl across every turn) used to call finish(), which
-      // RESOLVES this promise as if playback had succeeded: no error ever
-      // reached speakAtSpeed's catch, so its speechSynthesis fallback
-      // never ran, and nothing was ever logged — the exact "aparece na
-      // tela mas não fala, sem nenhum erro" production reports kept
-      // describing, including "funciona na primeira tarefa, para na
-      // segunda" (later play() calls on the same reused element are where
-      // an AbortError like this actually shows up).
-      void audio.play().catch((err) => {
-        console.error("[TTS] audio.play() rejeitado:", err);
-        window.clearTimeout(startWatchdog);
-        this.speaking = false;
-        this.pendingResolve = null;
-        audio.onplaying = null;
-        audio.onended = null;
-        audio.onerror = null;
-        this.emit("error", err);
-        this.revokeCurrentUrl();
-        reject(err instanceof Error ? err : new Error(String(err)));
-      });
+
+      // A rejected play() REJECTS this promise (never resolves it as if
+      // playback had worked — see a1f77b5) so speakAtSpeed's fallback runs.
+      // One exception: AbortError means "a load interrupted this play()",
+      // not "you're not allowed to play" — retry once on the same src
+      // before treating it as a real failure.
+      const tryPlay = (attempt: number) => {
+        audio.play().catch((err: unknown) => {
+          if (settled) return;
+          const name = (err as Error)?.name;
+          if (name === "AbortError" && attempt === 0 && audio.src === url) {
+            console.warn("[TTS] audio.play() AbortError — tentando de novo uma vez");
+            tryPlay(1);
+            return;
+          }
+          console.error("[TTS] audio.play() rejeitado:", err);
+          this.emit("error", err);
+          fail(err);
+        });
+      };
+      tryPlay(0);
     });
   }
 
-  cancel(): void {
-    if (this.currentAudio) {
-      // Detach handlers first — an abandoned <audio> element must never
-      // fire "playing"/"ended"/"error" against a blob URL cancel() is
-      // about to revoke out from under it.
-      this.currentAudio.onplaying = null;
-      this.currentAudio.onended = null;
-      this.currentAudio.onerror = null;
-      this.currentAudio.pause();
-      this.currentAudio.currentTime = 0;
+  /** Stops whatever the shared element is playing and settles its pending
+   * promise — WITHOUT touching cancelGeneration, so playBlob can call it
+   * on itself at the start of a new clip. */
+  private stopPlayback(): void {
+    if (this.fadeTimer !== null) {
+      clearInterval(this.fadeTimer);
+      this.fadeTimer = null;
+    }
+    const audio = this.audioEl;
+    if (audio) {
+      // Detach handlers first — a stopped element must never fire
+      // "playing"/"ended"/"error" against a blob URL about to be revoked.
+      audio.onplaying = null;
+      audio.onended = null;
+      audio.onerror = null;
+      audio.pause();
+      audio.volume = 1;
     }
     this.revokeCurrentUrl();
     this.speaking = false;
-    // Settle any speakAtSpeed() call still awaiting "ended"/"error" — a
-    // paused, abandoned element will never fire either, so without this
-    // the caller (e.g. orchestrator.handleUserMessage) would hang forever.
     if (this.pendingResolve) {
       const finish = this.pendingResolve;
       this.pendingResolve = null;
       finish();
     }
+  }
+
+  /**
+   * Stops speech right now — aborts an in-flight /api/tts fetch (so it
+   * can't finish later and start talking over whatever comes next),
+   * cancels a speechSynthesis fallback, and settles the pending speak()
+   * promise so the orchestrator's queue moves on. `fadeMs` (the Falar
+   * interruption uses 120) ramps the volume down instead of a hard cut;
+   * the promise still settles immediately, only the audible tail fades.
+   * (iOS ignores `audio.volume`, so there it is simply a 120ms-later cut.)
+   */
+  cancel(fadeMs = 0): void {
+    this.cancelGeneration++;
+    this.fetchController?.abort();
+    this.fetchController = null;
+    if (this.usingFallback && typeof window !== "undefined" && "speechSynthesis" in window) {
+      window.speechSynthesis.cancel();
+    }
+    const audio = this.audioEl;
+    if (fadeMs > 0 && audio && !audio.paused) {
+      // Settle + detach now; only the sound itself lingers for fadeMs.
+      audio.onplaying = null;
+      audio.onended = null;
+      audio.onerror = null;
+      this.speaking = false;
+      if (this.pendingResolve) {
+        const finish = this.pendingResolve;
+        this.pendingResolve = null;
+        finish();
+      }
+      const steps = 6;
+      const startVolume = audio.volume;
+      let step = 0;
+      if (this.fadeTimer !== null) clearInterval(this.fadeTimer);
+      this.fadeTimer = setInterval(() => {
+        step++;
+        audio.volume = Math.max(0, startVolume * (1 - step / steps));
+        if (step >= steps) this.stopPlayback();
+      }, fadeMs / steps);
+      return;
+    }
+    this.stopPlayback();
   }
 
   private revokeCurrentUrl(): void {
@@ -366,9 +465,10 @@ export class OpenAITTSProvider implements SpeechProvider {
     return () => this.listeners[event].delete(cb);
   }
 
-  /** Real <audio> element playing the current utterance. */
+  /** Real <audio> element playing the current utterance (null while the
+   * speechSynthesis fallback is the one talking — see usingFallback). */
   getAudioElement(): HTMLAudioElement | null {
-    return this.currentAudio;
+    return this.usingFallback ? null : this.audioEl;
   }
 
   private emit(event: SpeechEvent, payload?: unknown): void {

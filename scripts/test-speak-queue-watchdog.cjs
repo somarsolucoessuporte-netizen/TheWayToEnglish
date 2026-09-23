@@ -14,13 +14,13 @@ const ts = require('typescript');
 // nothing downstream — including every LATER turn's own speech — can
 // ever run again for the rest of the session.
 //
-// Speeds up any timer scheduled for >= 30s (matches
-// SPEAK_QUEUE_WATCHDOG_MS in orchestrator.ts) so this doesn't have to
-// wait 34 real seconds — every other timer in the module (well under
-// 30s) keeps its real duration.
+// Speeds up any timer scheduled for >= 15s (matches
+// SPEAK_QUEUE_START_WATCHDOG_MS in orchestrator.ts) so this doesn't have to
+// wait 15 real seconds — every other timer in the module (well under
+// 15s) keeps its real duration.
 const realSetTimeout = global.setTimeout;
 global.setTimeout = (fn, ms, ...args) =>
-  (typeof ms === 'number' && ms >= 30000) ? realSetTimeout(fn, 30, ...args) : realSetTimeout(fn, ms, ...args);
+  (typeof ms === 'number' && ms >= 15000) ? realSetTimeout(fn, 30, ...args) : realSetTimeout(fn, ms, ...args);
 
 function loadTs(filename) {
   const source = ts.transpileModule(fs.readFileSync(filename, 'utf8'), {
@@ -70,7 +70,7 @@ async function check() {
     ['Hello!'],
     'turn 2 must actually reach speech.speak() — a hung turn 1 must not permanently jam the queue'
   );
-  assert.ok(elapsedMs < 3000, `must not wait anywhere near the real 34s watchdog duration (took ${elapsedMs}ms)`);
+  assert.ok(elapsedMs < 3000, `must not wait anywhere near the real 15s watchdog duration (took ${elapsedMs}ms)`);
 
   console.log('PASS: a speak() call that never settles does not permanently jam the shared queue for later turns');
 }

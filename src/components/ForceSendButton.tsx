@@ -34,11 +34,10 @@ const LONG_PRESS_MS = 1500;
  *                `amplitude` — 0 for an STT provider without a real VAD,
  *                which just renders flat bars), label swaps to
  *                `listeningLabel`.
- *   processing — disabled, spinner + "Um instante…" while a batch STT
- *                provider is uploading/transcribing (see
- *                orchestrator.onTranscribing) — can't be force-sent again
- *                mid-upload, so the click handler is blocked here too,
- *                not just visually.
+ *   processing — spinner + "Um instante…" while a batch STT provider is
+ *                uploading/transcribing (see orchestrator.onTranscribing).
+ *                Still clickable: a tap drops that upload and reopens the
+ *                mic (the button is never disabled — see below).
  *
  * Two extra behaviors, both defensive UX for the case something hangs
  * (see orchestrator.startListening's return value / forceReset doc
@@ -57,9 +56,9 @@ const LONG_PRESS_MS = 1500;
  * this button is now a single page-level floating instance, always
  * mounted while a lesson is running, never conditionally unmounted):
  *   hidden         — fades out and stops accepting clicks (opacity 0,
- *                    pointer-events none) instead of unmounting, so the
- *                    dock's layout never jumps — used while the tutor is
- *                    actively speaking, when force-sending makes no sense.
+ *                    pointer-events none) instead of unmounting. No longer
+ *                    used for the tutor speaking: pressing Falar mid-speech
+ *                    interrupts her, so the button stays visible throughout.
  *   awaitingRepeat — pulses the border for a few seconds right after the
  *                    "hear it, repeat it" drill's "Now you try." cue (see
  *                    orchestrator.onAwaitingRepeat), so the student
@@ -158,7 +157,10 @@ export function ForceSendButton({
       onPointerUp={handlePointerUpOrLeave}
       onPointerLeave={handlePointerUpOrLeave}
       onPointerCancel={handlePointerUpOrLeave}
-      disabled={processing || hidden}
+      // NEVER disabled, in any tutor state: pressing Falar always wins —
+      // it interrupts her speech, an in-flight reply, or a pending
+      // transcription (see orchestrator.startListening).
+      aria-busy={processing || undefined}
     >
       {processing ? (
         <span className="listening-indicator">
