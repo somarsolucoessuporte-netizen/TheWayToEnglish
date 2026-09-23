@@ -1121,21 +1121,23 @@ body {
   background: rgba(20, 30, 60, 0.7);
 }
 
-.pause-btn--paused {
+.pause-btn.pause-btn--paused {
   background: var(--brand-navy);
   border-color: var(--brand-navy);
 }
 
 .pause-btn-icon {
-  font-size: 12px;
-  letter-spacing: -2px;
+  flex-shrink: 0;
 }
 
+/* Icon-only on the narrowest phones — still a comfortable touch target. */
 @media (max-width: 380px) {
   .pause-btn-label {
     display: none;
   }
   .pause-btn {
+    min-width: 52px;
+    justify-content: center;
     padding: 10px 16px;
   }
 }
