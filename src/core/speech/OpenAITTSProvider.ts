@@ -35,7 +35,19 @@ const FALLBACK_SPEECH_TIMEOUT_MS = 8000;
  * the returned MP3 through a real <audio> element.
  */
 export class OpenAITTSProvider implements SpeechProvider {
-  private audio: HTMLAudioElement | null = null;
+  /** The <audio> element for whichever playBlob() call is currently in
+   * flight — a BRAND NEW element every call (see playBlob), not reused
+   * across turns. Reuse was tried first (to work around an even earlier
+   * iOS autoplay issue — see unlockAudioElement's doc comment) but turned
+   * out to have its own failure mode: reassigning .src and calling
+   * .play() again on the SAME element, turn after turn, can throw
+   * AbortError once enough turns accumulate in a session — and that
+   * rejection used to be silently swallowed as "success" (fixed in
+   * a1f77b5), but even with that fixed, an AbortError itself is a real,
+   * avoidable failure, not just a symptom to handle gracefully. A fresh
+   * element every time has nothing previous to abort. Kept only for
+   * cancel() to reach the element currently playing. */
+  private currentAudio: HTMLAudioElement | null = null;
   private currentUrl: string | null = null;
   private speaking = false;
   /** Resolver for the in-flight speakAtSpeed() promise, if any — cancel()
@@ -43,15 +55,14 @@ export class OpenAITTSProvider implements SpeechProvider {
    * can't leave a previous speak() call awaiting forever on an "ended"
    * event that a paused, abandoned <audio> element will never fire. */
   private pendingResolve: (() => void) | null = null;
-  /** Single <audio> element unlocked by the first real user gesture on the
-   * page — see unlockAudioElement/playBlob. iOS Safari's autoplay grant is
-   * tied to the SPECIFIC element that played inside a genuine gesture, not
-   * to the page as a whole, so a fresh `new Audio(url)` on every turn (the
-   * old behavior) only ever autoplays successfully once: the very first
-   * turn, which rides on the gesture that started the lesson. Every turn
-   * after that silently fails to produce sound on iOS — text still
-   * arrives (the /api/chat call itself has nothing to do with playback),
-   * which matches exactly the "works once, then text-only" bug reported. */
+  /** Throwaway element that plays (and immediately pauses) a silent clip
+   * synchronously inside the first real user gesture — see
+   * unlockAudioElement. NOT reused for real playback (see currentAudio):
+   * this is a best-effort nudge for browsers (notably iOS Safari in some
+   * versions) that grant "this page may autoplay audio with sound" more
+   * broadly once ANY element has played during a genuine gesture, rather
+   * than requiring that exact element forever after. Cheap and harmless
+   * either way, so it stays even though playback no longer depends on it. */
   private unlockedAudioEl: HTMLAudioElement | null = null;
   private readonly listeners: Record<SpeechEvent, Set<Listener>> = {
     start: new Set(),
@@ -130,6 +141,7 @@ export class OpenAITTSProvider implements SpeechProvider {
 
       const arrayBuffer = await response.arrayBuffer();
       console.log("[TTS] blob size:", arrayBuffer.byteLength);
+      console.log("[TTS] novo Audio criado para:", text.slice(0, 50));
       await this.playBlob(new Blob([arrayBuffer], { type: "audio/mpeg" }));
     } catch (err) {
       // Explicit, not silent: log here AND rethrow so the orchestrator's
@@ -207,6 +219,7 @@ export class OpenAITTSProvider implements SpeechProvider {
    * (e.g. from a boot-time greeting prefetch) with no network round trip. */
   async speakBlob(blob: Blob): Promise<void> {
     try {
+      console.log("[TTS] novo Audio criado para: (blob pré-carregado)");
       await this.playBlob(blob);
     } catch (err) {
       console.error("[OpenAI TTS] erro (blob pré-carregado):", err);
@@ -217,22 +230,16 @@ export class OpenAITTSProvider implements SpeechProvider {
 
   /** Shared by speakAtSpeed (fresh /api/tts fetch) and speakBlob (already
    * have the audio) — everything from "here's a Blob" onward is identical
-   * either way: reuse (or create, as a fallback) the <audio> element, wire
-   * the same "playing"/"ended"/"error" handlers, play it. */
+   * either way: create a fresh <audio> element (see currentAudio's doc
+   * comment for why this is no longer reused across calls), wire the
+   * same "playing"/"ended"/"error" handlers, play it. */
   private async playBlob(blob: Blob): Promise<void> {
     this.cancel();
     const url = URL.createObjectURL(blob);
     console.log("[TTS] blob criado:", url);
-    // Reuse the element unlocked by the first user gesture (see
-    // unlockAudioElement) instead of `new Audio(url)` every turn — that
-    // fresh-element approach is exactly what broke autoplay on iOS after
-    // the first turn. Falls back to a throwaway fresh element only if the
-    // gesture listener somehow hasn't fired yet (shouldn't happen in
-    // practice: the whole app is gated behind the profile-picker click).
-    const audio = this.unlockedAudioEl ?? new Audio();
+    const audio = new Audio();
     audio.src = url;
-    console.log("[TTS] audioEl reutilizado, src:", audio.src.slice(0, 40));
-    this.audio = audio;
+    this.currentAudio = audio;
     this.currentUrl = url;
 
     await new Promise<void>((resolve, reject) => {
@@ -321,15 +328,15 @@ export class OpenAITTSProvider implements SpeechProvider {
   }
 
   cancel(): void {
-    if (this.audio) {
+    if (this.currentAudio) {
       // Detach handlers first — an abandoned <audio> element must never
       // fire "playing"/"ended"/"error" against a blob URL cancel() is
       // about to revoke out from under it.
-      this.audio.onplaying = null;
-      this.audio.onended = null;
-      this.audio.onerror = null;
-      this.audio.pause();
-      this.audio.currentTime = 0;
+      this.currentAudio.onplaying = null;
+      this.currentAudio.onended = null;
+      this.currentAudio.onerror = null;
+      this.currentAudio.pause();
+      this.currentAudio.currentTime = 0;
     }
     this.revokeCurrentUrl();
     this.speaking = false;
@@ -361,7 +368,7 @@ export class OpenAITTSProvider implements SpeechProvider {
 
   /** Real <audio> element playing the current utterance. */
   getAudioElement(): HTMLAudioElement | null {
-    return this.audio;
+    return this.currentAudio;
   }
 
   private emit(event: SpeechEvent, payload?: unknown): void {
