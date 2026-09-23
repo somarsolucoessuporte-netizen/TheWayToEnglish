@@ -1,4 +1,5 @@
 import type { SpeechEvent, SpeechOptions, SpeechProvider } from "./SpeechProvider";
+import { splitOutPortuguese } from "./portugueseGuard";
 
 type Listener = (e?: unknown) => void;
 
@@ -185,7 +186,17 @@ export class OpenAITTSProvider implements SpeechProvider {
     return this.speakAtSpeed(text, SLOW_SPEED, opts.lang);
   }
 
-  private async speakAtSpeed(text: string, speed: number, lang?: string): Promise<void> {
+  private async speakAtSpeed(rawText: string, speed: number, lang?: string): Promise<void> {
+    // School rule: Portuguese is written, never spoken. The orchestrator and
+    // /api/chat already strip it; this is the single choke point EVERY
+    // spoken text passes through (turns, drills, the correction card's
+    // Ouvir/Devagar buttons), so nothing Portuguese can reach the voice by
+    // any path. The log names the text so a new leak is traceable.
+    const { english: text, portuguese } = splitOutPortuguese(rawText);
+    if (portuguese.length) {
+      console.warn(`[TTS] PT bloqueado no provider: ${JSON.stringify(rawText)} — não falado: ${JSON.stringify(portuguese)}`);
+    }
+    if (!text.trim()) return;
     const generation = this.cancelGeneration;
     const cancelled = () => generation !== this.cancelGeneration;
     try {

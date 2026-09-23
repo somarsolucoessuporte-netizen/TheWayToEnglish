@@ -101,8 +101,43 @@ async function orchestratorNeverSpeaksPortuguese() {
   orchestrator.reset();
 }
 
+async function providerNeverSendsPortugueseToTts() {
+  const vm = require('node:vm');
+  const out = ts.transpileModule(fs.readFileSync(path.resolve(__dirname, '../src/core/speech/OpenAITTSProvider.ts'), 'utf8'), {
+    compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2020 },
+  }).outputText;
+  const ttsTexts = [];
+  class FakeAudio {
+    set src(v) { this._src = v; }
+    get src() { return this._src ?? ''; }
+    play() { setTimeout(() => this.onplaying?.(), 0); setTimeout(() => this.onended?.(), 2); return Promise.resolve(); }
+    pause() {}
+  }
+  const context = {
+    exports: {},
+    require: (name) => loadTs(path.resolve(__dirname, '../src/core/speech', `${name.replace(/^\.\//, '')}.ts`)),
+    console: { ...console, log() {}, warn() {}, error() {} },
+    Audio: FakeAudio, Blob, AbortController, setTimeout, clearTimeout, setInterval, clearInterval,
+    window: { setTimeout: (fn, ms) => setTimeout(fn, ms), clearTimeout },
+    document: undefined,
+    URL: { createObjectURL: () => 'blob:x', revokeObjectURL: () => {} },
+    fetch: async (_url, init) => {
+      ttsTexts.push(JSON.parse(init.body).text);
+      return { ok: true, status: 200, arrayBuffer: async () => new ArrayBuffer(8) };
+    },
+  };
+  vm.createContext(context);
+  vm.runInContext(out, context);
+  const provider = new context.exports.OpenAITTSProvider();
+  // Any caller (a turn, the drill, the correction card's Ouvir button).
+  await provider.speak("O símbolo para FALA é uma pessoa falando. What is the symbol for LISTENING?", { lang: 'en-US' });
+  await provider.speak('Em português, não usamos a letra A dessa forma. Vamos tentar de novo.', { lang: 'pt-BR' });
+  assert.deepEqual(ttsTexts, ['What is the symbol for LISTENING?'], 'only English may ever reach /api/tts');
+}
+
 (async () => {
   detector();
+  await providerNeverSendsPortugueseToTts();
   await orchestratorNeverSpeaksPortuguese();
   quiet.log('PASS: Portuguese in speech.english is detected and never spoken; speech.portuguese is never spoken on any turn');
 })().catch((error) => { quiet.error(error); process.exitCode = 1; });

@@ -4,6 +4,18 @@ const path = require('node:path');
 const vm = require('node:vm');
 const ts = require('typescript');
 
+// OpenAITTSProvider imports ./portugueseGuard — resolve it for the vm context.
+function requireFromSpeech(name) {
+  const file = require('node:path').resolve(__dirname, '../src/core/speech', `${name.replace(/^\.\//, '')}.ts`);
+  const out = require('typescript').transpileModule(require('node:fs').readFileSync(file, 'utf8'), {
+    compilerOptions: { module: require('typescript').ModuleKind.CommonJS, target: require('typescript').ScriptTarget.ES2020 },
+  }).outputText;
+  const mod = { exports: {} };
+  new Function('require', 'module', 'exports', out)(require, mod, mod.exports);
+  return mod.exports;
+}
+
+
 // Verifies OpenAITTSProvider.fallbackSpeak() always settles even when
 // speechSynthesis never fires onstart/onend/onerror for the utterance —
 // the exact "sessão trava, busy nunca volta a false" production report:
@@ -21,7 +33,7 @@ async function check(name, { fires = null } = {}) {
   }
   const utterances = [];
   const context = {
-    exports: {}, console,
+    exports: {}, require: requireFromSpeech, console,
     window: {
       speechSynthesis: {
         speak(u) {

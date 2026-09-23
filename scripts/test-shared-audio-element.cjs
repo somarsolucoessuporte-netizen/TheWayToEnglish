@@ -4,6 +4,18 @@ const path = require('node:path');
 const vm = require('node:vm');
 const ts = require('typescript');
 
+// OpenAITTSProvider imports ./portugueseGuard — resolve it for the vm context.
+function requireFromSpeech(name) {
+  const file = require('node:path').resolve(__dirname, '../src/core/speech', `${name.replace(/^\.\//, '')}.ts`);
+  const out = require('typescript').transpileModule(require('node:fs').readFileSync(file, 'utf8'), {
+    compilerOptions: { module: require('typescript').ModuleKind.CommonJS, target: require('typescript').ScriptTarget.ES2020 },
+  }).outputText;
+  const mod = { exports: {} };
+  new Function('require', 'module', 'exports', out)(require, mod, mod.exports);
+  return mod.exports;
+}
+
+
 // Regression + hardening for the single shared <audio> element (7601230,
 // reverting cd4e323's `new Audio()` per call, which silenced every turn
 // after the first on iOS).
@@ -104,7 +116,7 @@ function makeEnv({ pauseRejectsPending = true, silentPlayDelayMs = 0, injectAbor
   const docListeners = {};
   let blobCounter = 0;
   const context = {
-    exports: {},
+    exports: {}, require: requireFromSpeech,
     console: { ...console, log() {}, warn() {}, error() {} },
     Audio: FakeAudioElement,
     Blob,
