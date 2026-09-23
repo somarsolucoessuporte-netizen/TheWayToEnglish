@@ -6,10 +6,32 @@ import curriculumData from "./book01-unit01.json";
 // app/api/chat/route.ts's buildLessonPlanBlock for how this is injected
 // into the system prompt. ----
 
+/**
+ * How much a task depends on seeing an image — per TASK, not per lesson
+ * (the old lesson-level `requiresImages` flagged 10 of 22 lessons whole,
+ * including ones like B whose spoken practice works fine without any
+ * picture). Set by scripts/processar-unit.py's classify_image_dependency.
+ * PROVISIONAL: the app has no lesson images yet — revisit when the school
+ * answers about the material for these lessons.
+ *   oral       — no image needed; runs as written.
+ *   visual     — keeps its spoken practice; the part that needs sight is
+ *                dropped (people/things are named or described in words).
+ *   image-only — nothing is left without the image; skipped, and kept out
+ *                of the progress denominator (canDo).
+ * Missing = "oral" (older unit JSON without the field).
+ */
+export type ImageDependency = "oral" | "visual" | "image-only";
+
 export interface CurriculumTask {
   order: number;
   instruction: string;
   type: string;
+  imageDependency?: ImageDependency;
+}
+
+/** The tasks that can actually run in this app today — see ImageDependency. */
+export function playableTasks(tasks: CurriculumTask[]): CurriculumTask[] {
+  return tasks.filter((t) => t.imageDependency !== "image-only");
 }
 
 export interface CurriculumTable {
@@ -120,6 +142,10 @@ export interface CurriculumLesson {
   referenceContent: CurriculumReferenceContent;
   requiresImages: boolean;
   imageNote?: string;
+  /** False when the lesson has tasks and every one is image-only — it can't
+   * run until its material exists, so the UI refuses to open it (see
+   * page.tsx). */
+  playable: boolean;
 }
 
 const DEFAULT_DURATION_MINUTES = 15;
@@ -190,7 +216,10 @@ function toCurriculumLesson(plan: RawLessonPlan): CurriculumLesson {
     ])),
     grammarPoints: plan.referenceContent.grammarNotes ?? [],
     targetPhrases: exchanges.map((e) => e.q),
-    canDo: plan.tasks.map((t) => taskId(t.order)),
+    // image-only tasks never run, so they're not part of the progress
+    // denominator — missing material on our side must not lower the
+    // student's score.
+    canDo: playableTasks(plan.tasks).map((t) => taskId(t.order)),
     exampleExchanges: exchanges,
     prerequisiteLessonIds: [],
     notes: plan.practiceNote ?? null,
@@ -205,6 +234,10 @@ function toCurriculumLesson(plan: RawLessonPlan): CurriculumLesson {
     referenceContent: plan.referenceContent,
     requiresImages: plan.requiresImages,
     imageNote: plan.imageNote,
+    // Only a lesson EMPTIED by image-only tasks is unplayable — one with no
+    // tasks in the source at all (e.g. 3B) always ran from its reference
+    // content and still does.
+    playable: plan.tasks.length === 0 || playableTasks(plan.tasks).length > 0,
   };
 }
 

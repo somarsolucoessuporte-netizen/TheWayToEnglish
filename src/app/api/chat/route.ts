@@ -108,12 +108,28 @@ function buildLessonPlanBlock(lesson: CurriculumLesson, principles: string[]): s
     lines.push("");
   }
 
-  if (lesson.tasks.length > 0) {
+  // Per-task image handling (see CurriculumTask.imageDependency): this
+  // app has NO lesson images. image-only tasks are left out of the plan
+  // entirely (the model never runs or reports them); visual ones run
+  // without the part that needs sight.
+  const tasks = lesson.tasks.filter((t) => {
+    if (t.imageDependency !== "image-only") return true;
+    console.log(`[curriculum] tarefa pulada (image-only): ${lesson.code}/${taskId(t.order)}`);
+    return false;
+  });
+  if (tasks.length > 0) {
     lines.push("YOUR TASK SEQUENCE FOR THIS SESSION:");
-    for (const t of lesson.tasks) {
-      lines.push(`${t.order}. [${taskId(t.order)}] ${t.instruction} (type: ${t.type})`);
+    for (const t of tasks) {
+      const visual =
+        t.imageDependency === "visual"
+          ? " [NO IMAGE AVAILABLE — do only the spoken practice: name or describe the people/things in " +
+            "words instead of showing them, and never ask anything that requires seeing a picture]"
+          : "";
+      lines.push(`${t.order}. [${taskId(t.order)}] ${t.instruction} (type: ${t.type})${visual}`);
     }
     lines.push("");
+  } else if (lesson.tasks.length > 0) {
+    console.error(`[curriculum] lição ${lesson.code} sem nenhuma tarefa jogável sem imagem`);
   }
 
   if (lesson.practiceNote) {
@@ -162,8 +178,15 @@ function buildLessonPlanBlock(lesson: CurriculumLesson, principles: string[]): s
     lines.push("");
   }
 
-  if (lesson.requiresImages && lesson.imageNote) {
-    lines.push(`Image note: ${lesson.imageNote}`, "");
+  // The source material's "Image note" tells the tutor to SHOW images —
+  // there are none, so it's replaced by the opposite instruction.
+  if (lesson.tasks.some((t) => t.imageDependency && t.imageDependency !== "oral")) {
+    lines.push(
+      "NO IMAGES: this app has no images for this lesson. Wherever the plan mentions showing images, " +
+        "use words instead. Never ask the student to identify, describe or answer about something they " +
+        "would have to SEE — they have nothing on screen to look at.",
+      ""
+    );
   }
 
   lines.push(

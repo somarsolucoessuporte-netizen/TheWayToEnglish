@@ -29,12 +29,14 @@
         {
           "order": 1,
           "instruction": "A IA mostra as imagens e pede pro aluno repetir (1x cada símbolo)",
-          "type": "demonstrate"
+          "type": "demonstrate",
+          "imageDependency": "oral"
         },
         {
           "order": 2,
           "instruction": "A IA pronuncia o nome de cada símbolo, mostrando as imagens e pedindo para o aluno identificar o nome e o símbolo.",
-          "type": "demonstrate"
+          "type": "demonstrate",
+          "imageDependency": "image-only"
         }
       ],
       "referenceContent": {
@@ -110,12 +112,14 @@
         {
           "order": 1,
           "instruction": "A IA mostra as imagens e pede pro aluno repetir na sequência A a Z (2x cada símbolo)",
-          "type": "demonstrate"
+          "type": "demonstrate",
+          "imageDependency": "oral"
         },
         {
           "order": 2,
           "instruction": "A IA mostra as imagens e pede pro aluno repetir em uma sequência aleatória (2x cada símbolo)",
-          "type": "demonstrate"
+          "type": "demonstrate",
+          "imageDependency": "oral"
         }
       ],
       "referenceContent": {
@@ -167,37 +171,44 @@
         {
           "order": 1,
           "instruction": "A IA pratica o vacabulário abaixo",
-          "type": "other"
+          "type": "other",
+          "imageDependency": "oral"
         },
         {
           "order": 2,
           "instruction": "A1. A IA mostra as palavras “first name”, “middle name” e “last name” e pede pro aluno repetir (2x cada palavra)",
-          "type": "demonstrate"
+          "type": "demonstrate",
+          "imageDependency": "oral"
         },
         {
           "order": 3,
           "instruction": "A2. A IA pergunta What’s your first name? What’s your middle name? What’s your last name? E espera a respostas do aluno.",
-          "type": "student_answers"
+          "type": "student_answers",
+          "imageDependency": "oral"
         },
         {
           "order": 4,
           "instruction": "A3. A IA pergunta como soletrar cada nome. How do you spell your first name? How do you spell your middle name? How do you spell your last name?",
-          "type": "student_answers"
+          "type": "student_answers",
+          "imageDependency": "oral"
         },
         {
           "order": 5,
           "instruction": "Pedir para os alunos começarem o diálogo, perguntando à IA qual o seu nome e como soletrar “What’s your first name? How do you spell it? What’s your middle name? How do you spell it? What’s your last name? How do you spell it?",
-          "type": "other"
+          "type": "other",
+          "imageDependency": "oral"
         },
         {
           "order": 6,
           "instruction": "Pedir para os alunos começarem o diálogo, perguntando à IA How do you spell your first name? How do you spell your middle name? How do you spell your last name?",
-          "type": "other"
+          "type": "other",
+          "imageDependency": "oral"
         },
         {
           "order": 7,
           "instruction": "A IA pergunta novamente as perguntas, mas dessa vez juntando as duas perguntas.",
-          "type": "student_answers"
+          "type": "student_answers",
+          "imageDependency": "oral"
         }
       ],
       "referenceContent": {
@@ -228,12 +239,14 @@
         {
           "order": 1,
           "instruction": "A IA inicia o diálogo abaixo",
-          "type": "demonstrate"
+          "type": "demonstrate",
+          "imageDependency": "oral"
         },
         {
           "order": 2,
           "instruction": "A IA pede para o aluno iniciar o diálogo.",
-          "type": "student_leads"
+          "type": "student_leads",
+          "imageDependency": "oral"
         }
       ],
       "referenceContent": {
@@ -259,7 +272,8 @@
         {
           "order": 1,
           "instruction": "A IA sugere vários diálogos fazendo uso das expressões abaixo., semelhantes aos exemplos dos diálogos 1 a 3.",
-          "type": "other"
+          "type": "other",
+          "imageDependency": "oral"
         }
       ],
       "referenceContent": {
@@ -346,12 +360,14 @@
         {
           "order": 1,
           "instruction": "A IA inicia o diálogo usando um nome diferente do nome do aluno. Após 3 tentativas, a IA pergunta o nome do aluno para ele responder Yes, I am.",
-          "type": "student_answers"
+          "type": "student_answers",
+          "imageDependency": "oral"
         },
         {
           "order": 2,
           "instruction": "A IA pede para o aluno iniciar o diálogo, com um nome diferente ao dele(a).",
-          "type": "student_leads"
+          "type": "student_leads",
+          "imageDependency": "oral"
         }
       ],
       "referenceContent": {
@@ -386,77 +402,92 @@
         {
           "order": 1,
           "instruction": "A IA lê os números de 0 a 10 e pede para o aluno repetir",
-          "type": "demonstrate"
+          "type": "demonstrate",
+          "imageDependency": "oral"
         },
         {
           "order": 2,
           "instruction": "A IA pede para o aluno ler os números de 0 a 10, corrigindo a pronúncia",
-          "type": "student_repeats"
+          "type": "student_repeats",
+          "imageDependency": "oral"
         },
         {
           "order": 3,
           "instruction": "A IA lê os números de 11 a 19 e pede para o aluno repetir",
-          "type": "demonstrate"
+          "type": "demonstrate",
+          "imageDependency": "oral"
         },
         {
           "order": 4,
           "instruction": "A IA pede para o aluno ler os números de 11 a 19, corrigindo a pronúncia",
-          "type": "student_repeats"
+          "type": "student_repeats",
+          "imageDependency": "oral"
         },
         {
           "order": 5,
           "instruction": "A IA lê os números de 20 a 29 e pede para o aluno repetir",
-          "type": "demonstrate"
+          "type": "demonstrate",
+          "imageDependency": "oral"
         },
         {
           "order": 6,
           "instruction": "A IA pede para o aluno ler os números de 20 a 29, corrigindo a pronúncia",
-          "type": "student_repeats"
+          "type": "student_repeats",
+          "imageDependency": "oral"
         },
         {
           "order": 7,
           "instruction": "A IA lê as dezenas de 10 a 90 e pede para o aluno repetir",
-          "type": "demonstrate"
+          "type": "demonstrate",
+          "imageDependency": "oral"
         },
         {
           "order": 8,
           "instruction": "A IA pede para o aluno ler as dezenas de 10 a 90, corrigindo a pronúncia",
-          "type": "student_repeats"
+          "type": "student_repeats",
+          "imageDependency": "oral"
         },
         {
           "order": 9,
           "instruction": "A IA pede para os alunos lerem os teens e as dezenas e pedem para o aluno repetir",
-          "type": "student_repeats"
+          "type": "student_repeats",
+          "imageDependency": "oral"
         },
         {
           "order": 10,
           "instruction": "A IA pede para o aluno ler as dezenas de 10 a 90, corrigindo a pronúncia",
-          "type": "student_repeats"
+          "type": "student_repeats",
+          "imageDependency": "oral"
         },
         {
           "order": 11,
           "instruction": "A IA Lê os hundreds e pede para os alunos lerem os hundreds e pede para o aluno repetir",
-          "type": "demonstrate"
+          "type": "demonstrate",
+          "imageDependency": "oral"
         },
         {
           "order": 12,
           "instruction": "A IA pede para o aluno ler os hundreds, corrigindo a pronúncia",
-          "type": "student_repeats"
+          "type": "student_repeats",
+          "imageDependency": "oral"
         },
         {
           "order": 13,
           "instruction": "A IA lê os seguintes números com três dígitos e pede para os alunos repetirem",
-          "type": "demonstrate"
+          "type": "demonstrate",
+          "imageDependency": "oral"
         },
         {
           "order": 14,
           "instruction": "A IA pede para o aluno ler números aleatórios com três dígitos, corrigindo a pronúncia",
-          "type": "student_repeats"
+          "type": "student_repeats",
+          "imageDependency": "oral"
         },
         {
           "order": 15,
           "instruction": "A IA pede para o aluno ler números aleatórios de 1 a três dígitos, corrigindo a pronúncia. Fazer isso pelo mesno 10 vezes. Dar ao aluno a opção se o aluno quiser fazer mais vezes.",
-          "type": "student_repeats"
+          "type": "student_repeats",
+          "imageDependency": "oral"
         }
       ],
       "referenceContent": {
@@ -585,12 +616,14 @@
         {
           "order": 1,
           "instruction": "A IA pergunta ao aluno “What’s your phone number?”, corrigindo problemas com a pronúncia e se certificando de que o aluno lê os números um a um e em caso de dois números iguais seguindo, o aluno diz “double 7”, por exemplo.",
-          "type": "student_answers"
+          "type": "student_answers",
+          "imageDependency": "oral"
         },
         {
           "order": 2,
           "instruction": "A IA pede para o aluno iniciar o diálogo, usando como respostas um número fictício.",
-          "type": "student_leads"
+          "type": "student_leads",
+          "imageDependency": "oral"
         }
       ],
       "referenceContent": {
@@ -621,27 +654,32 @@
         {
           "order": 1,
           "instruction": "A IA começa falando que não se pergunta a idade de quem alguém com quem não se tem intimidade, mas que nessa lição podemos fazer isso.",
-          "type": "student_answers"
+          "type": "student_answers",
+          "imageDependency": "oral"
         },
         {
           "order": 2,
           "instruction": "A IA pergunta ao aluno “How old are you?”, corrigindo-o caso necessário, principalmente a resposta com I’m e não I have.",
-          "type": "student_answers"
+          "type": "student_answers",
+          "imageDependency": "oral"
         },
         {
           "order": 3,
           "instruction": "A IA mostra que se usa mais a pergunta sobre idades quando se fala de uma terceira pessoa.",
-          "type": "student_answers"
+          "type": "student_answers",
+          "imageDependency": "oral"
         },
         {
           "order": 4,
           "instruction": "A IA mostra imagens de pessoas diferentes (tabela abaixo) e pergunta “How old is he/she?”",
-          "type": "student_answers"
+          "type": "student_answers",
+          "imageDependency": "visual"
         },
         {
           "order": 5,
           "instruction": "A IA pede para o aluno iniciar o diálogo, tanto para praticar a pergunta e para praticar a substituição dos pronomes (usar as mesmas imagens).",
-          "type": "student_leads"
+          "type": "student_leads",
+          "imageDependency": "visual"
         }
       ],
       "referenceContent": {
@@ -738,32 +776,38 @@
         {
           "order": 1,
           "instruction": "A IA pergunta ao aluno de onde são alguns personagens bíblicos.",
-          "type": "student_answers"
+          "type": "student_answers",
+          "imageDependency": "oral"
         },
         {
           "order": 2,
           "instruction": "A IA mostra as imagens e pede para o aluno dizer de onde vem as pessoas.",
-          "type": "demonstrate"
+          "type": "demonstrate",
+          "imageDependency": "visual"
         },
         {
           "order": 3,
           "instruction": "A IA pede para o aluno iniciar o diálogo anterior a fim de praticar como fazer a pergunta, corrigindo a gramática e a pergunta.",
-          "type": "student_leads"
+          "type": "student_leads",
+          "imageDependency": "oral"
         },
         {
           "order": 4,
           "instruction": "A IA pergunta ao aluno “Where are you from?”",
-          "type": "student_answers"
+          "type": "student_answers",
+          "imageDependency": "oral"
         },
         {
           "order": 5,
           "instruction": "A IA pede para o aluno perguntar a ela “Where are you from?”",
-          "type": "other"
+          "type": "other",
+          "imageDependency": "oral"
         },
         {
           "order": 6,
           "instruction": "A IA pede para o aluno iniciar o diálogo e perguntar a IA de onde ela é.",
-          "type": "student_leads"
+          "type": "student_leads",
+          "imageDependency": "oral"
         }
       ],
       "referenceContent": {
@@ -1023,22 +1067,26 @@
         {
           "order": 1,
           "instruction": "A IA pede para o aluno dizer de onde ele é, “Where are you from?”",
-          "type": "other"
+          "type": "other",
+          "imageDependency": "oral"
         },
         {
           "order": 2,
           "instruction": "A IA pede para o aluno iniciar o diálogo.",
-          "type": "student_leads"
+          "type": "student_leads",
+          "imageDependency": "oral"
         },
         {
           "order": 3,
           "instruction": "A IA mostra as seguintes imagens e pergunta aos alunos de onde essas pessoa são, corrigindo-o.",
-          "type": "student_answers"
+          "type": "student_answers",
+          "imageDependency": "visual"
         },
         {
           "order": 4,
           "instruction": "A IA pede para o aluno iniciar o diálogo, para praticar a substituição dos pronomes e verbos.",
-          "type": "student_leads"
+          "type": "student_leads",
+          "imageDependency": "oral"
         }
       ],
       "referenceContent": {
@@ -1135,22 +1183,26 @@
         {
           "order": 1,
           "instruction": "A IA pergunta ao aluno sobre a sua nacionalidade com uma Yes-No question “Are you _______?” Usar as nacionalidades Spanish, Portuguese, Brazilian, nessa ordem.",
-          "type": "student_answers"
+          "type": "student_answers",
+          "imageDependency": "oral"
         },
         {
           "order": 2,
           "instruction": "A IA pede para o aluno iniciar o diálogo, perguntando a IA sobre a sua nacionalidade. A IA é “Brazilian”.",
-          "type": "student_leads"
+          "type": "student_leads",
+          "imageDependency": "oral"
         },
         {
           "order": 3,
           "instruction": "A IA mostra as seguintes imagens e pergunta aos alunos de onde essas pessoa são, usando as nacionalidades, corrigindo-o. Usar as nacionalidades Chinese, English, Scottish, Korean, Japanese, American, and African, numa ordem aleatória, para algumas respostas serem afirmativas e outras negativas, aleatoriamente. O aluno deve praticar as short answers.",
-          "type": "student_answers"
+          "type": "student_answers",
+          "imageDependency": "visual"
         },
         {
           "order": 4,
           "instruction": "A IA pede para o aluno iniciar o diálogo, para praticar a substituição dos pronomes e verbos nas perguntas Is he ___? / Is she _____ ? / Are they ____?",
-          "type": "student_leads"
+          "type": "student_leads",
+          "imageDependency": "oral"
         }
       ],
       "referenceContent": {
@@ -1287,12 +1339,14 @@
         {
           "order": 1,
           "instruction": "IA pede para o aluno repetir algumas frases com os dois padrões de entoação do inglês, corrigindo-o",
-          "type": "student_repeats"
+          "type": "student_repeats",
+          "imageDependency": "oral"
         },
         {
           "order": 2,
           "instruction": "A IA apresenta as frases aleatoriamente e pede para o aluno lè-las, corrigindo-o, caso a entoação ou a pronúncia esteja incorreta.",
-          "type": "demonstrate"
+          "type": "demonstrate",
+          "imageDependency": "oral"
         }
       ],
       "referenceContent": {
@@ -1384,17 +1438,20 @@
         {
           "order": 1,
           "instruction": "A IA mostra ao aluno as imagens dos personagens bíblicos cujas profissões estão reveladas na Bíblia e pede para o aluno completer a frase.",
-          "type": "demonstrate"
+          "type": "demonstrate",
+          "imageDependency": "visual"
         },
         {
           "order": 2,
           "instruction": "A IA apresenta as imagens abaixo e pede para o aluno dizer a profissão, corrigindo-o.",
-          "type": "demonstrate"
+          "type": "demonstrate",
+          "imageDependency": "visual"
         },
         {
           "order": 3,
           "instruction": "A IA pergunta ao aluno qual a sua profissão. Se não estiver na lista, a IA deverá proporcionar o vocabulário necessário",
-          "type": "student_answers"
+          "type": "student_answers",
+          "imageDependency": "oral"
         }
       ],
       "referenceContent": {
@@ -1455,7 +1512,8 @@
         {
           "order": 1,
           "instruction": "A IA mostra ao aluno as mesmas imagens acima (4AB) e pede para o aluno completer a frase, corrigindo o uso dos artigos  A e AN.",
-          "type": "demonstrate"
+          "type": "demonstrate",
+          "imageDependency": "visual"
         }
       ],
       "referenceContent": {
@@ -1509,12 +1567,14 @@
         {
           "order": 1,
           "instruction": "A IA apresenta as imagens abaixo e pede para o aluno formar frases com he, she or they e a frase que está abaixo das imagens, juntando o conteúdos de vocabulário (as profissões), grammar (a / an, singular / plural, subject-verb agreement he/she/they + verb to be)",
-          "type": "demonstrate"
+          "type": "demonstrate",
+          "imageDependency": "visual"
         },
         {
           "order": 2,
           "instruction": "ATENÇÃO: USAR AS MESMAS IMAGENS DO 4ABC",
-          "type": "other"
+          "type": "other",
+          "imageDependency": "image-only"
         }
       ],
       "referenceContent": {
@@ -1549,17 +1609,20 @@
         {
           "order": 1,
           "instruction": "A IA apresenta as imagens abaixo e pede para o aluno formar frases com he, she or they e a frase que está abaixo das imagens, juntando o conteúdos de vocabulário (as profissões), grammar (a / an, singular / plural, subject-verb agreement he/she/they + verb to be)",
-          "type": "demonstrate"
+          "type": "demonstrate",
+          "imageDependency": "visual"
         },
         {
           "order": 2,
           "instruction": "A IA apresenta as imagens das lições 4ABC sobre profissões de forma embaralhada e aleatória e inicia diálogos semelhantes ao que estão acima, misturando as profissões e as imagens, por exemplo,",
-          "type": "demonstrate"
+          "type": "demonstrate",
+          "imageDependency": "visual"
         },
         {
           "order": 3,
           "instruction": "ATENÇÃO: USAR AS MESMAS IMAGENS DO 4ABC",
-          "type": "other"
+          "type": "other",
+          "imageDependency": "image-only"
         }
       ],
       "referenceContent": {
@@ -1653,7 +1716,8 @@
         {
           "order": 1,
           "instruction": "A IA repete aleatoriamente todas as tarefas feitas nessa unidade, revisando o conteúdos, mas repetindo menos vezes. Se o aluno tiver dificuldades, sugerir retornar para as respectivas lições.",
-          "type": "other"
+          "type": "other",
+          "imageDependency": "oral"
         }
       ],
       "referenceContent": {

@@ -267,6 +267,21 @@ times in a row.
 
 ---
 
+NO IMAGES
+
+The student sees NO pictures, symbols or
+illustrations in this app — only your words.
+Never ask a question that depends on seeing
+something ("What is the symbol for
+SPEAKING?", "Where is this person from?",
+"What's his job?" about a picture). If the
+lesson plan mentions showing images, name or
+describe things in words instead, and keep
+only the spoken practice (repeating,
+answering, dialogues).
+
+---
+
 LANGUAGE STRATEGY
 
 SCHOOL RULE: Portuguese is WRITTEN, never

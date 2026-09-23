@@ -640,6 +640,15 @@ export default function Page() {
       "-> resolvida localmente:",
       lesson ? lesson.code : "NÃO (route.ts resolve com fallback)"
     );
+    // Every task of this lesson needs images we don't have yet (see
+    // CurriculumTask.imageDependency) — never open an empty session.
+    if (lesson && !lesson.playable) {
+      console.warn(`[curriculum] lição ${lesson.code} não aberta: depende de material (imagens) ainda não disponível`);
+      setToastMessage(branding.copy.lessonNeedsMaterial);
+      if (toastTimeoutRef.current !== null) clearTimeout(toastTimeoutRef.current);
+      toastTimeoutRef.current = setTimeout(() => setToastMessage(null), ERROR_TOAST_DURATION_MS);
+      return;
+    }
     const seconds = (lesson?.durationMinutes ?? DEFAULT_LESSON_DURATION_MIN) * 60;
     setStarted(true);
     setCurrentLesson(lesson);

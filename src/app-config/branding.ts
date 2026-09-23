@@ -34,6 +34,7 @@ export const branding = {
     stateThinking: "Pensando…",
     stateSpeaking: "Respondendo…",
     statePaused: "Pausado",
+    lessonNeedsMaterial: "Esta lição depende de material (imagens) que ainda não está disponível. Escolha outra lição.",
     connOk: "Conectado",
     connFailed: "Perdi você por um instante, pode repetir?",
     micUnsupported: "Este navegador não suporta reconhecimento de voz. Digite sua mensagem.",

@@ -74,6 +74,35 @@ TASK_TYPE_RULES = [
 
 IMAGE_RE = re.compile(r"imagens?", re.IGNORECASE)
 
+# Dependencia de imagem POR TAREFA (campo "imageDependency" de cada task).
+# O app ainda nao tem nenhuma imagem das licoes — decisao PROVISORIA ate a
+# escola responder sobre o material das licoes com imagens:
+#   "oral"       — nao depende de imagem (ou a imagem so ilustra o que e
+#                  repetido em voz alta: "mostra as imagens e pede pro aluno
+#                  repetir"). Roda normal.
+#   "visual"     — tem uma parte que pede para VER algo, mas a pratica
+#                  falada continua possivel nomeando/descrevendo em palavras.
+#                  Roda, sem a pergunta que depende da imagem.
+#   "image-only" — nada sobra sem a imagem (identificar o simbolo) ou nem e
+#                  tarefa (nota "ATENCAO: USAR AS MESMAS IMAGENS"). Pulada,
+#                  e fora do denominador do aproveitamento.
+# Heuristica: REVISAR o relatorio (print_report) a cada unit nova.
+_IMAGE_ONLY_RES = [
+    re.compile(r"^\s*aten[çc][ãa]o\b", re.IGNORECASE),
+    re.compile(r"identificar\b.*s[íi]mbolo", re.IGNORECASE),
+]
+_ORAL_WITH_IMAGE_RE = re.compile(r"\brepetir\b", re.IGNORECASE)
+
+
+def classify_image_dependency(text):
+    if not IMAGE_RE.search(text):
+        return "oral"
+    if any(r.search(text) for r in _IMAGE_ONLY_RES):
+        return "image-only"
+    if _ORAL_WITH_IMAGE_RE.search(text):
+        return "oral"
+    return "visual"
+
 # A escola tambem colore de vermelho listas de frases de pratica (nao
 # instrucoes) — ex.: a lista de exemplos da licao 3H. So tratamos um
 # paragrafo vermelho como INSTRUCAO quando ele fala sobre a IA agindo,
@@ -294,6 +323,7 @@ def extract_lesson(blocks, title_idx, end_idx, order, consumed):
                     "order": len(tasks) + 1,
                     "instruction": text,
                     "type": classify_task_type(text),
+                    "imageDependency": classify_image_dependency(text),
                 })
                 if IMAGE_RE.search(text):
                     requires_images = True
@@ -479,6 +509,18 @@ def print_report(result, orphan_red):
 
     with_images = [l["code"] for l in lessons if l["requiresImages"]]
     print(f"\nLicoes com requiresImages=true: {', '.join(with_images) if with_images else '(nenhuma)'}")
+
+    print("\nTarefas que dependem de imagem (REVISAR — decisao provisoria, ver classify_image_dependency):")
+    for l in lessons:
+        for t in l["tasks"]:
+            dep = t.get("imageDependency", "oral")
+            if dep != "oral":
+                print(f"  {l['code']} task-{t['order']}: {dep} — {t['instruction'][:90]}")
+    unplayable = [
+        l["code"] for l in lessons
+        if l["tasks"] and all(t.get("imageDependency") == "image-only" for t in l["tasks"])
+    ]
+    print(f"Licoes sem nenhuma tarefa jogavel sem imagem: {', '.join(unplayable) if unplayable else '(nenhuma)'}")
 
     thin = [l["code"] for l in lessons if len(l["tasks"]) == 0]
     print(f"Licoes sem nenhuma tarefa: {', '.join(thin) if thin else '(nenhuma)'}")
