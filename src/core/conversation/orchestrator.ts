@@ -5,7 +5,7 @@ import type { TutorResponse } from "../ai/TutorResponse";
 import type { AvatarEngine } from "../avatar-engine/AvatarEngine";
 import { playCorrectSound } from "../audio/playCorrectSound";
 import { splitOutPortuguese } from "../speech/portugueseGuard";
-import { CharacterStateMachine, type CharacterState } from "../character-state-machine/stateMachine";
+import { CharacterStateMachine, type CharacterState, type StateEvent } from "../character-state-machine/stateMachine";
 
 export interface ConversationOrchestratorOptions {
   speech: SpeechProvider;
@@ -72,6 +72,9 @@ const INTERRUPT_FADE_MS = 120;
  * (give the answer, move on), not a 4th "estímulo" — see fireNudge's doc
  * comment for how it resets the cycle for whatever comes next. */
 export type NudgeLevel = "gentle" | "help" | "offer" | "answer";
+
+/** See ConversationOrchestrator.stateOrigin. */
+type StateOrigin = "normal" | "nudge" | "anuncio" | "sistema";
 
 /** Cumulative idle-ms thresholds at which each nudge level fires, in
  * order — see startIdleClock/checkNudgeThresholds. Matches the client
@@ -219,6 +222,11 @@ export class ConversationOrchestrator {
   /** Aborts the in-flight /api/chat request of the current turn, if any. */
   private chatAbort: AbortController | null = null;
   private errorRecoverTimer: ReturnType<typeof setTimeout> | null = null;
+  /** What kind of turn is currently driving state changes — only for the
+   * "[state] dispatch" log (see dispatchState). Set by runTurn (normal vs.
+   * nudge) and forceAnnounce; "sistema" for everything outside a turn
+   * (button clicks, STT events, resets). */
+  private stateOrigin: StateOrigin = "sistema";
 
   private readonly entryListeners = new Set<EntriesListener>();
   private readonly errorListeners = new Set<ErrorListener>();
@@ -269,7 +277,7 @@ export class ConversationOrchestrator {
           this.errorRecoverTimer = null;
           if (this.stateMachine.getState() === "error") {
             console.log("[state] erro -> idle automático");
-            this.stateMachine.dispatch({ type: "RESET" });
+            this.dispatchState({ type: "RESET" });
           }
         }, ERROR_AUTO_RECOVER_MS);
       }
@@ -295,7 +303,7 @@ export class ConversationOrchestrator {
     // drill) is done, not per-call — that's what lets the video play
     // through an entire multi-part turn and stop only at its true end.
     this.speech.on("start", () => {
-      this.stateMachine.dispatch({ type: "SPEECH_START" });
+      this.dispatchState({ type: "SPEECH_START" });
       // Lets Avatar.tsx size the speaking clip's manual loop count for
       // THIS specific segment — see AvatarEngine.setSpeechAudioDuration's
       // doc comment for why this fires once per part, not once per turn.
@@ -315,23 +323,23 @@ export class ConversationOrchestrator {
       const { transcript, detectedLanguage } = (payload as SttResult) ?? { transcript: "" };
       const text = transcript.trim();
       if (this.stateMachine.getState() !== "listening") return;
-      this.stateMachine.dispatch({ type: "STOP_LISTENING" });
+      this.dispatchState({ type: "STOP_LISTENING" });
       if (text) {
         void this.handleUserMessage(text, detectedLanguage);
       } else {
-        this.stateMachine.dispatch({ type: "RESET" });
+        this.dispatchState({ type: "RESET" });
       }
     });
     // "end" without a preceding "final" means listening stopped with
     // nothing said (silence, timeout) — just go back to idle.
     this.stt.on("end", () => {
       if (this.stateMachine.getState() === "listening") {
-        this.stateMachine.dispatch({ type: "RESET" });
+        this.dispatchState({ type: "RESET" });
       }
     });
     this.stt.on("error", (err) => {
       this.emitError(`STT: ${String(err)}`);
-      this.stateMachine.dispatch({ type: "ERROR" });
+      this.dispatchState({ type: "ERROR" });
     });
     // Only fires for STT providers with an upload/processing gap between
     // "stopped recording" and "transcript ready" (e.g. WhisperSTTProvider).
@@ -431,10 +439,10 @@ export class ConversationOrchestrator {
     this.listeningStartInFlight = true;
     try {
       await this.stt.start();
-      this.stateMachine.dispatch({ type: "START_LISTENING" });
+      this.dispatchState({ type: "START_LISTENING" });
     } catch (err) {
       this.emitError(errorMessage(err));
-      this.stateMachine.dispatch({ type: "ERROR" });
+      this.dispatchState({ type: "ERROR" });
     } finally {
       this.listeningStartInFlight = false;
     }
@@ -471,7 +479,28 @@ export class ConversationOrchestrator {
     // RESET works from every state (praise/correction transients
     // included, which ignore START_LISTENING) — leaves a clean idle for
     // the START_LISTENING that follows.
-    this.stateMachine.dispatch({ type: "RESET" });
+    this.dispatchState({ type: "RESET" });
+  }
+
+  /**
+   * The ONLY way this class changes the character state. Logs every
+   * dispatch with its origin, and never lets a failure inside a transition
+   * escape: a throw here used to kill the whole turn before it reached the
+   * TTS (the "Illegal invocation" in enterTransient — text shown, voice
+   * never played, session dropped to "error"). The reply text is already
+   * generated by then; the turn must carry on and speak it regardless.
+   * Returns false if the transition threw.
+   */
+  private dispatchState(event: StateEvent): boolean {
+    const from = this.stateMachine.getState();
+    console.log("[state] dispatch", from, "->", event.type, "| origem:", this.stateOrigin);
+    try {
+      this.stateMachine.dispatch(event);
+      return true;
+    } catch (err) {
+      console.error(`[state] erro em ${from} (${event.type}):`, err);
+      return false;
+    }
   }
 
   /** True once the turn that captured `generation` has been superseded —
@@ -500,7 +529,7 @@ export class ConversationOrchestrator {
     const trimmed = text.trim();
     if (!trimmed) return;
     this.interruptTutor();
-    this.stateMachine.dispatch({ type: "STOP_LISTENING" }); // idle -> thinking
+    this.dispatchState({ type: "STOP_LISTENING" }); // idle -> thinking
     await this.handleUserMessage(trimmed);
   }
 
@@ -550,7 +579,7 @@ export class ConversationOrchestrator {
       this.lessonCompleteFired = false;
       this.idleAccumulatedMs = 0;
       this.nudgeLevelsFired.clear();
-      this.stateMachine.dispatch({ type: "STOP_LISTENING" }); // idle -> thinking
+      this.dispatchState({ type: "STOP_LISTENING" }); // idle -> thinking
       this.history.push({ role: "user", content: LESSON_KICKOFF_INSTRUCTION });
       await this.runTurn({ prefetchedResponse: opts.prefetched?.response, prefetchedAudioBlob: opts.prefetched?.audioBlob });
       // runTurn ends back on "idle" once the tutor's opening line finishes
@@ -633,18 +662,22 @@ export class ConversationOrchestrator {
   ): Promise<void> {
     const generation = ++this.turnGeneration;
     this.setBusy(true);
+    this.stateOrigin = "anuncio";
     try {
       if (this.stateMachine.getState() === "listening") {
         await this.stt.stop().catch(() => {});
       }
       if (this.isStale(generation)) return;
-      this.stateMachine.dispatch({ type: "RESET" }); // -> idle, from any state
-      this.stateMachine.dispatch({ type: "STOP_LISTENING" }); // idle -> thinking
+      this.dispatchState({ type: "RESET" }); // -> idle, from any state
+      this.dispatchState({ type: "STOP_LISTENING" }); // idle -> thinking
       if (opts.praiseFirst) await this.enterPraiseBeforeSpeaking();
       if (this.isStale(generation)) return;
       await this.speakParts(parts, generation);
     } finally {
-      if (!this.isStale(generation)) this.setBusy(false);
+      if (!this.isStale(generation)) {
+        this.setBusy(false);
+        this.stateOrigin = "sistema";
+      }
     }
   }
 
@@ -691,7 +724,7 @@ export class ConversationOrchestrator {
     // history, no lesson code), firing real /api/chat nudge calls against
     // nothing in the background. stopIdleClock() now runs AFTER, so it
     // actually cancels the clock this dispatch just started.
-    this.stateMachine.dispatch({ type: "RESET" });
+    this.dispatchState({ type: "RESET" });
     this.stopIdleClock();
   }
 
@@ -722,7 +755,7 @@ export class ConversationOrchestrator {
     this.setBusy(false);
     this.listeningStartInFlight = false;
     this.setTranscribing(false);
-    this.stateMachine.dispatch({ type: "RESET" });
+    this.dispatchState({ type: "RESET" });
     this.emitError("Reiniciado — pode tentar novamente.");
   }
 
@@ -843,7 +876,7 @@ export class ConversationOrchestrator {
     if (this.busy) return; // retried on the next 500ms tick since `level` isn't marked fired yet
     this.nudgeLevelsFired.add(level);
     console.log("[nudge] disparado", level);
-    this.stateMachine.dispatch({ type: "STOP_LISTENING" }); // idle -> thinking
+    this.dispatchState({ type: "STOP_LISTENING" }); // idle -> thinking
     console.log("[nudge] enviando com lessonCode:", this.currentLessonCode);
     await this.runTurn({ nudge: level });
     if (level === "answer") {
@@ -913,6 +946,7 @@ export class ConversationOrchestrator {
   } = {}): Promise<void> {
     const generation = ++this.turnGeneration;
     this.setBusy(true);
+    this.stateOrigin = opts.nudge ? "nudge" : "normal";
     // Hoisted out of the try block so the catch below can still find and
     // resolve THIS turn's pending chat bubble (see pushPendingTutorEntry)
     // if something throws after it was created but before speakPartsWithReveal
@@ -1055,7 +1089,7 @@ export class ConversationOrchestrator {
       // idle by the time it resolves — correction now overlays on top of
       // that idle state and reverts back to it on its own after ~1.5s.
       // Praise already happened above, before speaking.
-      if (correction) this.stateMachine.dispatch({ type: "CORRECTION" });
+      if (correction) this.dispatchState({ type: "CORRECTION" });
     } catch (err) {
       if (this.isStale(generation)) {
         // An aborted /api/chat (or anything else) from a turn the student
@@ -1073,7 +1107,7 @@ export class ConversationOrchestrator {
       if (awaitingChatResponse) this.setApiStatus(false);
       console.error(awaitingChatResponse ? "[turn] chat failed:" : "[turn] response processing failed:", err);
       this.emitError(errorMessage(err));
-      this.stateMachine.dispatch({ type: "ERROR" });
+      this.dispatchState({ type: "ERROR" });
       // See entryIndex's doc comment above — without this, a pending
       // bubble whose turn blew up before ever reaching speakPartsWithReveal
       // (or partway through it) is left showing "..." forever, even though
@@ -1090,6 +1124,7 @@ export class ConversationOrchestrator {
       if (!this.isStale(generation)) {
         console.log("[orchestrator] fim do turno, busy → false");
         this.setBusy(false);
+        this.stateOrigin = "sistema";
       }
       console.log("[turn] fim, busy →", this.busy);
     }
@@ -1150,7 +1185,14 @@ export class ConversationOrchestrator {
           resolve();
         }
       });
-      this.stateMachine.dispatch({ type: "PRAISE" });
+      // A failed PRAISE (or one that never actually entered "praise")
+      // must not hold the turn hostage — skip the pose and go speak.
+      const ok = this.dispatchState({ type: "PRAISE" });
+      if (!ok || this.stateMachine.getState() !== "praise") {
+        if (!ok) console.error("[state] praise falhou — seguindo para a fala mesmo assim");
+        unsubscribe();
+        resolve();
+      }
     });
   }
 
@@ -1181,7 +1223,7 @@ export class ConversationOrchestrator {
       // transition guaranteed to work from any state (see
       // CharacterStateMachine.dispatch), so the avatar doesn't get stuck
       // showing "thinking" forever with nothing left to wait on.
-      this.stateMachine.dispatch({ type: "RESET" });
+      this.dispatchState({ type: "RESET" });
       return;
     }
 
@@ -1217,9 +1259,9 @@ export class ConversationOrchestrator {
     // speakPartsWithReveal's identical fix and its own longer doc comment
     // for exactly how that manifests). RESET always works.
     if (this.stateMachine.getState() === "speaking") {
-      this.stateMachine.dispatch({ type: "SPEECH_END" });
+      this.dispatchState({ type: "SPEECH_END" });
     } else {
-      this.stateMachine.dispatch({ type: "RESET" });
+      this.dispatchState({ type: "RESET" });
     }
   }
 
@@ -1359,7 +1401,7 @@ export class ConversationOrchestrator {
       this.replaceEntry(entryIndex, { role: "tutor", response });
       // See speakParts's matching branch for why RESET (not SPEECH_END,
       // which is a no-op from "thinking" — see PERSISTENT_TRANSITIONS).
-      this.stateMachine.dispatch({ type: "RESET" });
+      this.dispatchState({ type: "RESET" });
       return;
     }
 
@@ -1399,9 +1441,9 @@ export class ConversationOrchestrator {
     // transition guaranteed to work from any state — use it whenever we
     // never actually got to "speaking".
     if (this.stateMachine.getState() === "speaking") {
-      this.stateMachine.dispatch({ type: "SPEECH_END" });
+      this.dispatchState({ type: "SPEECH_END" });
     } else {
-      this.stateMachine.dispatch({ type: "RESET" });
+      this.dispatchState({ type: "RESET" });
     }
   }
 

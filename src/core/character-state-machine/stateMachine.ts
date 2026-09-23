@@ -48,8 +48,16 @@ export class CharacterStateMachine {
 
   constructor(options: CharacterStateMachineOptions = {}) {
     this.transientDurationMs = options.transientDurationMs ?? 1500;
-    this.setTimeoutFn = options.setTimeoutFn ?? setTimeout;
-    this.clearTimeoutFn = options.clearTimeoutFn ?? clearTimeout;
+    // Wrapped, NOT stored bare: `this.setTimeoutFn(...)` calls the stored
+    // function with this state machine as `this`, and the browser's native
+    // setTimeout/clearTimeout throw "TypeError: Illegal invocation" unless
+    // `this` is the window. Node doesn't enforce that, which is why no test
+    // ever caught it — but in the browser every PRAISE/CORRECTION dispatch
+    // threw, killing the turn before it reached the TTS (text shown, no
+    // voice) and dropping the session into "error".
+    this.setTimeoutFn = options.setTimeoutFn ?? (((fn: () => void, ms?: number) => setTimeout(fn, ms)) as typeof setTimeout);
+    this.clearTimeoutFn =
+      options.clearTimeoutFn ?? (((id?: ReturnType<typeof setTimeout>) => clearTimeout(id)) as typeof clearTimeout);
   }
 
   getState(): CharacterState {
@@ -97,11 +105,20 @@ export class CharacterStateMachine {
       this.previousPersistentState = this.state as PersistentState;
     }
     this.clearTransientTimer();
+    let timer: ReturnType<typeof setTimeout>;
+    try {
+      timer = this.setTimeoutFn(() => {
+        this.transientTimer = null;
+        this.setState(this.previousPersistentState);
+      }, this.transientDurationMs);
+    } catch (err) {
+      // Without a timer nothing would ever revert the transient — skip it
+      // entirely instead of entering a state with no way out.
+      console.error(`[state] erro em ${transient}:`, err);
+      return;
+    }
+    this.transientTimer = timer;
     this.setState(transient);
-    this.transientTimer = this.setTimeoutFn(() => {
-      this.transientTimer = null;
-      this.setState(this.previousPersistentState);
-    }, this.transientDurationMs);
   }
 
   private clearTransientTimer(): void {
