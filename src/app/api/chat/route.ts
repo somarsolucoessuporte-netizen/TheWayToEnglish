@@ -35,7 +35,7 @@ interface ChatRequestBody {
   lessonCode?: string;
   timeWarning?: boolean;
   attemptCount?: number;
-  nudge?: "gentle" | "help" | "offer" | "answer";
+  nudge?: "gentle" | "help" | "offer" | "answer" | "unclear" | "advance";
   usedNudges?: string[];
 }
 
@@ -61,6 +61,18 @@ const NUDGE_INSTRUCTIONS: Record<NonNullable<ChatRequestBody["nudge"]>, string> 
     "The student has been silent for about 40 seconds total now. Stop waiting: in speech.english, give them " +
     "the answer directly and ask them to repeat it after you. Any Portuguese cue goes in speech.portuguese " +
     "(shown on screen, never spoken).",
+  unclear:
+    "The student's last attempt could not be understood — the recording was silence, background noise, or " +
+    "your own voice picked up by the microphone, so nothing usable was transcribed. This is NOT an error and " +
+    "NOT an attempt: do not correct, do not praise, do not count it toward attemptCount, do not mark any " +
+    "completedGoals. In speech.english, say briefly that you didn't catch that (e.g. \"Sorry, I didn't catch " +
+    "that.\") and REPEAT your last instruction verbatim.",
+  advance:
+    "You have already prompted the student several times in a row on the current item without getting a " +
+    "valid answer (silence, noise, or nothing usable). Do NOT repeat or re-ask it again. Treat the item as " +
+    "unclear — not failed: no correction, no praise, do not count it toward attemptCount. In speech.english, " +
+    "warmly say you'll move on (e.g. \"No problem, let's keep going.\") and give the NEXT item of the current " +
+    "task — or, if this was its last item, start the next task.",
 };
 
 const MAX_NAME_LEN = 80;

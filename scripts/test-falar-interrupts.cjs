@@ -46,6 +46,7 @@ function makeSpeech() {
       for (const cb of listeners.start) cb();
     }),
     speakSlow(text) { return this.speak(text); },
+    isSpeaking: () => false,
   };
 }
 

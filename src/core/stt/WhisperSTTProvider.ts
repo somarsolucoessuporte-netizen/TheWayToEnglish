@@ -159,7 +159,13 @@ export class WhisperSTTProvider implements SpeechToTextProvider {
         const timeoutId = window.setTimeout(() => {
           reject(new Error("GETUSERMEDIA_TIMEOUT"));
         }, GET_USER_MEDIA_TIMEOUT_MS);
-        navigator.mediaDevices.getUserMedia({ audio: true }).then(
+        // Browser-level echo cancellation first line of defense against the
+        // mic picking up the tutor's own voice from the speakers (the
+        // orchestrator also never opens the mic while she's audible — see
+        // startListening).
+        navigator.mediaDevices
+          .getUserMedia({ audio: { echoCancellation: true, noiseSuppression: true, autoGainControl: true } })
+          .then(
           (stream) => {
             window.clearTimeout(timeoutId);
             resolve(stream);

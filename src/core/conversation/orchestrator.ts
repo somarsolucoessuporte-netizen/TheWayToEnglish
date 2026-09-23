@@ -5,6 +5,7 @@ import type { TutorResponse } from "../ai/TutorResponse";
 import type { AvatarEngine } from "../avatar-engine/AvatarEngine";
 import { playCorrectSound } from "../audio/playCorrectSound";
 import { splitOutPortuguese } from "../speech/portugueseGuard";
+import { ECHO_SIMILARITY_THRESHOLD, echoSimilarity, matchWhisperHallucination } from "../stt/transcriptFilters";
 import { CharacterStateMachine, type CharacterState, type StateEvent } from "../character-state-machine/stateMachine";
 
 export interface ConversationOrchestratorOptions {
@@ -66,12 +67,24 @@ const ERROR_AUTO_RECOVER_MS = 3000;
 /** Fade applied to the tutor's voice when the student interrupts her by
  * pressing Falar — see interruptTutor. */
 const INTERRUPT_FADE_MS = 120;
+/** The mic never opens until the tutor's audio has been silent at least
+ * this long — see startListening. Room for the tail of the audio (and the
+ * fade) to clear the speakers before recording starts. */
+const MIC_AFTER_SPEECH_MARGIN_MS = 150;
 
 /** Escalating idle-silence reactions — see the idle clock fields below and
  * persona.ts's ACTIVE TUTOR section. 'answer' is the 40s-total resolution
  * (give the answer, move on), not a 4th "estímulo" — see fireNudge's doc
  * comment for how it resets the cycle for whatever comes next. */
-export type NudgeLevel = "gentle" | "help" | "offer" | "answer";
+export type NudgeLevel = "gentle" | "help" | "offer" | "answer" | "unclear" | "advance";
+
+/** Most prompt turns the tutor may fire in a row without a valid student
+ * answer in between (idle nudges AND "unclear" repeats after a discarded
+ * transcript). The one that reaches this cap becomes "advance" instead: she
+ * stops insisting and moves to the next item — see runNudgeTurn. Safety net
+ * against any repeat loop (a Whisper hallucination re-triggering "didn't
+ * catch that" forever was the one seen in production). */
+const MAX_CONSECUTIVE_NUDGES = 3;
 
 /** See ConversationOrchestrator.stateOrigin. */
 type StateOrigin = "normal" | "nudge" | "anuncio" | "sistema";
@@ -188,6 +201,9 @@ export class ConversationOrchestrator {
    * never repeats the same encouragement twice (see persona.ts's ACTIVE
    * TUTOR section). Deliberately NOT reset per-question, only by reset(). */
   private readonly usedNudgePhrases: string[] = [];
+  /** Prompt turns fired since the last valid student answer (or the last
+   * task change) — see MAX_CONSECUTIVE_NUDGES. */
+  private consecutiveNudges = 0;
 
   /** The tutor's speech.english from the last AI turn that actually got
    * shown/spoken (runTurn only — scripted announcements don't touch this) —
@@ -222,6 +238,9 @@ export class ConversationOrchestrator {
   /** Aborts the in-flight /api/chat request of the current turn, if any. */
   private chatAbort: AbortController | null = null;
   private errorRecoverTimer: ReturnType<typeof setTimeout> | null = null;
+  /** performance.now() at which the tutor's audio last stopped (or WILL
+   * have stopped, once an in-progress fade finishes) — see startListening. */
+  private speechQuietSince = 0;
   /** What kind of turn is currently driving state changes — only for the
    * "[state] dispatch" log (see dispatchState). Set by runTurn (normal vs.
    * nudge) and forceAnnounce; "sistema" for everything outside a turn
@@ -303,6 +322,16 @@ export class ConversationOrchestrator {
     // drill) is done, not per-call — that's what lets the video play
     // through an entire multi-part turn and stop only at its true end.
     this.speech.on("start", () => {
+      // The mic must never be recording while the tutor is audible — that's
+      // how she ended up transcribed as the student's answer ("What is the
+      // symbol for SPEAKING?" coming back as the student's own reply).
+      // Whatever path started this audio, the student's open mic wins.
+      if (this.stateMachine.getState() === "listening" || this.listeningStartInFlight) {
+        console.warn("[STT] TTS começou com o microfone aberto — áudio cancelado para não gravar a própria voz");
+        this.speech.cancel();
+        this.speechQuietSince = performance.now();
+        return;
+      }
       this.dispatchState({ type: "SPEECH_START" });
       // Lets Avatar.tsx size the speaking clip's manual loop count for
       // THIS specific segment — see AvatarEngine.setSpeechAudioDuration's
@@ -312,8 +341,14 @@ export class ConversationOrchestrator {
     // Fires once per individual speak() call's real end (or failure) — see
     // AvatarEngine.notifySpeechSegmentEnded's doc comment for why this is
     // NOT the same thing as the whole turn's SPEECH_END.
-    this.speech.on("end", () => this.avatar.notifySpeechSegmentEnded());
-    this.speech.on("error", () => this.avatar.notifySpeechSegmentEnded());
+    this.speech.on("end", () => {
+      this.speechQuietSince = performance.now();
+      this.avatar.notifySpeechSegmentEnded();
+    });
+    this.speech.on("error", () => {
+      this.speechQuietSince = performance.now();
+      this.avatar.notifySpeechSegmentEnded();
+    });
 
     // The transcript is delivered here, not through stop()'s return value —
     // continuous:false engines (the default BrowserSTTProvider) stop
@@ -324,11 +359,20 @@ export class ConversationOrchestrator {
       const text = transcript.trim();
       if (this.stateMachine.getState() !== "listening") return;
       this.dispatchState({ type: "STOP_LISTENING" });
-      if (text) {
-        void this.handleUserMessage(text, detectedLanguage);
-      } else {
+      if (!text) {
         this.dispatchState({ type: "RESET" });
+        return;
       }
+      const rejection = this.rejectTranscript(text);
+      if (rejection) {
+        // Not an answer at all — never shown as the student's bubble, never
+        // graded. Treated like an unclear attempt: she repeats her
+        // instruction (see the "unclear" nudge in /api/chat).
+        console.warn(rejection);
+        void this.runNudgeTurn("unclear");
+        return;
+      }
+      void this.handleUserMessage(text, detectedLanguage);
     });
     // "end" without a preceding "final" means listening stopped with
     // nothing said (silence, timeout) — just go back to idle.
@@ -438,6 +482,19 @@ export class ConversationOrchestrator {
     this.interruptTutor();
     this.listeningStartInFlight = true;
     try {
+      // Audio not owned by a turn (the correction card's Ouvir/Devagar
+      // buttons) isn't covered by interruptTutor — stop it too.
+      if (this.speech.isSpeaking()) {
+        this.speech.cancel(INTERRUPT_FADE_MS);
+        this.speechQuietSince = performance.now() + INTERRUPT_FADE_MS;
+      }
+      // Never open the mic over the tutor's voice: wait until her audio has
+      // been silent (fade included) for MIC_AFTER_SPEECH_MARGIN_MS.
+      const waitMs = this.speechQuietSince + MIC_AFTER_SPEECH_MARGIN_MS - performance.now();
+      if (waitMs > 0) {
+        console.log(`[STT] aguardando ${Math.round(waitMs)}ms de silêncio da tutora antes de abrir o microfone`);
+        await sleep(waitMs);
+      }
       await this.stt.start();
       this.dispatchState({ type: "START_LISTENING" });
     } catch (err) {
@@ -467,6 +524,7 @@ export class ConversationOrchestrator {
     this.chatAbort?.abort();
     this.chatAbort = null;
     this.speech.cancel(INTERRUPT_FADE_MS);
+    this.speechQuietSince = Math.max(this.speechQuietSince, performance.now() + INTERRUPT_FADE_MS);
     // "listening" here can only be a recording still uploading/being
     // transcribed (a live one is handled by the caller as force-send) —
     // drop it; the student is starting over.
@@ -501,6 +559,31 @@ export class ConversationOrchestrator {
       console.error(`[state] erro em ${from} (${event.type}):`, err);
       return false;
     }
+  }
+
+  /**
+   * Technical rejection of a transcript before it's treated as an answer
+   * (see core/stt/transcriptFilters). Returns the log line explaining why,
+   * or null if it's a real answer. Two cases:
+   *   - a known Whisper hallucination on silence/noise ("Legendas pela
+   *     comunidade Amara.org");
+   *   - an echo: the mic picked up the tutor's own last line (compared
+   *     against both its English and Portuguese text — Whisper has been
+   *     seen returning her English audio translated into Portuguese).
+   */
+  private rejectTranscript(text: string): string | null {
+    const hallucination = matchWhisperHallucination(text);
+    if (hallucination) return `[STT] alucinação do Whisper descartada: ${JSON.stringify(text)}`;
+    const lastTutor = [...this.entries].reverse().find((e) => e.role === "tutor");
+    if (lastTutor?.role === "tutor") {
+      for (const line of [lastTutor.response.speech.english, lastTutor.response.speech.portuguese]) {
+        const similarity = echoSimilarity(text, line);
+        if (similarity > ECHO_SIMILARITY_THRESHOLD) {
+          return `[STT] eco descartado: ${JSON.stringify(text)} (similaridade ${similarity.toFixed(2)} com a última fala da tutora)`;
+        }
+      }
+    }
+    return null;
   }
 
   /** True once the turn that captured `generation` has been superseded —
@@ -709,6 +792,7 @@ export class ConversationOrchestrator {
     this.idleAccumulatedMs = 0;
     this.nudgeLevelsFired.clear();
     this.usedNudgePhrases.length = 0;
+    this.consecutiveNudges = 0;
     this.lastTutorEnglish = undefined;
     this.speechQueue = Promise.resolve();
     this.speakQueueDepth = 0;
@@ -831,7 +915,10 @@ export class ConversationOrchestrator {
     console.log("[progress] tasks da lição:", this.lessonGoals);
     if (this.lessonCompleteFired || this.lessonGoals.length === 0) return;
     for (const goal of response.completedGoals ?? []) {
-      if (this.lessonGoals.includes(goal)) this.completedGoals.add(goal);
+      if (this.lessonGoals.includes(goal) && !this.completedGoals.has(goal)) {
+        this.completedGoals.add(goal);
+        this.consecutiveNudges = 0; // task changed — see MAX_CONSECUTIVE_NUDGES
+      }
     }
     console.log("[progress] completedGoals acumulados:", Array.from(this.completedGoals));
     if (this.completedGoals.size >= this.lessonGoals.length) {
@@ -849,6 +936,7 @@ export class ConversationOrchestrator {
     // was dispatched, synchronously, by every caller before this runs).
     this.idleAccumulatedMs = 0;
     this.nudgeLevelsFired.clear();
+    this.consecutiveNudges = 0;
     await this.runTurn({ detectedLanguage });
   }
 
@@ -878,11 +966,35 @@ export class ConversationOrchestrator {
     console.log("[nudge] disparado", level);
     this.dispatchState({ type: "STOP_LISTENING" }); // idle -> thinking
     console.log("[nudge] enviando com lessonCode:", this.currentLessonCode);
-    await this.runTurn({ nudge: level });
-    if (level === "answer") {
+    await this.runNudgeTurn(level);
+  }
+
+  /**
+   * Runs one prompt turn (idle nudge or "unclear" repeat) under the
+   * MAX_CONSECUTIVE_NUDGES cap: the cap-th one in a row is sent as
+   * "advance" (move on to the next item, no more insisting) instead of
+   * `level`. "answer" and "advance" both close the current question, so
+   * the idle clock and the counter start from zero after either.
+   */
+  private async runNudgeTurn(level: NudgeLevel): Promise<void> {
+    this.consecutiveNudges++;
+    let effective = level;
+    if (this.consecutiveNudges >= MAX_CONSECUTIVE_NUDGES) {
+      console.warn(`[nudge] teto atingido na tarefa ${this.currentTaskId() ?? "(desconhecida)"}, avançando`);
+      effective = "advance";
+    }
+    await this.runTurn({ nudge: effective });
+    if (effective === "answer" || effective === "advance") {
       this.idleAccumulatedMs = 0;
       this.nudgeLevelsFired.clear();
+      this.consecutiveNudges = 0;
     }
+  }
+
+  /** The first lesson goal (task id) not yet completed — the task the
+   * tutor is most likely on. Only used for logs. */
+  private currentTaskId(): string | undefined {
+    return this.lessonGoals.find((g) => !this.completedGoals.has(g));
   }
 
   /** Ticks idleAccumulatedMs while (and only while) the character state is
@@ -1038,7 +1150,9 @@ export class ConversationOrchestrator {
         role: "assistant",
         content: [response.speech.english, response.speech.portuguese].filter((s) => s.trim()).join(" / "),
       });
-      if (opts.nudge) {
+      // "unclear"/"advance" are procedural ("didn't catch that", "let's move
+      // on"), not encouragements the model must avoid repeating.
+      if (opts.nudge && opts.nudge !== "unclear" && opts.nudge !== "advance") {
         const spoken = [response.speech.english, response.speech.portuguese].filter((s) => s.trim()).join(" ");
         if (spoken) this.usedNudgePhrases.push(spoken);
       }

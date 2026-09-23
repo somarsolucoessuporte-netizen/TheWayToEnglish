@@ -155,8 +155,22 @@ function extractExchanges(dialogues: string[][]): { q: string; a: string }[] {
   return exchanges;
 }
 
+/** The lesson's descriptive title. A plan with no `title`/`skill` (Lesson A)
+ * used to fall back to `Lesson ${code}` — which the tutor then announced as
+ * "Book 1, Lesson A — Lesson A". The first table caption is the lesson's
+ * real heading in the source material, so it comes before that last
+ * resort. */
+function lessonTitle(plan: RawLessonPlan): string {
+  return (
+    plan.title ??
+    plan.skill ??
+    plan.referenceContent.tables?.find((t) => t.caption)?.caption ??
+    `Lesson ${plan.code}`
+  );
+}
+
 function toCurriculumLesson(plan: RawLessonPlan): CurriculumLesson {
-  const title = plan.title ?? plan.skill ?? `Lesson ${plan.code}`;
+  const title = lessonTitle(plan);
   const exchanges = extractExchanges(plan.referenceContent.dialogues);
   return {
     id: `book01-unit01-${plan.code.toLowerCase()}`,
@@ -211,7 +225,7 @@ export function getFirstLesson(): CurriculumLesson {
 /** Compact list of every lesson in the course — enough for the tutor to
  * recognize and name a lesson the student references, without teaching it. */
 export function getCourseOverview(): { lessonCode: string; title: string }[] {
-  return ALL_LESSON_PLANS.map((l) => ({ lessonCode: l.code, title: l.title ?? l.skill ?? `Lesson ${l.code}` }));
+  return ALL_LESSON_PLANS.map((l) => ({ lessonCode: l.code, title: lessonTitle(l) }));
 }
 
 /** Every lesson in the course, fully resolved (book/unit/code/title and

@@ -35,6 +35,7 @@ async function check({ chatFails = false, prefetched = false }) {
       on: () => () => {}, // "start" never fires — simulates a TTS call that fails immediately
       speak: async () => { throw new Error('Audio unavailable'); },
       cancel: () => {}, // required by SpeechProvider (no optional chaining at call sites) — reset() calls this unconditionally
+      isSpeaking: () => false,
     },
     stt: {
       on: (event, cb) => { sttListeners[event] = cb; return () => {}; },
