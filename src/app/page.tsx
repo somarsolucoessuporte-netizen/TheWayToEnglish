@@ -20,6 +20,7 @@ import { Avatar } from "@/components/Avatar";
 import { ChatLog } from "@/components/ChatLog";
 import { ErrorToast } from "@/components/ErrorToast";
 import { ForceSendButton } from "@/components/ForceSendButton";
+import { PauseButton } from "@/components/PauseButton";
 import { LessonCompleteCard } from "@/components/LessonCompleteCard";
 import { LessonGrid } from "@/components/LessonGrid";
 import { LessonProgressBar } from "@/components/LessonProgressBar";
@@ -210,6 +211,9 @@ export default function Page() {
   // Bumped every time a Falar click was silently ignored (orchestrator
   // busy) — see ForceSendButton's shakeTrigger prop.
   const [shakeTrigger, setShakeTrigger] = useState(0);
+  /** Mirrors orchestrator.isPaused() (see the Pause button) — freezes the
+   * session timer below and swaps the state label. */
+  const [paused, setPaused] = useState(false);
   // Pulses the Falar button's border for a few seconds right after the
   // "hear it, repeat it" drill's "Now you try." cue (see
   // orchestrator.onAwaitingRepeat) — see ForceSendButton's awaitingRepeat
@@ -262,13 +266,13 @@ export default function Page() {
   const [showTimeUpNotice, setShowTimeUpNotice] = useState(false);
 
   useEffect(() => {
-    if (!started || lessonComplete) return;
+    if (!started || lessonComplete || paused) return; // frozen while paused — resumes where it stopped
     if (characterState !== "idle" && characterState !== "listening") return;
     const id = window.setInterval(() => {
       setRemainingSeconds((prev) => Math.max(0, prev - 1));
     }, 1000);
     return () => window.clearInterval(id);
-  }, [started, lessonComplete, characterState]);
+  }, [started, lessonComplete, characterState, paused]);
 
   useEffect(() => {
     if (!started || lessonComplete || totalSeconds === 0) return;
@@ -548,6 +552,7 @@ export default function Page() {
   useEffect(() => {
     const unsubEntries = orchestrator.onEntriesChange(setEntries);
     const unsubState = orchestrator.onStateChange(setCharacterState);
+    const unsubPaused = orchestrator.onPausedChange(setPaused);
     const unsubError = orchestrator.onError((message) => {
       console.error("[conversation]", message);
       setToastMessage(message);
@@ -569,6 +574,7 @@ export default function Page() {
     return () => {
       unsubEntries();
       unsubState();
+      unsubPaused();
       unsubError();
       unsubApiStatus();
       unsubTranscribing();
@@ -751,8 +757,16 @@ export default function Page() {
   // Avatar sprite stays on "listening" throughout the transcription gap
   // (see orchestrator.onTranscribing) — only the text label changes, so
   // the wait for a batch STT provider's upload doesn't read as a freeze.
-  const stateLabel =
-    transcribing && characterState === "listening" ? branding.copy.stateTranscribing : STATE_LABELS[characterState];
+  const stateLabel = paused
+    ? branding.copy.statePaused
+    : transcribing && characterState === "listening"
+      ? branding.copy.stateTranscribing
+      : STATE_LABELS[characterState];
+
+  function handlePauseToggle() {
+    if (orchestrator.isPaused()) void orchestrator.resume({ repeatInstruction: true });
+    else orchestrator.pause();
+  }
 
   // The Falar button itself — one element, wrapped differently per layout
   // below (mobile: .force-send-btn-dock, fixed to the whole viewport,
@@ -760,8 +774,10 @@ export default function Page() {
   // .stage-falar-dock, absolute inside .stage, since desktop's avatar
   // only occupies the left column and a viewport-centered button would
   // sit visibly off-center from it — see each CSS rule's own comment).
+  // Falar + Pausa side by side, in whichever dock the layout uses below.
   const falarButton = started && (
-    <ForceSendButton
+    <div className="talk-controls">
+      <ForceSendButton
       label={branding.copy.forceSendButton}
       listeningLabel={branding.copy.forceSendWhileListening}
       isListening={characterState === "listening"}
@@ -771,7 +787,9 @@ export default function Page() {
       onLongPress={handleForceReset}
       amplitude={micAmplitude}
       shakeTrigger={shakeTrigger}
-    />
+      />
+      <PauseButton paused={paused} onToggle={handlePauseToggle} />
+    </div>
   );
 
   return (

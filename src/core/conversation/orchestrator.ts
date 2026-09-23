@@ -76,7 +76,7 @@ const MIC_AFTER_SPEECH_MARGIN_MS = 150;
  * persona.ts's ACTIVE TUTOR section. 'answer' is the 40s-total resolution
  * (give the answer, move on), not a 4th "estímulo" — see fireNudge's doc
  * comment for how it resets the cycle for whatever comes next. */
-export type NudgeLevel = "gentle" | "help" | "offer" | "answer" | "unclear" | "advance";
+export type NudgeLevel = "gentle" | "help" | "offer" | "answer" | "unclear" | "advance" | "resume";
 
 /** Most prompt turns the tutor may fire in a row without a valid student
  * answer in between (idle nudges AND "unclear" repeats after a discarded
@@ -254,6 +254,12 @@ export class ConversationOrchestrator {
   private readonly lessonCompleteListeners = new Set<LessonCompleteListener>();
   private readonly amplitudeListeners = new Set<AmplitudeListener>();
   private readonly awaitingRepeatListeners = new Set<AwaitingRepeatListener>();
+  private readonly pausedListeners = new Set<(paused: boolean) => void>();
+  /** Student-controlled pause (see pause()/resume()). While true: no turn,
+   * no nudge, no idle clock, mic closed, session timer frozen (page.tsx).
+   * Nothing here listens to tab focus/blur, so it only ever changes on an
+   * explicit pause()/resume()/reset(). */
+  private paused = false;
 
   constructor(opts: ConversationOrchestratorOptions) {
     this.speech = opts.speech;
@@ -442,6 +448,61 @@ export class ConversationOrchestrator {
    * UI pulses its border for a few seconds afterward so the student
    * notices it's their turn to attempt the word, instead of the cue
    * landing on a button that looks identical to every other idle moment. */
+  onPausedChange(cb: (paused: boolean) => void): () => void {
+    this.pausedListeners.add(cb);
+    return () => this.pausedListeners.delete(cb);
+  }
+
+  isPaused(): boolean {
+    return this.paused;
+  }
+
+  private setPaused(value: boolean): void {
+    this.paused = value;
+    for (const cb of this.pausedListeners) cb(value);
+  }
+
+  /**
+   * The Pause button: a way out of anything — a repeat loop, a long reply,
+   * an open mic. Stops the tutor mid-word (INTERRUPT_FADE_MS fade), aborts
+   * in-flight /api/tts and /api/chat, drops all queued speech, closes the
+   * mic, stops the idle-nudge clock. The avatar goes back to idle. Never
+   * ends the session and never touches progress (history, goals, entries).
+   * page.tsx freezes the session timer off onPausedChange.
+   */
+  pause(): void {
+    if (this.paused) return;
+    console.log("[pause] sessão pausada");
+    this.setPaused(true); // first: nothing below may start a turn/nudge
+    this.interruptTutor(true);
+    this.listeningStartInFlight = false;
+    this.stopIdleClock("pausa");
+  }
+
+  /**
+   * Leaves the pause. The nudge escalation starts over from zero. With
+   * `repeatInstruction` (the Retomar button), the tutor says the current
+   * instruction once more — same task, never restarting the lesson (see
+   * the "resume" nudge in /api/chat). Without it (the student pressed
+   * Falar or typed while paused), she stays quiet: they're already
+   * answering.
+   */
+  async resume(opts: { repeatInstruction?: boolean } = {}): Promise<void> {
+    if (!this.paused) return;
+    console.log("[pause] sessão retomada", opts.repeatInstruction ? "(repetindo a instrução)" : "");
+    this.idleAccumulatedMs = 0;
+    this.nudgeLevelsFired.clear();
+    this.consecutiveNudges = 0;
+    this.setPaused(false);
+    if (opts.repeatInstruction) {
+      this.dispatchState({ type: "RESET" });
+      this.dispatchState({ type: "STOP_LISTENING" }); // idle -> thinking
+      await this.runTurn({ nudge: "resume" });
+    } else if (this.stateMachine.getState() === "idle") {
+      this.startIdleClock(); // RESET to an already-idle state doesn't re-fire the subscribe hook
+    }
+  }
+
   onAwaitingRepeat(cb: AwaitingRepeatListener): () => void {
     this.awaitingRepeatListeners.add(cb);
     return () => this.awaitingRepeatListeners.delete(cb);
@@ -479,6 +540,9 @@ export class ConversationOrchestrator {
       console.log("[state] click ignorado — start() já em andamento");
       return false;
     }
+    // Falar while paused: the student is answering — leave the pause
+    // quietly (no repeated instruction) and open the mic.
+    if (this.paused) await this.resume();
     this.interruptTutor();
     this.listeningStartInFlight = true;
     try {
@@ -495,9 +559,13 @@ export class ConversationOrchestrator {
         console.log(`[STT] aguardando ${Math.round(waitMs)}ms de silêncio da tutora antes de abrir o microfone`);
         await sleep(waitMs);
       }
+      if (this.paused) return false; // paused while waiting — see pause()
       await this.stt.start();
+      if (this.paused) return false;
       this.dispatchState({ type: "START_LISTENING" });
     } catch (err) {
+      // pause() aborts a getUserMedia still in flight — not an error.
+      if (this.paused) return false;
       this.emitError(errorMessage(err));
       this.dispatchState({ type: "ERROR" });
     } finally {
@@ -516,10 +584,10 @@ export class ConversationOrchestrator {
    * resetting the state machine out from under the new recording. A no-op
    * when the tutor is already idle with nothing queued.
    */
-  private interruptTutor(): void {
+  private interruptTutor(force = false): void {
     const state = this.stateMachine.getState();
-    if (!this.busy && state === "idle" && this.speakQueueDepth === 0) return;
-    console.log(`[state] Falar interrompe a tutora — estado=${state} busy=${this.busy} fila=${this.speakQueueDepth}`);
+    if (!force && !this.busy && state === "idle" && this.speakQueueDepth === 0) return;
+    console.log(`[state] tutora interrompida — estado=${state} busy=${this.busy} fila=${this.speakQueueDepth}`);
     this.turnGeneration++;
     this.chatAbort?.abort();
     this.chatAbort = null;
@@ -528,7 +596,7 @@ export class ConversationOrchestrator {
     // "listening" here can only be a recording still uploading/being
     // transcribed (a live one is handled by the caller as force-send) —
     // drop it; the student is starting over.
-    if (state === "listening") {
+    if (state === "listening" || (force && this.listeningStartInFlight)) {
       if (this.stt.abort) this.stt.abort();
       else void this.stt.stop().catch(() => {});
     }
@@ -611,6 +679,7 @@ export class ConversationOrchestrator {
   async sendTextMessage(text: string): Promise<void> {
     const trimmed = text.trim();
     if (!trimmed) return;
+    if (this.paused) await this.resume();
     this.interruptTutor();
     this.dispatchState({ type: "STOP_LISTENING" }); // idle -> thinking
     await this.handleUserMessage(trimmed);
@@ -771,6 +840,7 @@ export class ConversationOrchestrator {
    * previous lesson's chat history and entries into the new session.
    */
   reset(): void {
+    if (this.paused) this.setPaused(false);
     this.turnGeneration++;
     this.chatAbort?.abort();
     this.chatAbort = null;
@@ -961,6 +1031,7 @@ export class ConversationOrchestrator {
    * takes the initiative again for that question.
    */
   private async fireNudge(level: NudgeLevel): Promise<void> {
+    if (this.paused) return;
     if (this.busy) return; // retried on the next 500ms tick since `level` isn't marked fired yet
     this.nudgeLevelsFired.add(level);
     console.log("[nudge] disparado", level);
@@ -1003,6 +1074,7 @@ export class ConversationOrchestrator {
    * interval) keeps this trivially correct: there is never a tick in
    * flight while any non-idle state is active. */
   private startIdleClock(): void {
+    if (this.paused) return; // no nudges while paused — resume() rearms from zero
     this.stopIdleClock();
     const next = NUDGE_THRESHOLDS_MS.find((t) => !this.nudgeLevelsFired.has(t.level));
     if (next) console.log("[nudge] agendado", next.ms);
@@ -1056,6 +1128,10 @@ export class ConversationOrchestrator {
     prefetchedResponse?: TutorResponse;
     prefetchedAudioBlob?: Blob;
   } = {}): Promise<void> {
+    if (this.paused) {
+      console.log("[pause] turno ignorado — sessão pausada");
+      return;
+    }
     const generation = ++this.turnGeneration;
     this.setBusy(true);
     this.stateOrigin = opts.nudge ? "nudge" : "normal";
@@ -1152,7 +1228,7 @@ export class ConversationOrchestrator {
       });
       // "unclear"/"advance" are procedural ("didn't catch that", "let's move
       // on"), not encouragements the model must avoid repeating.
-      if (opts.nudge && opts.nudge !== "unclear" && opts.nudge !== "advance") {
+      if (opts.nudge && opts.nudge !== "unclear" && opts.nudge !== "advance" && opts.nudge !== "resume") {
         const spoken = [response.speech.english, response.speech.portuguese].filter((s) => s.trim()).join(" ");
         if (spoken) this.usedNudgePhrases.push(spoken);
       }

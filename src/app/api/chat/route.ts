@@ -35,7 +35,7 @@ interface ChatRequestBody {
   lessonCode?: string;
   timeWarning?: boolean;
   attemptCount?: number;
-  nudge?: "gentle" | "help" | "offer" | "answer" | "unclear" | "advance";
+  nudge?: "gentle" | "help" | "offer" | "answer" | "unclear" | "advance" | "resume";
   usedNudges?: string[];
 }
 
@@ -73,6 +73,11 @@ const NUDGE_INSTRUCTIONS: Record<NonNullable<ChatRequestBody["nudge"]>, string> 
     "unclear — not failed: no correction, no praise, do not count it toward attemptCount. In speech.english, " +
     "warmly say you'll move on (e.g. \"No problem, let's keep going.\") and give the NEXT item of the current " +
     "task — or, if this was its last item, start the next task.",
+  resume:
+    "The student paused the lesson and has just resumed it. Do NOT restart the lesson, do NOT repeat the " +
+    "greeting or the lesson announcement, and do NOT move on. In speech.english, say briefly \"Let's " +
+    "continue.\" and then repeat, verbatim, your last instruction or question — the one the student still has " +
+    "to answer. No correction, no praise, no completedGoals.",
 };
 
 const MAX_NAME_LEN = 80;
