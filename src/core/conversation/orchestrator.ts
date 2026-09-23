@@ -47,6 +47,22 @@ type AwaitingRepeatListener = () => void;
 const DRILL_SLOW_TIMEOUT_MS = 8000;
 const DRILL_NORMAL_TIMEOUT_MS = 6000;
 
+/** Hard ceiling on how long a single enqueueSpeak() task may occupy the
+ * shared speech queue before it's forced to release it regardless of what
+ * it's doing — see enqueueSpeak/runQueuedSpeak. This is deliberately NOT
+ * 15s: OpenAITTSProvider's own worst case is fetch timeout (15s) THEN
+ * playback-start watchdog (10s) THEN, only once both of those have
+ * genuinely failed, the speechSynthesis fallback's own watchdog (8s) —
+ * 33s stacked. Anything shorter than that risks THIS watchdog firing
+ * while a legitimate primary-then-fallback recovery is still correctly
+ * in progress, which would let the NEXT queued turn start speaking over
+ * it — the exact "duplicada" failure mode enqueueSpeak exists to
+ * prevent in the first place. This is purely a last-resort net for a
+ * task that never settles at all (all of OpenAITTSProvider's own
+ * watchdogs already guarantee settlement well inside this window in
+ * every case they're designed for) — see runQueuedSpeak's doc comment. */
+const SPEAK_QUEUE_WATCHDOG_MS = 34000;
+
 /** Escalating idle-silence reactions — see the idle clock fields below and
  * persona.ts's ACTIVE TUTOR section. 'answer' is the 40s-total resolution
  * (give the answer, move on), not a 4th "estímulo" — see fireNudge's doc
@@ -179,6 +195,13 @@ export class ConversationOrchestrator {
   /** Every speech.speak()/speakBlob() call is chained through here instead
    * of firing directly — see enqueueSpeak's doc comment. */
   private speechQueue: Promise<void> = Promise.resolve();
+  /** Numbers every enqueueSpeak() call for the "[TTS] turno N | ..." logs
+   * — a per-session sequence, not a per-lesson-turn count (a single
+   * conversational turn can enqueue 2+ of these: English, then
+   * Portuguese) — that's deliberate: it's what lets the logs show
+   * exactly which call in the queue stalled, not just which AI turn it
+   * came from. */
+  private speakCallCounter = 0;
 
   private readonly entryListeners = new Set<EntriesListener>();
   private readonly errorListeners = new Set<ErrorListener>();
@@ -1067,7 +1090,7 @@ export class ConversationOrchestrator {
       for (const part of nonEmpty) {
         const spokenText = normalizeForSpeech(part.text);
         console.log(`[TTS] tentando falar: "${spokenText}"`);
-        await this.enqueueSpeak(() => this.speech.speak(spokenText, { lang: part.lang }));
+        await this.enqueueSpeak(() => this.speech.speak(spokenText, { lang: part.lang }), spokenText);
         console.log("[TTS] concluído");
       }
       if (opts.after) await opts.after();
@@ -1110,14 +1133,71 @@ export class ConversationOrchestrator {
    * the second call simply waits for the first's real 'end'/'error'
    * instead of cutting it off, so every tutor message that's ever shown
    * has actually been given a real, uninterrupted chance to play.
+   *
+   * A REJECTED task was already safe before this — `this.speechQueue`'s
+   * own continuation below has always swallowed it
+   * (`.then(() => undefined, () => undefined)`), so one failed turn's
+   * speech was never enough by itself to jam every later one. The gap was
+   * a task that never SETTLES AT ALL: `this.speechQueue` only advances
+   * once `run` (task()'s own promise) actually settles one way or the
+   * other, so a genuine hang inside `task()` — anywhere OpenAITTSProvider
+   * doesn't already have its own watchdog covering it — left `run`
+   * (and everything chained after it, forever) waiting. `label` is
+   * whatever text this call is about, purely for the requested
+   * "[TTS] turno N | enfileirado" log — enqueueSpeak's own caller always
+   * knows it; this method has no other way to see inside the closure.
    */
-  private enqueueSpeak(task: () => Promise<void>): Promise<void> {
-    const run = this.speechQueue.then(task, task);
-    this.speechQueue = run.then(
+  private enqueueSpeak(task: () => Promise<void>, label: string): Promise<void> {
+    const callNumber = ++this.speakCallCounter;
+    console.log(`[TTS] turno ${callNumber} | enfileirado:`, JSON.stringify(label));
+    const bounded = this.speechQueue.then(() => this.runQueuedSpeak(task, callNumber));
+    this.speechQueue = bounded.then(
       () => undefined,
       () => undefined
     );
-    return run;
+    return bounded;
+  }
+
+  /**
+   * Runs one enqueueSpeak() task under a hard ceiling (see
+   * SPEAK_QUEUE_WATCHDOG_MS's own doc comment for why it's sized the way
+   * it is) so the shared queue can never stall forever behind a call that
+   * neither resolves nor rejects — every one of OpenAITTSProvider's own
+   * internal timeouts should already prevent that for anything it's
+   * designed to handle, but this is the backstop for whatever isn't. On a
+   * genuine timeout this RESOLVES (not rejects) — the queue must move on
+   * regardless, exactly as if that one turn's speech had simply failed
+   * and been logged, which is what a real (non-hung) failure already does
+   * via the reject path below.
+   */
+  private runQueuedSpeak(task: () => Promise<void>, callNumber: number): Promise<void> {
+    return new Promise<void>((resolve, reject) => {
+      let settled = false;
+      const timer = setTimeout(() => {
+        if (settled) return;
+        settled = true;
+        console.error(
+          `[TTS] turno ${callNumber} | watchdog: não concluiu em ${SPEAK_QUEUE_WATCHDOG_MS}ms — liberando a fila à força`
+        );
+        resolve();
+      }, SPEAK_QUEUE_WATCHDOG_MS);
+      task().then(
+        () => {
+          if (settled) return;
+          settled = true;
+          clearTimeout(timer);
+          console.log(`[TTS] turno ${callNumber} | play resolvido`);
+          resolve();
+        },
+        (err) => {
+          if (settled) return;
+          settled = true;
+          clearTimeout(timer);
+          console.error(`[TTS] turno ${callNumber} | play rejeitado:`, err);
+          reject(err);
+        }
+      );
+    });
   }
 
   /**
@@ -1261,7 +1341,7 @@ export class ConversationOrchestrator {
       // here in the enqueueSpeak change and lost `this`).
       if (prefetchedAudioBlob && this.speech.speakBlob) {
         try {
-          await this.enqueueSpeak(() => this.speech.speakBlob!(prefetchedAudioBlob));
+          await this.enqueueSpeak(() => this.speech.speakBlob!(prefetchedAudioBlob), "(blob pré-carregado)");
         } catch (err) {
           // The prefetched blob can fail for reasons unrelated to the normal
           // TTS path (a stale/corrupt blob, a revoked URL) — falling back to
@@ -1271,7 +1351,7 @@ export class ConversationOrchestrator {
           console.warn("[TTS] blob pré-carregado falhou, tentando TTS normal:", err);
           const fallbackText = normalizeForSpeech(part.text);
           console.log(`[TTS] tentando falar: "${fallbackText}"`);
-          await this.enqueueSpeak(() => this.speech.speak(fallbackText, { lang: part.lang }));
+          await this.enqueueSpeak(() => this.speech.speak(fallbackText, { lang: part.lang }), fallbackText);
           console.log("[TTS] concluído");
         }
       } else {
@@ -1287,7 +1367,7 @@ export class ConversationOrchestrator {
         // directly from the log rather than needing to re-derive it.
         const spokenText = normalizeForSpeech(part.text);
         console.log(`[TTS] tentando falar: "${spokenText}"`);
-        await this.enqueueSpeak(() => this.speech.speak(spokenText, { lang: part.lang }));
+        await this.enqueueSpeak(() => this.speech.speak(spokenText, { lang: part.lang }), spokenText);
         console.log("[TTS] concluído");
       }
     } catch (err) {
