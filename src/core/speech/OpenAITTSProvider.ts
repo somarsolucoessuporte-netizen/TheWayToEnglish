@@ -29,6 +29,12 @@ const PLAYBACK_START_TIMEOUT_MS = 10000;
  * production report. */
 const FALLBACK_SPEECH_TIMEOUT_MS = 8000;
 
+/** Upper bound on how long playBlob waits for the previous play() on the
+ * shared element to settle before swapping .src — see waitForPendingPlay.
+ * In practice pause() settles it within a tick; this only exists so a
+ * browser that never settles it can't wedge speech. */
+const PENDING_PLAY_SETTLE_MAX_MS = 1000;
+
 /** Tiny silent MP3 played (and immediately paused) on the shared element
  * inside a real user gesture — see unlockAudioElement. */
 const SILENT_MP3 =
@@ -74,6 +80,16 @@ export class OpenAITTSProvider implements SpeechProvider {
    * instead of letting it finish and play over whatever came next. */
   private fetchController: AbortController | null = null;
   private fadeTimer: ReturnType<typeof setInterval> | null = null;
+  /** The most recent play() on the shared element, mapped to always
+   * resolve (never reject) — and true until it has. Assigning .src while a
+   * play() is still pending is precisely what makes the browser reject it
+   * with AbortError, so playBlob never touches .src before this settles. */
+  private lastPlay: Promise<void> = Promise.resolve();
+  private playPending = false;
+  /** True while playBlob is between "stopped the previous clip" and
+   * "started the new one" — unlockAudioElement must not slip a silent
+   * clip onto the element in that window. */
+  private preparingPlayback = false;
   private readonly listeners: Record<SpeechEvent, Set<Listener>> = {
     start: new Set(),
     end: new Set(),
@@ -111,13 +127,53 @@ export class OpenAITTSProvider implements SpeechProvider {
    * one per call. Public so a caller with its own gesture handler can
    * call it directly too. */
   unlockAudioElement(): void {
-    if (this.speaking || this.pendingResolve) return; // never clobber real speech
+    // Never clobber real speech, a clip about to start, or an unlock
+    // that's still in flight (a double tap) — the latter would itself be a
+    // .src swap over a pending play().
+    if (this.speaking || this.pendingResolve || this.preparingPlayback || this.playPending) return;
     const el = this.getAudioEl();
     el.src = SILENT_MP3;
-    void el.play().then(
-      () => el.pause(),
-      () => {}
+    // The pause() lives INSIDE the tracked promise (see trackPlay), and
+    // only if the element still holds the silent clip: an unlock's pause
+    // must never land on a real clip that started after it.
+    this.trackPlay(el.play(), () => {
+      if (el.src === SILENT_MP3) el.pause();
+    }).catch(() => {});
+  }
+
+  /** Records `play` as the element's pending play() (see lastPlay) and
+   * returns it unchanged for the caller to handle. `onResolved` runs
+   * BEFORE lastPlay settles, so anything waiting on lastPlay also waits
+   * for it. */
+  private trackPlay(play: Promise<void>, onResolved?: () => void): Promise<void> {
+    this.playPending = true;
+    this.lastPlay = play.then(
+      () => {
+        onResolved?.();
+        this.playPending = false;
+      },
+      () => {
+        this.playPending = false;
+      }
     );
+    return play;
+  }
+
+  /** Waits (bounded) for the shared element's last play() to settle — see
+   * lastPlay. The caller has already paused the element, which per the
+   * HTML spec rejects a pending play() promptly; the bound is only for a
+   * browser that doesn't. */
+  private async waitForPendingPlay(): Promise<void> {
+    if (!this.playPending) return;
+    let timer: ReturnType<typeof setTimeout> | undefined;
+    const timedOut = await Promise.race([
+      this.lastPlay.then(() => false),
+      new Promise<boolean>((r) => {
+        timer = setTimeout(() => r(true), PENDING_PLAY_SETTLE_MAX_MS);
+      }),
+    ]);
+    clearTimeout(timer);
+    if (timedOut) console.warn("[TTS] play() anterior não assentou a tempo — seguindo mesmo assim");
   }
 
   async speak(text: string, opts: SpeechOptions = {}): Promise<void> {
@@ -283,7 +339,15 @@ export class OpenAITTSProvider implements SpeechProvider {
    * and a (non-retried) play() rejection reject — there is no exit that
    * leaves it pending. */
   private async playBlob(blob: Blob): Promise<void> {
-    this.stopPlayback();
+    const generation = this.cancelGeneration;
+    this.stopPlayback(); // pause() first…
+    this.preparingPlayback = true;
+    try {
+      await this.waitForPendingPlay(); // …then let the old play() settle before touching .src
+    } finally {
+      this.preparingPlayback = false;
+    }
+    if (generation !== this.cancelGeneration) return; // cancelled while waiting
     const url = URL.createObjectURL(blob);
     const audio = this.getAudioEl();
     audio.volume = 1;
@@ -359,11 +423,13 @@ export class OpenAITTSProvider implements SpeechProvider {
 
       // A rejected play() REJECTS this promise (never resolves it as if
       // playback had worked — see a1f77b5) so speakAtSpeed's fallback runs.
-      // One exception: AbortError means "a load interrupted this play()",
-      // not "you're not allowed to play" — retry once on the same src
-      // before treating it as a real failure.
+      // AbortError ("a load/pause interrupted this play()") shouldn't
+      // happen any more — waitForPendingPlay removed its cause — but if a
+      // stray one does, retry once on the same src before treating it as a
+      // real failure. Success is still only ever "playing" firing (the
+      // start watchdog stays armed), never the play() promise alone.
       const tryPlay = (attempt: number) => {
-        audio.play().catch((err: unknown) => {
+        this.trackPlay(audio.play()).catch((err: unknown) => {
           if (settled) return;
           const name = (err as Error)?.name;
           if (name === "AbortError" && attempt === 0 && audio.src === url) {
