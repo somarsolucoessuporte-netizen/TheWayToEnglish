@@ -6,6 +6,7 @@ import { TUTOR_SYSTEM_PROMPT } from "@/app-config/persona";
 import { getCourseOverview, getFirstLesson, getGlobalPrinciples, getLessonByCode, taskId, type CurriculumLesson } from "@/app-config/curriculum";
 import type { AIOptions, Message } from "@/core/ai/AIProvider";
 import { introductionReply } from "@/core/conversation/introductionReply";
+import { splitOutPortuguese } from "@/core/speech/portugueseGuard";
 
 // The provider swap lives here, not in app-config/providers.ts: both
 // providers hold an API key server-side (GROQ_API_KEY / OPENAI_API_KEY),
@@ -48,11 +49,18 @@ const NUDGE_INSTRUCTIONS: Record<NonNullable<ChatRequestBody["nudge"]>, string> 
     "The student has been silent for about 6 seconds. Do NOT ask a generic question or give vague " +
     "encouragement — look at your own last message in the conversation and REPEAT that exact instruction " +
     "in English, so the student knows precisely what to do (e.g. \"Let's try again. Repeat after me: READING.\").",
-  help: "The student has been silent for about 14 seconds. Reformulate your last question in Portuguese and give a concrete example to help them get started.",
+  help:
+    "The student has been silent for about 14 seconds. In speech.english, re-ask your last question in simpler " +
+    "English with a concrete example. Put a Portuguese reformulation in speech.portuguese (shown on screen, " +
+    "never spoken) — never Portuguese inside speech.english.",
   offer:
-    "The student has been silent for about 25 seconds. Offer, in Portuguese, to give them the answer directly so you can practice the pronunciation together.",
+    "The student has been silent for about 25 seconds. In speech.english, offer (in English) to give them the " +
+    "answer so you can practice it together. You may add the same offer in Portuguese in speech.portuguese " +
+    "(shown on screen, never spoken) — never Portuguese inside speech.english.",
   answer:
-    "The student has been silent for about 40 seconds total now. Stop waiting: give them the answer directly (English, then a Portuguese cue), and ask them to repeat it after you.",
+    "The student has been silent for about 40 seconds total now. Stop waiting: in speech.english, give them " +
+    "the answer directly and ask them to repeat it after you. Any Portuguese cue goes in speech.portuguese " +
+    "(shown on screen, never spoken).",
 };
 
 const MAX_NAME_LEN = 80;
@@ -173,6 +181,35 @@ function normalizeForComparison(text: string): string {
  * declared a checkable "enum" expectedAnswer — a "free" or missing one
  * has nothing fixed to check against.
  */
+/**
+ * Server-side guard for the school's "Portuguese is written, never spoken"
+ * rule (see core/speech/portugueseGuard.ts and persona.ts's LANGUAGE
+ * STRATEGY): speech.english is what the TTS reads aloud, so any Portuguese
+ * sentence the model put there is moved into speech.portuguese (still
+ * shown on screen, never spoken). Returns the response unchanged when
+ * speech.english was clean. `emptied` is true when speech.english had
+ * content and NOTHING English survived — the caller regenerates then.
+ */
+function movePortugueseOutOfEnglish(response: TutorResponse): { response: TutorResponse; moved: string[]; emptied: boolean } {
+  const original = response.speech.english;
+  const { english, portuguese: moved } = splitOutPortuguese(original);
+  if (moved.length === 0) return { response, moved, emptied: false };
+  console.warn(`[TTS] PT detectado em speech.english: ${JSON.stringify(original)} — removido: ${JSON.stringify(moved)}`);
+  const existingPt = response.speech.portuguese.trim();
+  const movedText = moved.filter((m) => !existingPt.includes(m)).join(" ");
+  return {
+    response: {
+      ...response,
+      speech: {
+        english,
+        portuguese: [movedText, existingPt].filter(Boolean).join(" "),
+      },
+    },
+    moved,
+    emptied: original.trim().length > 0 && english.trim().length === 0,
+  };
+}
+
 function findLeakedAnswer(response: TutorResponse): string | null {
   const expected = response.expectedAnswer;
   if (!expected || expected.type !== "enum" || !expected.values?.length) return null;
@@ -343,6 +380,32 @@ export async function POST(req: NextRequest) {
         console.error('[chat] segunda tentativa ainda vazou a resposta — usando mesmo assim (sem 3a tentativa)');
       }
       response = retryResponse;
+    }
+
+    // Portuguese inside speech.english (the field the TTS reads aloud) —
+    // see movePortugueseOutOfEnglish. If stripping it leaves no English at
+    // all, one regeneration with the rule spelled out; never more.
+    const guarded = movePortugueseOutOfEnglish(response);
+    response = guarded.response;
+    if (guarded.emptied) {
+      console.error("[chat] speech.english ficou vazio após remover o português — regenerando o turno");
+      const reinforcedMessages: Message[] = [
+        ...messages,
+        {
+          role: "system",
+          content:
+            `Your previous reply put Portuguese inside speech.english: ${JSON.stringify(guarded.moved.join(" "))}. ` +
+            `speech.english is read aloud and must be EXCLUSIVELY English — no Portuguese words at all, not even ` +
+            `quoted. Regenerate this turn: speech.english in English only (e.g. "The correct way is: A. Now you ` +
+            `try: A."), and put any Portuguese explanation in speech.portuguese.`,
+        },
+      ];
+      const retry = movePortugueseOutOfEnglish(TutorResponseSchema.parse(await provider.send(reinforcedMessages, sendOptions)));
+      if (retry.emptied) {
+        console.error("[chat] segunda tentativa ainda sem inglês em speech.english — mantendo só o texto em português (sem 3a tentativa)");
+      } else {
+        response = retry.response;
+      }
     }
 
     return NextResponse.json(response);

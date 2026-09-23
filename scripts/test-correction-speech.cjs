@@ -76,7 +76,7 @@ async function testCorrectionSpeaksOnlyEnglishNormalized() {
   orchestrator.reset();
 }
 
-async function testNormalTurnStillSpeaksBothLanguages() {
+async function testNormalTurnSpeaksOnlyEnglish() {
   const spoken = [];
   const orchestrator = new ConversationOrchestrator({
     systemPrompt: '',
@@ -94,14 +94,13 @@ async function testNormalTurnStillSpeaksBothLanguages() {
 
   assert.deepEqual(spoken, [
     { text: 'Where are you from?', lang: 'en-US' },
-    { text: 'De onde você é?', lang: 'pt-BR' },
-  ], 'a non-correction turn must still speak both languages, unaffected by this change');
+  ], 'school rule: Portuguese is written, never spoken — on non-correction turns too');
 
   orchestrator.reset();
 }
 
 (async () => {
   await testCorrectionSpeaksOnlyEnglishNormalized();
-  await testNormalTurnStillSpeaksBothLanguages();
-  console.log('PASS: correction turns speak only normalized English (Portuguese stays visual-only); other turns unaffected');
+  await testNormalTurnSpeaksOnlyEnglish();
+  console.log('PASS: correction turns speak only normalized English; no turn ever speaks Portuguese');
 })().catch((error) => { console.error(error); process.exitCode = 1; });

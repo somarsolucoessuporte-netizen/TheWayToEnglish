@@ -4,6 +4,7 @@ import type { AIProvider, Message } from "../ai/AIProvider";
 import type { TutorResponse } from "../ai/TutorResponse";
 import type { AvatarEngine } from "../avatar-engine/AvatarEngine";
 import { playCorrectSound } from "../audio/playCorrectSound";
+import { splitOutPortuguese } from "../speech/portugueseGuard";
 import { CharacterStateMachine, type CharacterState } from "../character-state-machine/stateMachine";
 
 export interface ConversationOrchestratorOptions {
@@ -612,13 +613,8 @@ export class ConversationOrchestrator {
       praise: true,
     };
     this.pushEntry({ role: "tutor", response });
-    await this.forceAnnounce(
-      [
-        { text: response.speech.english, lang: "en-US" },
-        { text: response.speech.portuguese, lang: "pt-BR" },
-      ],
-      { praiseFirst: true }
-    );
+    // Portuguese closing is shown, never spoken — see runTurn's partsToSpeak.
+    await this.forceAnnounce([{ text: response.speech.english, lang: "en-US" }], { praiseFirst: true });
   }
 
   /**
@@ -1025,24 +1021,16 @@ export class ConversationOrchestrator {
         if (this.isStale(generation)) return;
       }
 
-      // English always plays first, Portuguese second — EXCEPT for a
-      // correction, where Portuguese is never spoken at all, only shown
-      // (see the ✗/✓ card in ChatLog.tsx): a correction turn is longer,
-      // mixes English and Portuguese, and often carries an ALL-CAPS
-      // vocabulary word (see normalizeForSpeech) — the exact profile of
-      // the "aparece na tela mas não é falada" production report. Debbie
-      // only ever needs to be HEARD explaining in English (the "hear it,
-      // repeat it" drill below re-says the corrected word slowly on its
-      // own); the Portuguese explanation is there for the student to
-      // READ, matching persona.ts's own framing of it as a written aid,
-      // not a spoken one. Every other turn (including a correction's own
-      // ATTEMPT-BASED ESCALATION explanations) keeps speaking both parts,
-      // English first — see persona.ts's OUTPUT FORMAT for why the order
-      // itself still matters when Portuguese IS spoken.
+      // Only English is ever spoken — the school's rule is that Portuguese
+      // is WRITTEN help, never spoken (see persona.ts's LANGUAGE STRATEGY):
+      // speech.portuguese is shown on screen (see ChatLog) and never sent to
+      // the TTS, on any kind of turn. /api/chat already moves any
+      // Portuguese the model slipped into speech.english over to
+      // speech.portuguese; englishOnlyForSpeech re-checks right before the
+      // TTS call as a last line of defense.
       const englishPart = { text: response.speech.english, lang: "en-US" };
-      const portuguesePart = { text: response.speech.portuguese, lang: "pt-BR" };
       const correction = response.correction;
-      const partsToSpeak = correction ? [englishPart] : [englishPart, portuguesePart];
+      const partsToSpeak = [englishPart];
       console.log("[turn] chamando speak()", correction ? "(correção — só inglês)" : "");
       // DIAGNOSTIC LOGGING (temporary — investigating the "sessão trava,
       // busy nunca volta a false" report): `busy` itself is always true at
@@ -1200,7 +1188,8 @@ export class ConversationOrchestrator {
     try {
       for (const part of nonEmpty) {
         if (this.isStale(generation)) return;
-        const spokenText = normalizeForSpeech(part.text);
+        const spokenText = normalizeForSpeech(this.englishOnlyForSpeech(part.text));
+        if (!spokenText.trim()) continue;
         console.log(`[TTS] tentando falar: "${spokenText}"`);
         await this.enqueueSpeak(() => this.speech.speak(spokenText, { lang: part.lang }), spokenText, generation);
         console.log("[TTS] concluído");
@@ -1501,7 +1490,7 @@ export class ConversationOrchestrator {
           // ever taking the whole session to the ERROR state.
           console.warn("[TTS] blob pré-carregado falhou, tentando TTS normal:", err);
           if (this.isStale(generation)) return;
-          const fallbackText = normalizeForSpeech(part.text);
+          const fallbackText = normalizeForSpeech(this.englishOnlyForSpeech(part.text));
           console.log(`[TTS] tentando falar: "${fallbackText}"`);
           await this.enqueueSpeak(() => this.speech.speak(fallbackText, { lang: part.lang }), fallbackText, generation);
           console.log("[TTS] concluído");
@@ -1517,10 +1506,12 @@ export class ConversationOrchestrator {
         // normalizeForSpeech (see its own doc comment), not `part.text`
         // itself, so this also confirms/denies the CAPS-word hypothesis
         // directly from the log rather than needing to re-derive it.
-        const spokenText = normalizeForSpeech(part.text);
-        console.log(`[TTS] tentando falar: "${spokenText}"`);
-        await this.enqueueSpeak(() => this.speech.speak(spokenText, { lang: part.lang }), spokenText, generation);
-        console.log("[TTS] concluído");
+        const spokenText = normalizeForSpeech(this.englishOnlyForSpeech(part.text));
+        if (spokenText.trim()) {
+          console.log(`[TTS] tentando falar: "${spokenText}"`);
+          await this.enqueueSpeak(() => this.speech.speak(spokenText, { lang: part.lang }), spokenText, generation);
+          console.log("[TTS] concluído");
+        }
       }
     } catch (err) {
       // Belt-and-suspenders on top of OpenAITTSProvider's own fetch
@@ -1649,6 +1640,18 @@ export class ConversationOrchestrator {
     } finally {
       console.log("[speakParts] concluído, busy →", this.busy);
     }
+  }
+
+  /** Last line of defense for "Portuguese is never spoken" (see
+   * portugueseGuard): drops any Portuguese sentence from text about to go
+   * to the TTS. /api/chat should already have moved them out — this only
+   * matters for a path that bypassed it — so it logs when it fires. */
+  private englishOnlyForSpeech(text: string): string {
+    const { english, portuguese } = splitOutPortuguese(text);
+    if (portuguese.length) {
+      console.warn(`[TTS] PT detectado em speech.english: ${JSON.stringify(text)} — não será falado: ${JSON.stringify(portuguese)}`);
+    }
+    return english;
   }
 
   private pushEntry(entry: ChatEntry): void {
