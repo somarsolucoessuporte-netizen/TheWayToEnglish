@@ -170,6 +170,14 @@ export class ConversationOrchestrator {
   private lessonGoals: string[] = [];
   private readonly completedGoals = new Set<string>();
   private lessonCompleteFired = false;
+  /** Session lifecycle — separate from the character state machine, which
+   * is untouched. "finished" is TERMINAL for the lesson: once every task is
+   * done (or the closing announcement starts, e.g. time ran out), no turn,
+   * no nudge and no mic may start again. Without this, nudges and turns
+   * kept firing after the last task and the model — seeing every task
+   * done — started the lesson over from task 1. Only reset()/startLesson()
+   * return to "active". See finishSession(). */
+  private sessionState: "active" | "finished" = "active";
 
   /** Guards startLesson() against being kicked off twice for the same
    * session — see startLesson's doc comment. There is only one call site
@@ -536,6 +544,10 @@ export class ConversationOrchestrator {
    * double tap.
    */
   async startListening(): Promise<boolean> {
+    if (this.sessionState === "finished") {
+      console.log("[sessão] microfone não abre — lição encerrada");
+      return false;
+    }
     if (this.listeningStartInFlight) {
       console.log("[state] click ignorado — start() já em andamento");
       return false;
@@ -679,6 +691,10 @@ export class ConversationOrchestrator {
   async sendTextMessage(text: string): Promise<void> {
     const trimmed = text.trim();
     if (!trimmed) return;
+    if (this.sessionState === "finished") {
+      console.log("[sessão] mensagem ignorada — lição encerrada");
+      return;
+    }
     if (this.paused) await this.resume();
     this.interruptTutor();
     this.dispatchState({ type: "STOP_LISTENING" }); // idle -> thinking
@@ -729,6 +745,7 @@ export class ConversationOrchestrator {
       this.stt.setLessonVocabulary?.(opts.vocabulary ?? []);
       this.completedGoals.clear();
       this.lessonCompleteFired = false;
+      this.sessionState = "active";
       this.idleAccumulatedMs = 0;
       this.nudgeLevelsFired.clear();
       this.dispatchState({ type: "STOP_LISTENING" }); // idle -> thinking
@@ -778,6 +795,7 @@ export class ConversationOrchestrator {
    * generic "all done for today" closing line instead of naming one.
    */
   async announceLessonComplete(nextLesson?: { lessonCode: string; title: string }): Promise<void> {
+    this.finishSession("anúncio de encerramento");
     const name = this.studentName;
     const code = this.currentLessonCode;
     const closingEn = nextLesson
@@ -859,6 +877,7 @@ export class ConversationOrchestrator {
     this.stt.setLessonVocabulary?.([]);
     this.completedGoals.clear();
     this.lessonCompleteFired = false;
+    this.sessionState = "active";
     this.idleAccumulatedMs = 0;
     this.nudgeLevelsFired.clear();
     this.usedNudgePhrases.length = 0;
@@ -993,7 +1012,26 @@ export class ConversationOrchestrator {
     console.log("[progress] completedGoals acumulados:", Array.from(this.completedGoals));
     if (this.completedGoals.size >= this.lessonGoals.length) {
       this.lessonCompleteFired = true;
+      this.finishSession("todas as tarefas concluídas");
       for (const cb of this.lessonCompleteListeners) cb();
+    }
+  }
+
+  /**
+   * Enters the terminal "finished" state (see sessionState): stops the
+   * idle-nudge clock and closes the mic if it's open. Deliberately does NOT
+   * cancel speech or touch the character state — the turn that completed
+   * the last task finishes its reply, and the closing announcement
+   * (announceLessonComplete -> forceAnnounce, never runTurn) still plays.
+   */
+  private finishSession(reason: string): void {
+    if (this.sessionState === "finished") return;
+    this.sessionState = "finished";
+    console.log(`[sessão] lição encerrada (${reason}) — nenhum turno, nudge ou microfone a partir daqui`);
+    this.stopIdleClock("lição encerrada");
+    if (this.stateMachine.getState() === "listening" || this.listeningStartInFlight) {
+      if (this.stt.abort) this.stt.abort();
+      else void this.stt.stop().catch(() => {});
     }
   }
 
@@ -1031,6 +1069,7 @@ export class ConversationOrchestrator {
    * takes the initiative again for that question.
    */
   private async fireNudge(level: NudgeLevel): Promise<void> {
+    if (this.sessionState !== "active") return;
     if (this.paused) return;
     if (this.busy) return; // retried on the next 500ms tick since `level` isn't marked fired yet
     this.nudgeLevelsFired.add(level);
@@ -1074,6 +1113,7 @@ export class ConversationOrchestrator {
    * interval) keeps this trivially correct: there is never a tick in
    * flight while any non-idle state is active. */
   private startIdleClock(): void {
+    if (this.sessionState !== "active") return; // no nudge is ever scheduled after the lesson ends
     if (this.paused) return; // no nudges while paused — resume() rearms from zero
     this.stopIdleClock();
     const next = NUDGE_THRESHOLDS_MS.find((t) => !this.nudgeLevelsFired.has(t.level));
@@ -1128,6 +1168,10 @@ export class ConversationOrchestrator {
     prefetchedResponse?: TutorResponse;
     prefetchedAudioBlob?: Blob;
   } = {}): Promise<void> {
+    if (this.sessionState === "finished") {
+      console.log("[sessão] turno ignorado — lição encerrada");
+      return;
+    }
     if (this.paused) {
       console.log("[pause] turno ignorado — sessão pausada");
       return;
