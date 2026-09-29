@@ -53,13 +53,17 @@ function setup(reply) {
 }
 
 async function lastTaskEndsTheLesson() {
-  const { orchestrator, sends, spoken, stt } = setup(() => ({
-    speech: { english: 'Great job! We finished all the tasks.', portuguese: '' },
-    completedGoals: ['task-1'],
-  }));
+  // A task only completes after a real student answer in it (see
+  // test-premature-goal.cjs): kickoff, one answer, then the completing reply.
+  const replies = [
+    { speech: { english: 'Hi! Repeat after me: SPEAKING.', portuguese: '' } },
+    { speech: { english: 'Great job! We finished all the tasks.', portuguese: '' }, completedGoals: ['task-1'] },
+  ];
+  const { orchestrator, sends, spoken, stt } = setup(() => replies.shift());
   await orchestrator.startLesson({ studentName: 'Ana', currentLessonCode: 'A', canDoGoals: ['task-1'] });
+  await orchestrator.sendTextMessage('speaking');
   await tick(2500); // the closing announcement plays after its ~1.5s praise pose
-  assert.deepEqual(sends, ['turn'], 'only the turn that completed the last task');
+  assert.deepEqual(sends, ['turn', 'turn'], 'only the kickoff and the turn that completed the last task');
   assert.ok(spoken.some((t) => /Congratulations/.test(t)), 'the closing announcement still plays');
 
   // Nothing may start again: turns, nudges, mic, typed messages.
@@ -69,16 +73,17 @@ async function lastTaskEndsTheLesson() {
   await orchestrator.fireNudge('gentle');
   const micOpened = await orchestrator.startListening();
   await orchestrator.sendTextMessage('hello again');
-  assert.deepEqual(sends, ['turn'], 'no runTurn and no nudge after the lesson is finished');
+  assert.deepEqual(sends, ['turn', 'turn'], 'no runTurn and no nudge after the lesson is finished');
   assert.equal(orchestrator.idleTickHandle, null, 'no nudge clock scheduled');
   assert.equal(micOpened, false);
   assert.equal(stt.starts, 0, 'the mic never opens after the lesson is finished');
-  assert.equal(orchestrator.entries.filter((e) => e.role === 'user').length, 0);
+  assert.equal(orchestrator.entries.filter((e) => e.role === 'user').length, 1, 'only the real answer — the post-end message is dropped');
 
   // A new lesson starts fresh.
   orchestrator.reset();
+  replies.push({ speech: { english: 'Hi! Repeat after me: A.', portuguese: '' } });
   await orchestrator.startLesson({ studentName: 'Ana', currentLessonCode: 'B', canDoGoals: ['task-1', 'task-2'] });
-  assert.deepEqual(sends, ['turn', 'turn'], 'reset + startLesson makes the session active again');
+  assert.deepEqual(sends, ['turn', 'turn', 'turn'], 'reset + startLesson makes the session active again');
   orchestrator.reset();
 }
 

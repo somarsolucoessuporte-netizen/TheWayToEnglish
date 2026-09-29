@@ -14,11 +14,6 @@ conteúdo/fluxo das lições (2026-09-28).
 - [ ] A persona vai 2x por turno: o cliente manda como mensagem `system`
   (`orchestrator.ts` runTurn) e o servidor descarta (`route.ts`).
 - [ ] O histórico da conversa cresce sem limite, sem corte nem resumo.
-- [ ] O modelo marca como concluída (`completedGoals`) a tarefa que acabou de
-  **começar**, na mesma resposta. Visto em produção em 2026-09-28, lição B:
-  depois de receber "task-1 concluída, atual task-2", ele respondeu
-  iniciando a task-2 com `completedGoals: ["task-2"]`. Isso pode encerrar a
-  lição antes da hora.
 
 ## Conteúdo / compilação
 

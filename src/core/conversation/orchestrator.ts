@@ -170,6 +170,11 @@ export class ConversationOrchestrator {
   private lessonGoals: string[] = [];
   private readonly completedGoals = new Set<string>();
   private lessonCompleteFired = false;
+  /** Real student answers (handleUserMessage — never nudges or discarded
+   * transcripts) since the current task became current. A task can only be
+   * accepted as done once this is > 0: the model used to report a task in
+   * the same reply that STARTED it, ending lessons with most tasks undone. */
+  private answersInCurrentTask = 0;
   /** Session lifecycle — separate from the character state machine, which
    * is untouched. "finished" is TERMINAL for the lesson: once every task is
    * done (or the closing announcement starts, e.g. time ran out), no turn,
@@ -744,6 +749,7 @@ export class ConversationOrchestrator {
       this.lessonGoals = opts.canDoGoals ?? [];
       this.stt.setLessonVocabulary?.(opts.vocabulary ?? []);
       this.completedGoals.clear();
+      this.answersInCurrentTask = 0;
       this.lessonCompleteFired = false;
       this.sessionState = "active";
       this.idleAccumulatedMs = 0;
@@ -876,6 +882,7 @@ export class ConversationOrchestrator {
     this.lessonGoals = [];
     this.stt.setLessonVocabulary?.([]);
     this.completedGoals.clear();
+    this.answersInCurrentTask = 0;
     this.lessonCompleteFired = false;
     this.sessionState = "active";
     this.idleAccumulatedMs = 0;
@@ -983,11 +990,14 @@ export class ConversationOrchestrator {
    * LESSON COMPLETION) into the running set, and fires onLessonComplete
    * exactly once the moment every goal for the current lesson is in —
    * called right after every ai.send(), same as
-   * updateCorrectionAttemptTracking. Unknown goal strings (a model typo, a
-   * goal that isn't verbatim in lessonGoals) are dropped silently rather
-   * than counted — better to under-complete than to finish a lesson on a
-   * goal that was never actually assigned. */
-  private updateGoalProgress(response: TutorResponse): void {
+   * updateCorrectionAttemptTracking. The model's report is only a claim:
+   * at most ONE goal per turn is accepted, and only if it is the CURRENT
+   * task and the student has answered at least once in it (see
+   * answersInCurrentTask). Everything else — unknown, future, repeated, or
+   * a task with no student answer yet — is rejected and logged. Returns the
+   * accepted goals, which replace response.completedGoals (see runTurn) so
+   * LessonProgressBar, counting from entries, sees the same thing. */
+  private updateGoalProgress(response: TutorResponse): string[] {
     // DIAGNOSTIC LOGGING (progress-bar-stuck investigation — see
     // LessonProgressBar's "Etapa X de Y", which re-derives the same count
     // from entries independently, see its own doc comment for why). Kept
@@ -1002,12 +1012,18 @@ export class ConversationOrchestrator {
     // whole "practice every symbol" scope).
     console.log("[progress] completedGoals:", response.completedGoals);
     console.log("[progress] tasks da lição:", this.lessonGoals);
-    if (this.lessonCompleteFired || this.lessonGoals.length === 0) return;
+    if (this.lessonCompleteFired || this.lessonGoals.length === 0) return [];
+    const accepted: string[] = [];
     for (const goal of response.completedGoals ?? []) {
-      if (this.lessonGoals.includes(goal) && !this.completedGoals.has(goal)) {
-        this.completedGoals.add(goal);
-        this.consecutiveNudges = 0; // task changed — see MAX_CONSECUTIVE_NUDGES
+      const reason = this.goalRejectionReason(goal, accepted.length > 0);
+      if (reason) {
+        console.warn(`[progress] goal rejeitado: ${goal} motivo: ${reason}`);
+        continue;
       }
+      accepted.push(goal);
+      this.completedGoals.add(goal);
+      this.answersInCurrentTask = 0; // the next task starts with no answer yet
+      this.consecutiveNudges = 0; // task changed — see MAX_CONSECUTIVE_NUDGES
     }
     console.log("[progress] completedGoals acumulados:", Array.from(this.completedGoals));
     if (this.completedGoals.size >= this.lessonGoals.length) {
@@ -1015,6 +1031,19 @@ export class ConversationOrchestrator {
       this.finishSession("todas as tarefas concluídas");
       for (const cb of this.lessonCompleteListeners) cb();
     }
+    return accepted;
+  }
+
+  /** Why `goal` can't be accepted as done this turn, or undefined if it can
+   * — see updateGoalProgress. */
+  private goalRejectionReason(goal: string, alreadyAcceptedThisTurn: boolean): string | undefined {
+    if (!this.lessonGoals.includes(goal)) return "não é tarefa desta lição";
+    if (this.completedGoals.has(goal)) return "já concluída";
+    if (alreadyAcceptedThisTurn) return "mais de uma tarefa no mesmo turno";
+    const current = this.currentTaskId();
+    if (goal !== current) return `não é a tarefa atual (${current})`;
+    if (this.answersInCurrentTask === 0) return "nenhuma resposta do aluno nesta tarefa";
+    return undefined;
   }
 
   /**
@@ -1045,6 +1074,7 @@ export class ConversationOrchestrator {
     this.idleAccumulatedMs = 0;
     this.nudgeLevelsFired.clear();
     this.consecutiveNudges = 0;
+    this.answersInCurrentTask++;
     await this.runTurn({ detectedLanguage });
   }
 
@@ -1266,7 +1296,8 @@ export class ConversationOrchestrator {
       if (normalizedEnglish) this.lastTutorEnglish = normalizedEnglish;
 
       this.updateCorrectionAttemptTracking(response);
-      this.updateGoalProgress(response);
+      const acceptedGoals = this.updateGoalProgress(response);
+      response = { ...response, completedGoals: acceptedGoals.length > 0 ? acceptedGoals : undefined };
 
       this.history.push({
         role: "assistant",
