@@ -38,6 +38,8 @@ export class HttpAIProvider implements AIProvider {
           attemptCount: opts?.attemptCount,
           nudge: opts?.nudge,
           usedNudges: opts?.usedNudges,
+          completedGoals: opts?.completedGoals,
+          currentTaskId: opts?.currentTaskId,
         }),
         signal: controller.signal,
       });

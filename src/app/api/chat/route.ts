@@ -7,6 +7,7 @@ import { getCourseOverview, getFirstLesson, getGlobalPrinciples, getLessonByCode
 import type { AIOptions, Message } from "@/core/ai/AIProvider";
 import { introductionReply } from "@/core/conversation/introductionReply";
 import { splitOutPortuguese } from "@/core/speech/portugueseGuard";
+import { buildLessonProgressNote } from "@/core/conversation/lessonProgress";
 
 // The provider swap lives here, not in app-config/providers.ts: both
 // providers hold an API key server-side (GROQ_API_KEY / OPENAI_API_KEY),
@@ -37,6 +38,9 @@ interface ChatRequestBody {
   attemptCount?: number;
   nudge?: "gentle" | "help" | "offer" | "answer" | "unclear" | "advance" | "resume";
   usedNudges?: string[];
+  /** See AIOptions.completedGoals / currentTaskId. */
+  completedGoals?: string[];
+  currentTaskId?: string;
 }
 
 /** Level-specific instruction for a NUDGE EVENT (see ChatRequestBody.nudge
@@ -358,6 +362,8 @@ export async function POST(req: NextRequest) {
   const lessonPlanBlock = buildLessonPlanBlock(lesson, getGlobalPrinciples());
   console.log("[7 api] plano injetado:", lessonPlanBlock.slice(0, 200));
   hints.push({ role: "system", content: lessonPlanBlock });
+  const progressNote = buildLessonProgressNote(body.completedGoals, body.currentTaskId);
+  if (progressNote) hints.push({ role: "system", content: progressNote });
   const overview = getCourseOverview()
     .map((l) => `${l.lessonCode} — ${l.title}`)
     .join("; ");

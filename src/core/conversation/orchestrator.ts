@@ -1102,7 +1102,7 @@ export class ConversationOrchestrator {
   }
 
   /** The first lesson goal (task id) not yet completed — the task the
-   * tutor is most likely on. Only used for logs. */
+   * tutor is on. Sent on every turn (see runTurn) and used for logs. */
   private currentTaskId(): string | undefined {
     return this.lessonGoals.find((g) => !this.completedGoals.has(g));
   }
@@ -1218,6 +1218,8 @@ export class ConversationOrchestrator {
           attemptCount: this.correctionAttemptCount,
           nudge: opts.nudge,
           usedNudges: this.usedNudgePhrases,
+          completedGoals: Array.from(this.completedGoals),
+          currentTaskId: this.currentTaskId(),
         });
         awaitingChatResponse = false;
         if (this.chatAbort === chatAbort) this.chatAbort = null;

@@ -40,6 +40,13 @@ export interface AIOptions {
    * can avoid repeating one — see orchestrator's usedNudgePhrases. Only
    * meaningful alongside `nudge`, but harmless to send otherwise. */
   usedNudges?: string[];
+  /** Task ids (see curriculum's taskId) the tutor has already reported done
+   * this lesson, accumulated by the orchestrator — the history it sends is
+   * plain speech text, so without this the model can't see what it already
+   * finished and may start the lesson over. */
+  completedGoals?: string[];
+  /** First not-yet-completed task id — the task the tutor must be on. */
+  currentTaskId?: string;
   /** Aborts the request — the Falar button interrupting a turn that's
    * still waiting on the model (see orchestrator.interruptTutor). */
   signal?: AbortSignal;
