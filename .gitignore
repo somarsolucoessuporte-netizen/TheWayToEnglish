@@ -21,3 +21,6 @@ material_do_curso/imagens/**/*
 
 .vercel
 .env*
+
+# Cache do Python (scripts/processar-unit.py)
+__pycache__/
