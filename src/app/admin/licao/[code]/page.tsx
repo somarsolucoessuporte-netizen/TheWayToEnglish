@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { connection } from "next/server";
+import { requireAdmin } from "@/lib/admin/auth";
 import { LESSON_STATUSES, findLessons, listLessonImages, listSteps } from "@/lib/admin/data";
 import { releaseField } from "../../actions";
 import { ImageUploadForm, LessonEditForm } from "../../forms";
@@ -13,6 +14,7 @@ export default async function AdminLessonPage({
   searchParams: Promise<{ unit?: string | string[] }>;
 }) {
   await connection();
+  await requireAdmin();
   const { code } = await params;
   const { unit } = await searchParams;
   const lessonCode = decodeURIComponent(code);

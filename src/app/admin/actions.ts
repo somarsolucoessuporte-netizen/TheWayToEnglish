@@ -8,12 +8,14 @@ import { isDeepStrictEqual, promisify } from "node:util";
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { createServiceClient } from "@/lib/supabase";
+import { requireAdmin } from "@/lib/admin/auth";
 import { LESSON_IMAGES_BUCKET, LESSON_STATUSES, getLessonById, lessonImageFolder } from "@/lib/admin/data";
 import { DOCX_LESSON_FIELDS, planLessonMerge, type DocxLesson } from "@/lib/admin/mergeLessons";
 
-// NO AUTHENTICATION (by request, for now): anyone who can reach /admin can
-// run these. Every input is still validated, and identity/ownership is
-// always re-read from the database, never trusted from the form.
+// Every action starts with requireAdmin(): Server Actions are reachable by a
+// direct POST, so src/proxy.ts's redirect alone does not protect them. Every
+// input is still validated, and rows are always re-read from the database,
+// never trusted from the form.
 
 export interface ActionResult {
   ok: boolean;
@@ -63,6 +65,7 @@ const DocxUnitSchema = z.object({
  * Needs Python + python-docx on the server: works on a local `next dev` /
  * `next start`, not on Vercel's Node runtime. */
 export async function importDocx(_prev: ActionResult | null, formData: FormData): Promise<ActionResult> {
+  await requireAdmin();
   const unitId = uuid.safeParse(formData.get("unitId"));
   const file = formData.get("file");
   if (!unitId.success) return fail("Unit inválida.");
@@ -166,6 +169,7 @@ function optionalText(value: FormDataEntryValue | null): string | null {
 /** Saves the edit form. Only fields whose value actually changed are written,
  * and each of them is added to edited_fields so a later .docx import keeps it. */
 export async function saveLesson(_prev: ActionResult | null, formData: FormData): Promise<ActionResult> {
+  await requireAdmin();
   const lessonId = uuid.safeParse(formData.get("lessonId"));
   if (!lessonId.success) return fail("Lição inválida.");
   const current = await getLessonById(lessonId.data);
@@ -211,6 +215,7 @@ export async function saveLesson(_prev: ActionResult | null, formData: FormData)
 
 /** Removes a field from edited_fields — the next .docx import overwrites it again. */
 export async function releaseField(formData: FormData): Promise<void> {
+  await requireAdmin();
   const lessonId = uuid.safeParse(formData.get("lessonId"));
   const field = String(formData.get("field") ?? "");
   if (!lessonId.success || !(DOCX_LESSON_FIELDS as readonly string[]).concat("status").includes(field)) return;
@@ -231,6 +236,7 @@ export async function releaseField(formData: FormData): Promise<void> {
  * is chosen, stores the path in steps.image_path (marking the step as edited
  * by hand). */
 export async function uploadLessonImage(_prev: ActionResult | null, formData: FormData): Promise<ActionResult> {
+  await requireAdmin();
   const lessonId = uuid.safeParse(formData.get("lessonId"));
   const stepIdRaw = String(formData.get("stepId") ?? "");
   const file = formData.get("file");

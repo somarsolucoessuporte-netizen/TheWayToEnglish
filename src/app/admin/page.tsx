@@ -1,10 +1,12 @@
 import Link from "next/link";
 import { connection } from "next/server";
+import { requireAdmin } from "@/lib/admin/auth";
 import { listCurriculum } from "@/lib/admin/data";
 import { DocxUploadForm } from "./forms";
 
 export default async function AdminHome() {
   await connection();
+  await requireAdmin();
   const books = await listCurriculum();
 
   return (

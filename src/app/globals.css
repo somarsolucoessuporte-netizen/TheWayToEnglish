@@ -2055,3 +2055,19 @@ body {
   border: 1px solid var(--border);
   border-radius: 8px;
 }
+
+.admin-login {
+  max-width: 380px;
+  margin: 48px auto 0;
+}
+
+.admin-form input[type="password"] {
+  font: inherit;
+  font-size: 14px;
+  color: var(--text-primary);
+  padding: 8px 10px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--bg-surface);
+  width: 100%;
+}
