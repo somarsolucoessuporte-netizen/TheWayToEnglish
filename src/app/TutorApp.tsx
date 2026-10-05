@@ -156,8 +156,6 @@ const STATE_LABELS: Record<CharacterState, string> = {
   error: branding.copy.genericError,
 };
 
-/** The whole student app. `lessons` comes from the server (app/page.tsx),
- * read from Supabase with the bundled JSON as fallback. */
 /** The student a lesson starts for: the school's ?aluno= when present;
  * otherwise test mode — no name, except 1A (whose introduction exchange
  * needs one, so it gets the "Aluno" placeholder). */
@@ -170,6 +168,8 @@ function urlOrTestStudent(lessonCode: string, aluno: string | null): DemoStudent
   };
 }
 
+/** The whole student app. `lessons` comes from the server (app/page.tsx),
+ * read from Supabase with the bundled JSON as fallback. */
 export default function TutorApp({ lessons }: { lessons: CurriculumLesson[] }) {
   const avatarEngine = useMemo(() => new AvatarEngine(), []);
   // 2000ms (not the default 1500) so the praise video (see Avatar.tsx) —
@@ -713,7 +713,18 @@ export default function TutorApp({ lessons }: { lessons: CurriculumLesson[] }) {
   // click — no ?licao= in the address bar (so a reload goes back to the
   // grid instead of restarting the lesson), and the click stays the user
   // gesture iOS needs to unlock audio.
+  //
+  // Unlike the old Start (a full page reload), this reuses the orchestrator
+  // a previous lesson in the same page may have left behind, so it is
+  // cleared first: stopAllMedia() silences any audio and closes the mic
+  // (reset() alone leaves the mic open), then reset() empties the speech
+  // queue, cancels the pending turn, clears busy and the lesson progress.
+  // Both are synchronous — the click is still the gesture when
+  // handleStudentPick runs.
   function handleGridStart(lesson: CurriculumLesson) {
+    orchestrator.stopAllMedia();
+    orchestrator.reset();
+    console.log("[start] estado antes de iniciar:", { busy: orchestrator.isBusy(), state: orchestrator.getState() });
     void handleStudentPick(urlOrTestStudent(lesson.code, null));
   }
 

@@ -317,17 +317,27 @@ export async function POST(req: NextRequest) {
     });
   }
 
+  // Built here, sent LAST (after the conversation — see `messages` below).
+  // Placed among the hints, it sat above the lesson plan and the whole
+  // conversation, which ends with the tutor's own question: the model read
+  // that question as answered and praised + advanced ("Great job! Now
+  // LISTENING") on a student who never said a word.
+  let nudgeNote: Message | undefined;
   if (body.nudge) {
     const usedNudges = Array.isArray(body.usedNudges) ? body.usedNudges.filter((n) => typeof n === "string") : [];
-    hints.push({
+    const moveOn = body.nudge === "answer" || body.nudge === "advance";
+    nudgeNote = {
       role: "system",
       content:
-        `Note: NUDGE EVENT (${body.nudge}). ${NUDGE_INSTRUCTIONS[body.nudge]} ` +
+        `Note: NUDGE EVENT (${body.nudge}). The student has NOT said anything since your last message — ` +
+        `there is no answer to evaluate: do not praise, do not correct, do not report any completedGoals` +
+        (moveOn ? ". " : `, and do not move on to the next item. `) +
+        `${NUDGE_INSTRUCTIONS[body.nudge]} ` +
         (usedNudges.length > 0
           ? `You have already used these encouragements earlier in this session — do NOT repeat any of ` +
             `them verbatim, say something different this time: ${usedNudges.map((n) => `"${n}"`).join("; ")}.`
           : "This is the first nudge this session — no prior encouragement to avoid repeating yet."),
-    });
+    };
   }
 
   const studentName = body.studentName?.slice(0, MAX_NAME_LEN).trim();
@@ -388,7 +398,12 @@ export async function POST(req: NextRequest) {
       console.log("[introReply] resposta:", JSON.stringify(introduction));
       return NextResponse.json(introduction);
     }
-    const messages: Message[] = [{ role: "system", content: TUTOR_SYSTEM_PROMPT }, ...hints, ...conversation];
+    const messages: Message[] = [
+      { role: "system", content: TUTOR_SYSTEM_PROMPT },
+      ...hints,
+      ...conversation,
+      ...(nudgeNote ? [nudgeNote] : []),
+    ];
     const sendOptions: AIOptions = {
       sessionId: body.sessionId,
       detectedLanguage: body.detectedLanguage,
