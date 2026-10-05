@@ -839,7 +839,7 @@ export default function TutorApp({ lessons }: { lessons: CurriculumLesson[] }) {
       {(bootState === "fading" || bootState === "ready") && (
         <div className={`app-shell${bootState === "fading" ? " app-fade-in" : ""}`}>
           {!started ? (
-            <LessonGrid lessons={allLessons} onStart={handleGridStart} />
+            <LessonGrid lessons={allLessons} onStart={handleGridStart} canStart={bootState === "ready"} />
           ) : (
           <>
           {/* Mobile renders its own floating header over the full-screen

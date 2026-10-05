@@ -28,7 +28,16 @@ type DropdownKey = "book" | "unit" | "lesson";
  * `lesson.title`) is exactly what app-config/curriculum already
  * carries — never translated or reformatted.
  */
-export function LessonGrid({ lessons, onStart }: { lessons: CurriculumLesson[]; onStart: (lesson: CurriculumLesson) => void }) {
+export function LessonGrid({
+  lessons,
+  onStart,
+  canStart = true,
+}: {
+  lessons: CurriculumLesson[];
+  onStart: (lesson: CurriculumLesson) => void;
+  /** False during the app's fade-in, when a start would be ignored. */
+  canStart?: boolean;
+}) {
   const books = useMemo(() => uniqueInOrder(lessons.map((lesson) => lesson.book)), [lessons]);
 
   // Pre-selected (not skipped) when there's only one book — the dropdown
@@ -134,7 +143,7 @@ export function LessonGrid({ lessons, onStart }: { lessons: CurriculumLesson[]; 
         <button
           type="button"
           className="btn btn-primary lesson-select-start"
-          disabled={!selectedLesson}
+          disabled={!selectedLesson || !canStart}
           onClick={handleStart}
         >
           Start
