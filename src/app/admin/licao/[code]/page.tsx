@@ -6,7 +6,7 @@ import { LESSON_STATUSES, findLessons, listSteps, signImagePaths } from "@/lib/a
 import { stripImagePaths } from "@/lib/admin/mergeLessons";
 import { releaseField } from "../../actions";
 import { DataError } from "../../DataError";
-import { LessonEditForm, TaskImageUpload } from "../../forms";
+import { LessonEditForm, TaskEditor } from "../../forms";
 
 interface TaskRow {
   order: number;
@@ -16,8 +16,6 @@ interface TaskRow {
   imagePath?: string;
 }
 
-/** Tasks whose imageDependency says they use a picture ("oral" ones don't). */
-const NEEDS_IMAGE = new Set(["visual", "image-only"]);
 
 export default async function AdminLessonPage({
   params,
@@ -127,32 +125,18 @@ export default async function AdminLessonPage({
           <p className="admin-hint">Esta lição não tem tasks.</p>
         ) : (
           <ol className="admin-tasks">
-            {tasks.map((task) => {
-              const needsImage = !!task.imageDependency && NEEDS_IMAGE.has(task.imageDependency);
-              return (
-                <li key={task.order} className="admin-task">
-                  <div className="admin-task-order">{task.order}</div>
-                  <div className="admin-task-body">
-                    <div className="admin-task-meta">
-                      {task.type && <span className="admin-tag">{task.type}</span>}
-                      {needsImage && (
-                        <span className="admin-badge-image" title={`imageDependency: ${task.imageDependency}`}>
-                          requer imagem
-                        </span>
-                      )}
-                    </div>
-                    <p className="admin-task-instruction">{task.instruction}</p>
-                    {needsImage && (
-                      <TaskImageUpload
-                        lessonId={lesson.id}
-                        order={task.order}
-                        initialUrl={task.imagePath ? imageUrls[task.imagePath] : undefined}
-                      />
-                    )}
-                  </div>
-                </li>
-              );
-            })}
+            {tasks.map((task) => (
+              <li key={task.order} className="admin-task">
+                <div className="admin-task-order">{task.order}</div>
+                <div className="admin-task-body">
+                  <TaskEditor
+                    lessonId={lesson.id}
+                    task={{ order: task.order, type: task.type, instruction: task.instruction, imageDependency: task.imageDependency }}
+                    initialUrl={task.imagePath ? imageUrls[task.imagePath] : undefined}
+                  />
+                </div>
+              </li>
+            ))}
           </ol>
         )}
       </div>

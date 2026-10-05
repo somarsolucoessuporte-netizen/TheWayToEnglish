@@ -208,7 +208,23 @@ export async function saveLesson(_prev: ActionResult | null, formData: FormData)
     image_note: optionalText(formData.get("image_note")),
   };
   const before = { ...current, legacy_tasks: stripImagePaths(current.legacy_tasks ?? []) };
-  const changed = EDITABLE_FIELDS.filter((f) => !isDeepStrictEqual(next[f], before[f] ?? null));
+
+  // Tasks are also saved one by one (saveTask), so this form's JSON can be
+  // stale. It carries the tasks as they were when the page loaded: JSON left
+  // untouched → tasks are not part of this save; JSON edited while the tasks
+  // changed underneath → refuse instead of reverting those edits.
+  let base: unknown = undefined;
+  try {
+    base = JSON.parse(String(formData.get("legacy_tasks_base") ?? "null"));
+  } catch {}
+  const tasksEdited = base == null || !isDeepStrictEqual(next.legacy_tasks, stripImagePaths(base));
+  if (tasksEdited && base != null && !isDeepStrictEqual(stripImagePaths(base), before.legacy_tasks)) {
+    return fail("As tasks foram alteradas desde que a página abriu — recarregue antes de salvar o JSON.");
+  }
+
+  const changed = EDITABLE_FIELDS.filter(
+    (f) => (f !== "legacy_tasks" || tasksEdited) && !isDeepStrictEqual(next[f], before[f] ?? null)
+  );
   if (changed.length === 0) return { ok: true, message: "Nada mudou — nada foi gravado." };
 
   const update: Record<string, unknown> = Object.fromEntries(changed.map((f) => [f, next[f]]));
@@ -237,6 +253,48 @@ export async function releaseField(formData: FormData): Promise<void> {
   if (error) throw error;
   revalidatePath("/admin");
   revalidatePath(`/admin/licao/${encodeURIComponent(current.code)}`);
+}
+
+// ------------------------------------------------------------- task edit --
+
+const IMAGE_DEPENDENCIES = new Set(["visual", "image-only"]);
+
+/** Saves one task's instruction and "Usar imagem" choice inside
+ * lessons.legacy_tasks. Checked keeps an existing visual/image-only value
+ * (or sets "visual"); unchecked removes imageDependency — the image itself
+ * stays in Storage and in imagePath, so re-checking brings it back. Marks
+ * legacy_tasks as edited by hand so a .docx re-import keeps it. */
+export async function saveTask(_prev: ActionResult | null, formData: FormData): Promise<ActionResult> {
+  await requireAdmin();
+  const lessonId = uuid.safeParse(formData.get("lessonId"));
+  const order = z.coerce.number().int().safeParse(formData.get("order"));
+  if (!lessonId.success || !order.success) return fail("Task inválida.");
+  const instruction = String(formData.get("instruction") ?? "").trim();
+  if (!instruction) return fail("A instrução não pode ficar vazia.");
+  const useImage = formData.get("useImage") === "on";
+
+  const lesson = await getLessonById(lessonId.data);
+  if (!lesson) return fail("Lição não encontrada.");
+  const tasks = Array.isArray(lesson.legacy_tasks) ? (lesson.legacy_tasks as Record<string, unknown>[]) : [];
+  const task = tasks.find((t) => t?.order === order.data);
+  if (!task) return fail(`A lição não tem task ${order.data}.`);
+
+  const { imageDependency, ...rest } = task;
+  const updatedTask: Record<string, unknown> = { ...rest, instruction };
+  if (useImage) {
+    updatedTask.imageDependency = IMAGE_DEPENDENCIES.has(String(imageDependency)) ? imageDependency : "visual";
+  }
+  if (isDeepStrictEqual(updatedTask, task)) return { ok: true, message: "Nada mudou." };
+
+  const { error } = await createServiceClient()
+    .from("lessons")
+    .update({
+      legacy_tasks: tasks.map((t) => (t === task ? updatedTask : t)),
+      edited_fields: Array.from(new Set([...(lesson.edited_fields ?? []), "legacy_tasks"])),
+    })
+    .eq("id", lesson.id);
+  if (error) return fail(`Erro ao salvar a task: ${error.message}`);
+  return { ok: true, message: `Task ${order.data} salva.` };
 }
 
 // ----------------------------------------------------------- image upload --

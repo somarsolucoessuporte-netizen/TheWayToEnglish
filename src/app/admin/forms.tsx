@@ -1,7 +1,8 @@
 "use client";
 
 import { startTransition, useActionState, useEffect, useState } from "react";
-import { importDocx, saveLesson, uploadTaskImage, type ActionResult } from "./actions";
+import { usesImage } from "@/lib/admin/tasks";
+import { importDocx, saveLesson, saveTask, uploadTaskImage, type ActionResult } from "./actions";
 
 function Result({ state }: { state: ActionResult | null }) {
   if (!state) return null;
@@ -95,6 +96,7 @@ export function LessonEditForm({ lesson, statuses }: { lesson: LessonFormValues;
 
       {/* Advanced: the tasks themselves (listed read-only in "Tasks" below).
           imagePath is left out on purpose — images are set per task. */}
+      <input type="hidden" name="legacy_tasks_base" value={JSON.stringify(lesson.legacy_tasks ?? [])} />
       <details className="admin-details">
         <summary>Editar tasks como JSON (avançado)</summary>
         <textarea
@@ -163,5 +165,70 @@ export function TaskImageUpload({
         {state?.ok && <span className="admin-inline-ok">{state.message}</span>}
       </form>
     </div>
+  );
+}
+
+export interface TaskEditorValues {
+  order: number;
+  type?: string;
+  instruction?: string;
+  imageDependency?: string;
+}
+
+/** One task: editable instruction, "Usar imagem" toggle and its own Salvar.
+ * The image upload (a separate form — forms can't nest) shows only while the
+ * box is checked; unchecking hides it without touching the stored image. */
+export function TaskEditor({
+  lessonId,
+  task,
+  initialUrl,
+}: {
+  lessonId: string;
+  task: TaskEditorValues;
+  initialUrl?: string;
+}) {
+  const [state, action, pending] = useActionState(saveTask, null);
+  const [useImage, setUseImage] = useState(usesImage(task.imageDependency));
+  return (
+    <>
+      <div className="admin-task-meta">
+        {task.type && <span className="admin-tag">{task.type}</span>}
+        {useImage && <span className="admin-badge-image">requer imagem</span>}
+      </div>
+      <form
+        className="admin-task-form"
+        onSubmit={(event) => {
+          // Not <form action>: React would reset the textarea after saving.
+          event.preventDefault();
+          const formData = new FormData(event.currentTarget);
+          startTransition(() => action(formData));
+        }}
+      >
+        <input type="hidden" name="lessonId" value={lessonId} />
+        <input type="hidden" name="order" value={task.order} />
+        <textarea
+          name="instruction"
+          rows={3}
+          defaultValue={task.instruction ?? ""}
+          aria-label={`Instrução da task ${task.order}`}
+          required
+        />
+        <div className="admin-task-actions">
+          <label className="admin-checkbox-inline">
+            <input type="checkbox" name="useImage" checked={useImage} onChange={(e) => setUseImage(e.currentTarget.checked)} />
+            Usar imagem
+          </label>
+          <button type="submit" className="admin-button is-small" disabled={pending}>
+            {pending ? "Salvando…" : "Salvar"}
+          </button>
+          {state && <span className={state.ok ? "admin-inline-ok" : "admin-inline-error"}>{state.message}</span>}
+        </div>
+      </form>
+      {/* Hidden, not unmounted: an image uploaded in this visit stays on
+          screen if the box is checked again. */}
+      <div hidden={!useImage}>
+        <TaskImageUpload lessonId={lessonId} order={task.order} initialUrl={initialUrl} />
+      </div>
+    </>
   );
 }
