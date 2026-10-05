@@ -8,6 +8,7 @@ import type { AIOptions, Message } from "@/core/ai/AIProvider";
 import { introductionReply } from "@/core/conversation/introductionReply";
 import { splitOutPortuguese } from "@/core/speech/portugueseGuard";
 import { buildLessonProgressNote } from "@/core/conversation/lessonProgress";
+import { removeCorrectionFromPraise } from "@/core/ai/correctionGuard";
 
 // The provider swap lives here, not in app-config/providers.ts: both
 // providers hold an API key server-side (GROQ_API_KEY / OPENAI_API_KEY),
@@ -467,6 +468,14 @@ export async function POST(req: NextRequest) {
       } else {
         response = retry.response;
       }
+    }
+
+    // A turn marked correct (praise, no correction) must not also say "The
+    // correct way is: …" — see core/ai/correctionGuard.ts.
+    const praised = removeCorrectionFromPraise(response);
+    if (praised.removed) {
+      console.warn("[chat] acerto com \"The correct way is\" — frase removida:", JSON.stringify(response.speech.english));
+      response = praised.response;
     }
 
     return NextResponse.json(response);
