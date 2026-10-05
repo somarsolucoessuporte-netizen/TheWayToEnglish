@@ -1,4 +1,66 @@
-# Ponto de restauração — v1-ciclo-funcionando
+# Pontos de restauração
+
+## v1-json-funcionando (atual)
+
+| | |
+|---|---|
+| **Tag** | `v1-json-funcionando` (anotada) |
+| **Branch congelada** | `estavel-v1-json`: **nunca recebe commit** |
+| **Código da aplicação** | `af0913e` (`af0913e` = último commit antes deste arquivo). A tag aponta para o commit que atualiza este arquivo; o código é idêntico ao de `af0913e` |
+| **Data** | 2026-10-05 |
+| **Produção** | https://prototipotheway.somar.ia.br (alias de https://the-way-to-english.vercel.app) |
+| **Deploy da Vercel (af0913e)** | ID `3ipPExophCQqAXZ82JNrFsWvHtEA`: https://vercel.com/coffee-beats/the-way-to-english/3ipPExophCQqAXZ82JNrFsWvHtEA |
+
+### O que funciona neste ponto
+
+- **App do aluno lendo o currículo do JSON** (`src/app-config/curriculum/book01-unit01.json`),
+  com o ciclo completo da lição descrito em v1-ciclo-funcionando abaixo.
+- **Supabase populado mas desconectado do app**: projeto `zauysusadzciuyacihmk`,
+  migrations 001–003, Book 1 / Unit 1 com 22 lições (status `pendente`, sem steps),
+  RLS sem políticas (só a service_role acessa), bucket privado `lesson-images`.
+  `scripts/test-supabase-parity.cjs` confirma Supabase == JSON.
+- **Painel `/admin`** com login (`ADMIN_PASSWORD`, cookie httpOnly): lista de lições,
+  edição da lição, tasks editáveis com "Usar imagem" e upload por task,
+  conteúdo de referência editável, proteção de campos editados à mão
+  (`edited_fields`) contra o reimport do `.docx`.
+- Variáveis do Supabase e `ADMIN_PASSWORD` configuradas na Vercel (projeto coffee-beats).
+
+### O que não funciona / limitações
+
+- Edições feitas no `/admin` **não chegam à Debbie**: o app ainda lê o JSON.
+- Upload de `.docx` no `/admin` só funciona localmente (precisa de Python + python-docx;
+  a Vercel não tem).
+- Server Actions do `/admin` podem dar "Server Action not found" numa aba aberta
+  durante um deploy — recarregar resolve (Skew Protection da Vercel evita).
+- As limitações do fluxo da lição listadas em v1-ciclo-funcionando continuam.
+
+### Como voltar
+
+**Produção, sem git:** no painel da Vercel, abra o deploy `3ipPExophCQqAXZ82JNrFsWvHtEA`
+e use **Instant Rollback / Promote to Production**.
+
+**Pelo git, sem reescrever histórico (o deploy vem pelo push em `main`):**
+
+```sh
+git fetch origin --tags
+git checkout main
+git revert --no-edit v1-json-funcionando..HEAD
+git push origin main
+```
+
+**Só inspecionar/rodar localmente:**
+
+```sh
+git checkout estavel-v1-json    # ou: git checkout v1-json-funcionando
+```
+
+O banco não volta junto com o git: o Supabase guarda o que foi editado no `/admin`.
+Para devolver o currículo ao conteúdo do JSON: `node scripts/seed-curriculum.cjs`
+(regrava lições e status `pendente`; não mexe em steps nem em imagens).
+
+---
+
+# Ponto anterior — v1-ciclo-funcionando
 
 | | |
 |---|---|
@@ -12,7 +74,7 @@
 | **URL imutável do deploy** | ⚠️ PENDENTE: copiar do link acima (campo "Domains", formato `the-way-to-english-<hash>-coffee-beats.vercel.app`). A CLI deste ambiente não tem acesso a esse projeto da Vercel |
 | **Backup do currículo** | `backup/v1-ciclo-funcionando/book01-unit01.json` (sha256 `ef6d5b46d8bd884f94cafbb5fc7435c2c27a5dee4faa7e83bf93c691acda414c`) |
 
-## O que funciona neste ponto
+### O que funciona neste ponto
 
 Os 17 scripts `scripts/test-*.cjs` passam e o `tsc --noEmit` está limpo.
 
@@ -35,7 +97,7 @@ Os 17 scripts `scripts/test-*.cjs` passam e o `tsc --noEmit` está limpo.
   fora do progresso.
 - Seletor Book → Unit → Lesson e o link direto `?aluno=&licao=`.
 
-## O que não funciona / limitações conhecidas
+### O que não funciona / limitações conhecidas
 
 Detalhes em `BACKLOG.md`.
 
@@ -51,7 +113,7 @@ Detalhes em `BACKLOG.md`.
 - A persona tem inconsistências (seções citadas que não existem, campo
   `hint` antigo) e o histórico da conversa não tem limite.
 
-## Como voltar
+### Como voltar
 
 **Mais rápido (produção, sem git):** no painel da Vercel do projeto
 `the-way-to-english`, abra o deploy `E1UpT87dE3WHa36a9pcdyMKoqypm` e use
