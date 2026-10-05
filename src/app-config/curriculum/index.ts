@@ -27,6 +27,9 @@ export interface CurriculumTask {
   instruction: string;
   type: string;
   imageDependency?: ImageDependency;
+  /** Path in the lesson-images bucket — uploaded per task in /admin, so it
+   * exists only in Supabase (supabase-source.ts), never in the unit JSON. */
+  imagePath?: string;
 }
 
 /** The tasks that can actually run in this app today — see ImageDependency. */

@@ -65,4 +65,27 @@ assert.deepEqual(plan.missingFromDocx, ['OLD']);
 assert.equal(a.values.practice_note, null);
 assert.equal(a.values.image_note, null);
 
-console.log('admin merge: hand-edited fields and status are preserved on .docx import');
+// Task images uploaded in /admin survive a .docx re-import (matched by order).
+const withImages = planLessonMerge(
+  [{ id: 'id-c', code: 'C', edited_fields: [], legacy_tasks: [
+    { order: 1, instruction: 'old', type: 'drill', imagePath: 'book01/unit01/C/task-1.png' },
+    { order: 3, instruction: 'gone', type: 'drill', imagePath: 'book01/unit01/C/task-3.png' },
+  ] }],
+  [docxLesson('C', { tasks: [
+    { order: 1, instruction: 'rewritten', type: 'drill' },
+    { order: 2, instruction: 'new', type: 'drill' },
+  ] })]
+).updates[0].values.legacy_tasks;
+assert.deepEqual(withImages, [
+  { order: 1, instruction: 'rewritten', type: 'drill', imagePath: 'book01/unit01/C/task-1.png' },
+  { order: 2, instruction: 'new', type: 'drill' },
+], 'imagePath follows the task order; text comes from the docx; dropped tasks drop their image');
+
+const { carryImagePaths, stripImagePaths } = loadTs(path.resolve(__dirname, '../src/lib/admin/mergeLessons.ts'));
+const stored = [{ order: 1, instruction: 'x', type: 't', imagePath: 'p/task-1.png' }];
+assert.deepEqual(stripImagePaths(stored), [{ order: 1, instruction: 'x', type: 't' }]);
+assert.deepEqual(carryImagePaths(stripImagePaths(stored), stored), stored, 'JSON editor round-trip keeps the image');
+assert.deepEqual(carryImagePaths([{ order: 1, instruction: 'x', type: 't', imagePath: 'forged' }], []),
+  [{ order: 1, instruction: 'x', type: 't' }], 'imagePath typed into the JSON editor is ignored');
+
+console.log('admin merge: hand-edited fields, status and task images are preserved on .docx import');

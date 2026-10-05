@@ -9,8 +9,8 @@ import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { createServiceClient } from "@/lib/supabase";
 import { requireAdmin } from "@/lib/admin/auth";
-import { LESSON_IMAGES_BUCKET, LESSON_STATUSES, getLessonById, lessonImageFolder } from "@/lib/admin/data";
-import { DOCX_LESSON_FIELDS, planLessonMerge, type DocxLesson } from "@/lib/admin/mergeLessons";
+import { LESSON_IMAGES_BUCKET, LESSON_STATUSES, getLessonById, lessonImageFolder, signImagePaths } from "@/lib/admin/data";
+import { DOCX_LESSON_FIELDS, carryImagePaths, planLessonMerge, stripImagePaths, type DocxLesson } from "@/lib/admin/mergeLessons";
 
 // Every action starts with requireAdmin(): Server Actions are reachable by a
 // direct POST, so src/proxy.ts's redirect alone does not protect them. Every
@@ -21,6 +21,11 @@ export interface ActionResult {
   ok: boolean;
   message: string;
   details?: string[];
+}
+
+export interface TaskImageResult extends ActionResult {
+  /** Signed URL of the uploaded image, for the inline thumbnail. */
+  url?: string;
 }
 
 const fail = (message: string, details?: string[]): ActionResult => ({ ok: false, message, details });
@@ -121,7 +126,7 @@ export async function importDocx(_prev: ActionResult | null, formData: FormData)
 
   const { data: existing, error: existingError } = await supabase
     .from("lessons")
-    .select("id, code, edited_fields")
+    .select("id, code, edited_fields, legacy_tasks")
     .eq("unit_id", unit.id);
   if (existingError) return fail(`Erro ao ler as lições: ${existingError.message}`);
 
@@ -192,18 +197,22 @@ export async function saveLesson(_prev: ActionResult | null, formData: FormData)
     );
   }
 
+  // The JSON editor never shows imagePath (only the per-task upload sets
+  // it): compare without it, and put the stored paths back on save.
   const next = {
     title: optionalText(formData.get("title")),
     status,
     practice_note: optionalText(formData.get("practice_note")),
-    legacy_tasks: tasks, // as typed (zod would drop unknown keys)
+    legacy_tasks: stripImagePaths(tasks), // as typed (zod would drop unknown keys)
     requires_images: formData.get("requires_images") === "on",
     image_note: optionalText(formData.get("image_note")),
   };
-  const changed = EDITABLE_FIELDS.filter((f) => !isDeepStrictEqual(next[f], current[f] ?? (f === "legacy_tasks" ? [] : null)));
+  const before = { ...current, legacy_tasks: stripImagePaths(current.legacy_tasks ?? []) };
+  const changed = EDITABLE_FIELDS.filter((f) => !isDeepStrictEqual(next[f], before[f] ?? null));
   if (changed.length === 0) return { ok: true, message: "Nada mudou — nada foi gravado." };
 
   const update: Record<string, unknown> = Object.fromEntries(changed.map((f) => [f, next[f]]));
+  if ("legacy_tasks" in update) update.legacy_tasks = carryImagePaths(update.legacy_tasks, current.legacy_tasks);
   update.edited_fields = Array.from(new Set([...(current.edited_fields ?? []), ...changed]));
   const { error } = await createServiceClient().from("lessons").update(update).eq("id", current.id);
   if (error) return fail(`Erro ao salvar: ${error.message}`);
@@ -232,15 +241,16 @@ export async function releaseField(formData: FormData): Promise<void> {
 
 // ----------------------------------------------------------- image upload --
 
-/** Uploads an image to lesson-images/<book>/<unit>/<lesson>/ and, when a step
- * is chosen, stores the path in steps.image_path (marking the step as edited
- * by hand). */
-export async function uploadLessonImage(_prev: ActionResult | null, formData: FormData): Promise<ActionResult> {
+/** Uploads the image of one task to lesson-images/<book>/<unit>/<lesson>/
+ * task-<order>.<ext> (replacing any previous one) and stores that path as the
+ * task's imagePath inside lessons.legacy_tasks. Returns a signed URL so the
+ * thumbnail updates in place. */
+export async function uploadTaskImage(_prev: TaskImageResult | null, formData: FormData): Promise<TaskImageResult> {
   await requireAdmin();
   const lessonId = uuid.safeParse(formData.get("lessonId"));
-  const stepIdRaw = String(formData.get("stepId") ?? "");
+  const order = z.coerce.number().int().safeParse(formData.get("order"));
   const file = formData.get("file");
-  if (!lessonId.success) return fail("Lição inválida.");
+  if (!lessonId.success || !order.success) return fail("Task inválida.");
   if (!(file instanceof File) || file.size === 0) return fail("Escolha uma imagem.");
   const extension = IMAGE_TYPES[file.type];
   if (!extension) return fail("Formato não aceito (PNG, JPG, WEBP, GIF ou SVG).");
@@ -248,32 +258,26 @@ export async function uploadLessonImage(_prev: ActionResult | null, formData: Fo
 
   const lesson = await getLessonById(lessonId.data);
   if (!lesson) return fail("Lição não encontrada.");
+  const tasks = Array.isArray(lesson.legacy_tasks) ? (lesson.legacy_tasks as Record<string, unknown>[]) : [];
+  const task = tasks.find((t) => t?.order === order.data);
+  if (!task) return fail(`A lição não tem task ${order.data}.`);
 
   const supabase = createServiceClient();
-  let stepId: string | null = null;
-  if (stepIdRaw) {
-    const parsedStep = uuid.safeParse(stepIdRaw);
-    if (!parsedStep.success) return fail("Step inválido.");
-    const { data: step } = await supabase.from("steps").select("id").eq("id", parsedStep.data).eq("lesson_id", lesson.id).maybeSingle();
-    if (!step) return fail("Esse step não pertence a esta lição.");
-    stepId = step.id;
-  }
-
-  const base = path.parse(file.name).name.normalize("NFKD").replace(/[^\w-]+/g, "-").replace(/^-+|-+$/g, "").slice(0, 60) || "imagem";
-  const storagePath = `${lessonImageFolder(lesson)}/${Date.now()}-${base}.${extension}`;
-  const { error: uploadError } = await supabase.storage
-    .from(LESSON_IMAGES_BUCKET)
-    .upload(storagePath, Buffer.from(await file.arrayBuffer()), { contentType: file.type, upsert: false });
+  const storage = supabase.storage.from(LESSON_IMAGES_BUCKET);
+  const storagePath = `${lessonImageFolder(lesson)}/task-${order.data}.${extension}`;
+  const { error: uploadError } = await storage.upload(storagePath, Buffer.from(await file.arrayBuffer()), {
+    contentType: file.type,
+    upsert: true,
+  });
   if (uploadError) return fail(`Erro no upload: ${uploadError.message}`);
 
-  if (stepId) {
-    const { error } = await supabase.from("steps").update({ image_path: storagePath, edited_manually: true }).eq("id", stepId);
-    if (error) return fail(`Imagem salva em ${storagePath}, mas o step não foi atualizado: ${error.message}`);
-  }
+  const previous = typeof task.imagePath === "string" ? task.imagePath : undefined;
+  const updated = tasks.map((t) => (t === task ? { ...t, imagePath: storagePath } : t));
+  const { error } = await supabase.from("lessons").update({ legacy_tasks: updated }).eq("id", lesson.id);
+  if (error) return fail(`Imagem enviada, mas a task não foi atualizada: ${error.message}`);
+  // Same task, other format (task-1.png → task-1.jpg): drop the orphan.
+  if (previous && previous !== storagePath) await storage.remove([previous]);
 
-  revalidatePath(`/admin/licao/${encodeURIComponent(lesson.code)}`);
-  return {
-    ok: true,
-    message: stepId ? `Imagem salva e ligada ao step: ${storagePath}` : `Imagem salva (sem step ligado): ${storagePath}`,
-  };
+  const urls = await signImagePaths([storagePath]).catch(() => ({} as Record<string, string>));
+  return { ok: true, message: `Imagem da task ${order.data} salva.`, url: urls[storagePath] };
 }

@@ -1,7 +1,7 @@
 "use client";
 
-import { startTransition, useActionState } from "react";
-import { importDocx, saveLesson, uploadLessonImage, type ActionResult } from "./actions";
+import { startTransition, useActionState, useEffect, useState } from "react";
+import { importDocx, saveLesson, uploadTaskImage, type ActionResult } from "./actions";
 
 function Result({ state }: { state: ActionResult | null }) {
   if (!state) return null;
@@ -83,17 +83,6 @@ export function LessonEditForm({ lesson, statuses }: { lesson: LessonFormValues;
         <textarea name="practice_note" rows={3} defaultValue={lesson.practice_note ?? ""} />
       </label>
 
-      <label>
-        <span>legacy_tasks (JSON)</span>
-        <textarea
-          name="legacy_tasks"
-          rows={16}
-          spellCheck={false}
-          className="admin-code"
-          defaultValue={JSON.stringify(lesson.legacy_tasks ?? [], null, 2)}
-        />
-      </label>
-
       <label className="admin-checkbox">
         <input type="checkbox" name="requires_images" defaultChecked={lesson.requires_images} />
         <span>requires_images</span>
@@ -103,6 +92,19 @@ export function LessonEditForm({ lesson, statuses }: { lesson: LessonFormValues;
         <span>Image note</span>
         <textarea name="image_note" rows={2} defaultValue={lesson.image_note ?? ""} />
       </label>
+
+      {/* Advanced: the tasks themselves (listed read-only in "Tasks" below).
+          imagePath is left out on purpose — images are set per task. */}
+      <details className="admin-details">
+        <summary>Editar tasks como JSON (avançado)</summary>
+        <textarea
+          name="legacy_tasks"
+          rows={16}
+          spellCheck={false}
+          className="admin-code"
+          defaultValue={JSON.stringify(lesson.legacy_tasks ?? [], null, 2)}
+        />
+      </details>
 
       <div className="admin-actions">
         <button type="submit" className="admin-button" disabled={pending}>
@@ -114,41 +116,52 @@ export function LessonEditForm({ lesson, statuses }: { lesson: LessonFormValues;
   );
 }
 
-export function ImageUploadForm({
+/** Inline image for one task: thumbnail + choose + send. The thumbnail
+ * switches to the uploaded image as soon as the action returns. */
+export function TaskImageUpload({
   lessonId,
-  steps,
+  order,
+  initialUrl,
 }: {
   lessonId: string;
-  steps: { id: string; label: string }[];
+  order: number;
+  initialUrl?: string;
 }) {
-  const [state, action, pending] = useActionState(uploadLessonImage, null);
+  const [state, action, pending] = useActionState(uploadTaskImage, null);
+  const [fileName, setFileName] = useState("");
+  // React resets the form (file input included) once the action finishes.
+  useEffect(() => setFileName(""), [state]);
+  const url = state?.url ?? initialUrl;
   return (
-    <form action={action} className="admin-form">
-      <input type="hidden" name="lessonId" value={lessonId} />
-      <label>
-        <span>Imagem</span>
-        <input type="file" name="file" accept="image/png,image/jpeg,image/webp,image/gif,image/svg+xml" required />
-      </label>
-      <label>
-        <span>Ligar ao step</span>
-        <select name="stepId" defaultValue="">
-          <option value="">— nenhum (só guardar no Storage) —</option>
-          {steps.map((s) => (
-            <option key={s.id} value={s.id}>
-              {s.label}
-            </option>
-          ))}
-        </select>
-      </label>
-      {steps.length === 0 && (
-        <p className="admin-hint">Esta lição ainda não tem steps — a imagem fica guardada na pasta da lição e pode ser ligada depois.</p>
-      )}
-      <div className="admin-actions">
-        <button type="submit" className="admin-button" disabled={pending}>
-          {pending ? "Enviando…" : "Enviar imagem"}
-        </button>
+    <div className="admin-task-image">
+      <div className="admin-thumb">
+        {url ? (
+          // eslint-disable-next-line @next/next/no-img-element -- short-lived signed URL
+          <img src={url} alt={`Imagem da task ${order}`} />
+        ) : (
+          <span className="admin-muted">sem imagem</span>
+        )}
       </div>
-      <Result state={state} />
-    </form>
+      <form action={action} className="admin-task-image-form">
+        <input type="hidden" name="lessonId" value={lessonId} />
+        <input type="hidden" name="order" value={order} />
+        <label className="admin-button is-small is-ghost admin-file-button">
+          Escolher imagem
+          <input
+            type="file"
+            name="file"
+            accept="image/png,image/jpeg,image/webp,image/gif,image/svg+xml"
+            required
+            onChange={(e) => setFileName(e.currentTarget.files?.[0]?.name ?? "")}
+          />
+        </label>
+        {fileName && <span className="admin-muted admin-file-name">{fileName}</span>}
+        <button type="submit" className="admin-button is-small" disabled={pending}>
+          {pending ? "Enviando…" : "Enviar"}
+        </button>
+        {state && !state.ok && <span className="admin-inline-error">{state.message}</span>}
+        {state?.ok && <span className="admin-inline-ok">{state.message}</span>}
+      </form>
+    </div>
   );
 }

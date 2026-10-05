@@ -2,10 +2,22 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { connection } from "next/server";
 import { requireAdmin } from "@/lib/admin/auth";
-import { LESSON_STATUSES, findLessons, listLessonImages, listSteps } from "@/lib/admin/data";
+import { LESSON_STATUSES, findLessons, listSteps, signImagePaths } from "@/lib/admin/data";
+import { stripImagePaths } from "@/lib/admin/mergeLessons";
 import { releaseField } from "../../actions";
 import { DataError } from "../../DataError";
-import { ImageUploadForm, LessonEditForm } from "../../forms";
+import { LessonEditForm, TaskImageUpload } from "../../forms";
+
+interface TaskRow {
+  order: number;
+  type?: string;
+  instruction?: string;
+  imageDependency?: string;
+  imagePath?: string;
+}
+
+/** Tasks whose imageDependency says they use a picture ("oral" ones don't). */
+const NEEDS_IMAGE = new Set(["visual", "image-only"]);
 
 export default async function AdminLessonPage({
   params,
@@ -49,10 +61,16 @@ export default async function AdminLessonPage({
   }
 
   const lesson = matches[0];
+  const tasks = (Array.isArray(lesson.legacy_tasks) ? (lesson.legacy_tasks as TaskRow[]) : [])
+    .filter((t) => t && typeof t.order === "number")
+    .sort((a, b) => a.order - b.order);
   let steps: Awaited<ReturnType<typeof listSteps>>;
-  let images: Awaited<ReturnType<typeof listLessonImages>>;
+  let imageUrls: Record<string, string>;
   try {
-    [steps, images] = await Promise.all([listSteps(lesson.id), listLessonImages(lesson)]);
+    [steps, imageUrls] = await Promise.all([
+      listSteps(lesson.id),
+      signImagePaths(tasks.map((t) => t.imagePath).filter((p): p is string => typeof p === "string")),
+    ]);
   } catch (error) {
     return <DataError error={error} />;
   }
@@ -96,7 +114,7 @@ export default async function AdminLessonPage({
             title: lesson.title,
             status: lesson.status,
             practice_note: lesson.practice_note,
-            legacy_tasks: lesson.legacy_tasks,
+            legacy_tasks: stripImagePaths(lesson.legacy_tasks ?? []),
             requires_images: lesson.requires_images,
             image_note: lesson.image_note,
           }}
@@ -104,32 +122,38 @@ export default async function AdminLessonPage({
       </div>
 
       <div className="admin-card">
-        <h3>Imagens</h3>
-        <ImageUploadForm
-          lessonId={lesson.id}
-          steps={steps.map((s) => ({
-            id: s.id,
-            label: `Step ${s.order} · ${s.mechanic}${s.image_path ? " (já tem imagem)" : ""}`,
-          }))}
-        />
-        {images.length > 0 && (
-          <div className="admin-images">
-            {images.map((img) => {
-              const usedBy = steps.filter((s) => s.image_path === img.path).map((s) => `step ${s.order}`);
+        <h3>Tasks</h3>
+        {tasks.length === 0 ? (
+          <p className="admin-hint">Esta lição não tem tasks.</p>
+        ) : (
+          <ol className="admin-tasks">
+            {tasks.map((task) => {
+              const needsImage = !!task.imageDependency && NEEDS_IMAGE.has(task.imageDependency);
               return (
-                <figure key={img.path}>
-                  {img.url && (
-                    // eslint-disable-next-line @next/next/no-img-element -- signed URL, short-lived
-                    <img src={img.url} alt={img.name} />
-                  )}
-                  <figcaption>
-                    {img.name}
-                    <span className="admin-muted">{usedBy.length ? ` · ${usedBy.join(", ")}` : " · sem step"}</span>
-                  </figcaption>
-                </figure>
+                <li key={task.order} className="admin-task">
+                  <div className="admin-task-order">{task.order}</div>
+                  <div className="admin-task-body">
+                    <div className="admin-task-meta">
+                      {task.type && <span className="admin-tag">{task.type}</span>}
+                      {needsImage && (
+                        <span className="admin-badge-image" title={`imageDependency: ${task.imageDependency}`}>
+                          requer imagem
+                        </span>
+                      )}
+                    </div>
+                    <p className="admin-task-instruction">{task.instruction}</p>
+                    {needsImage && (
+                      <TaskImageUpload
+                        lessonId={lesson.id}
+                        order={task.order}
+                        initialUrl={task.imagePath ? imageUrls[task.imagePath] : undefined}
+                      />
+                    )}
+                  </div>
+                </li>
               );
             })}
-          </div>
+          </ol>
         )}
       </div>
 

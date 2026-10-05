@@ -110,22 +110,13 @@ export function lessonImageFolder(lesson: AdminLesson): string {
   return `${lesson.unit.book.code}/${lesson.unit.code}/${lesson.code}`;
 }
 
-export interface LessonImage {
-  path: string;
-  name: string;
-  url: string | null;
-}
-
-/** Images already in the lesson's folder, with 1-hour signed URLs for preview
- * (the bucket is private). */
-export async function listLessonImages(lesson: AdminLesson): Promise<LessonImage[]> {
-  const storage = createServiceClient().storage.from(LESSON_IMAGES_BUCKET);
-  const folder = lessonImageFolder(lesson);
-  const { data, error } = await storage.list(folder, { sortBy: { column: "name", order: "asc" } });
+/** 1-hour signed URLs (the bucket is private) for task thumbnails, keyed by
+ * storage path. Paths that fail to sign are simply absent. */
+export async function signImagePaths(paths: string[]): Promise<Record<string, string>> {
+  if (paths.length === 0) return {};
+  const { data, error } = await createServiceClient().storage.from(LESSON_IMAGES_BUCKET).createSignedUrls(paths, 3600);
   if (error) throw error;
-  const files = (data ?? []).filter((f) => f.id); // folders have no id
-  if (files.length === 0) return [];
-  const paths = files.map((f) => `${folder}/${f.name}`);
-  const { data: signed } = await storage.createSignedUrls(paths, 3600);
-  return paths.map((path, i) => ({ path, name: files[i].name, url: signed?.[i]?.signedUrl ?? null }));
+  const urls: Record<string, string> = {};
+  for (const d of data ?? []) if (d.path && d.signedUrl) urls[d.path] = d.signedUrl;
+  return urls;
 }

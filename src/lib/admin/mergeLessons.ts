@@ -8,6 +8,9 @@
 //                           the ones listed in its edited_fields (corrected
 //                           by hand in /admin); status is never touched
 // - lesson only in the DB → left alone and reported, never deleted
+// - task images           → a task's imagePath (set by /admin's per-task
+//                           upload, it exists only in the database) is carried
+//                           over to the docx task with the same order
 
 /** The lesson columns a .docx import writes. */
 export const DOCX_LESSON_FIELDS = [
@@ -41,6 +44,41 @@ export interface ExistingLesson {
   id: string;
   code: string;
   edited_fields: string[] | null;
+  legacy_tasks?: unknown;
+}
+
+type TaskLike = { order?: unknown; imagePath?: unknown } & Record<string, unknown>;
+
+function asTasks(value: unknown): TaskLike[] {
+  return Array.isArray(value) ? (value.filter((t) => t && typeof t === "object") as TaskLike[]) : [];
+}
+
+/** `tasks` with each task's imagePath taken from the `previous` task of the
+ * same order (when it had one). Anything else about `tasks` wins. */
+export function carryImagePaths(tasks: unknown, previous: unknown): unknown {
+  if (!Array.isArray(tasks)) return tasks;
+  const paths = new Map(
+    asTasks(previous)
+      .filter((t) => typeof t.imagePath === "string")
+      .map((t) => [t.order, t.imagePath as string])
+  );
+  return tasks.map((task) => {
+    if (!task || typeof task !== "object") return task;
+    const { imagePath: _ignored, ...rest } = task as TaskLike;
+    const path = paths.get(rest.order);
+    return path ? { ...rest, imagePath: path } : rest;
+  });
+}
+
+/** Tasks without imagePath — what /admin's JSON editor shows (image paths
+ * are only changed by the per-task upload). */
+export function stripImagePaths(tasks: unknown): unknown {
+  if (!Array.isArray(tasks)) return tasks;
+  return tasks.map((task) => {
+    if (!task || typeof task !== "object") return task;
+    const { imagePath: _ignored, ...rest } = task as TaskLike;
+    return rest;
+  });
 }
 
 export interface LessonMergePlan {
@@ -79,6 +117,7 @@ export function planLessonMerge(existing: ExistingLesson[], fromDocx: DocxLesson
     const kept = Object.fromEntries(
       DOCX_LESSON_FIELDS.filter((f) => !edited.has(f)).map((f) => [f, values[f]])
     ) as Partial<DocxLessonValues>;
+    if ("legacy_tasks" in kept) kept.legacy_tasks = carryImagePaths(kept.legacy_tasks, current.legacy_tasks);
     plan.updates.push({ id: current.id, code: lesson.code, values: kept, protectedFields });
   }
 
