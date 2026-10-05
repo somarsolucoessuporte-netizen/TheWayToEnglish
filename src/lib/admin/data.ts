@@ -62,12 +62,13 @@ export interface AdminLesson {
   legacy_tasks: unknown;
   requires_images: boolean;
   image_note: string | null;
+  reference_content: unknown;
   edited_fields: string[];
   unit: { id: string; code: string; title: string | null; book: { code: string; title: string } };
 }
 
 const LESSON_COLUMNS =
-  "id, code, title, skill, status, practice_note, legacy_tasks, requires_images, image_note, edited_fields, " +
+  "id, code, title, skill, status, practice_note, legacy_tasks, requires_images, image_note, reference_content, edited_fields, " +
   "unit:units!inner(id, code, title, book:books!inner(code, title))";
 
 /** Every lesson with this code — more than one once several units exist

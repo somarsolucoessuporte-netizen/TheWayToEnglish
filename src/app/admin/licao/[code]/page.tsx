@@ -7,6 +7,7 @@ import { stripImagePaths } from "@/lib/admin/mergeLessons";
 import { releaseField } from "../../actions";
 import { DataError } from "../../DataError";
 import { LessonEditForm, TaskEditor } from "../../forms";
+import { ReferenceContentEditor } from "../../ReferenceContentEditor";
 
 interface TaskRow {
   order: number;
@@ -139,6 +140,15 @@ export default async function AdminLessonPage({
             ))}
           </ol>
         )}
+      </div>
+
+      <div className="admin-card">
+        <h3>Conteúdo de referência</h3>
+        <p className="admin-hint">
+          O material que a Debbie lê no prompt desta lição. Salvar marca o conteúdo como editado à mão — o próximo
+          .docx não o sobrescreve.
+        </p>
+        <ReferenceContentEditor lessonId={lesson.id} initial={lesson.reference_content} />
       </div>
 
       <div className="admin-card">

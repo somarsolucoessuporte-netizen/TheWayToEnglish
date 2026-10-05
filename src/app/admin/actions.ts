@@ -255,6 +255,93 @@ export async function releaseField(formData: FormData): Promise<void> {
   revalidatePath(`/admin/licao/${encodeURIComponent(current.code)}`);
 }
 
+// ------------------------------------------------------ reference content --
+
+const ReferenceContentSchema = z
+  .object({
+    vocabulary: z.array(z.string()),
+    dialogues: z.array(z.array(z.string())),
+    grammarNotes: z.array(z.string()).optional(),
+    tables: z.array(z.object({ caption: z.string().optional(), rows: z.array(z.array(z.string())) })).optional(),
+    practicePhrases: z.array(z.object({ group: z.string(), phrases: z.array(z.string()) })).optional(),
+  })
+  .passthrough();
+
+type ReferenceContent = z.infer<typeof ReferenceContentSchema>;
+
+/** Drops what the editor leaves behind when a "+ Adicionar" is never filled:
+ * blank list entries and empty dialogues/groups. Tables are kept exactly as
+ * edited — empty cells and even empty rows exist in the source (lesson A's
+ * SYMBOL column, 4E's image table) and are removed only with ×. */
+function tidyReferenceContent(content: ReferenceContent): ReferenceContent {
+  const lines = (list: string[]) => list.map((x) => x.trim()).filter(Boolean);
+  return {
+    ...content,
+    vocabulary: lines(content.vocabulary),
+    dialogues: content.dialogues.map(lines).filter((d) => d.length > 0),
+    ...(content.grammarNotes && { grammarNotes: lines(content.grammarNotes) }),
+    ...(content.tables && {
+      tables: content.tables.map((t) => ({
+        ...t,
+        ...(t.caption !== undefined && { caption: t.caption.trim() }),
+      })),
+    }),
+    ...(content.practicePhrases && {
+      practicePhrases: content.practicePhrases
+        .map((g) => ({ group: g.group.trim(), phrases: lines(g.phrases) }))
+        .filter((g) => g.group || g.phrases.length > 0),
+    }),
+  };
+}
+
+/** Saves the "Conteúdo de referência" section — what the tutor reads in its
+ * prompt. Marks reference_content as edited by hand (a .docx re-import then
+ * leaves it alone). Refuses if it changed since the page loaded. */
+export interface ReferenceContentResult extends ActionResult {
+  /** What is now stored — the editor's new baseline for the next save. */
+  content?: unknown;
+}
+
+export async function saveReferenceContent(
+  _prev: ReferenceContentResult | null,
+  formData: FormData
+): Promise<ReferenceContentResult> {
+  await requireAdmin();
+  const lessonId = uuid.safeParse(formData.get("lessonId"));
+  if (!lessonId.success) return fail("Lição inválida.");
+  let submitted: unknown;
+  let base: unknown;
+  try {
+    submitted = JSON.parse(String(formData.get("reference_content") ?? ""));
+    base = JSON.parse(String(formData.get("reference_content_base") ?? "null"));
+  } catch {
+    return fail("Conteúdo inválido.");
+  }
+  const parsed = ReferenceContentSchema.safeParse(submitted);
+  if (!parsed.success) return fail("Conteúdo em formato inesperado.", parsed.error.issues.map((i) => `${i.path.join(".")}: ${i.message}`));
+
+  const lesson = await getLessonById(lessonId.data);
+  if (!lesson) return fail("Lição não encontrada.");
+  if (base != null && !isDeepStrictEqual(base, lesson.reference_content)) {
+    return fail("O conteúdo de referência mudou desde que a página abriu — recarregue antes de salvar.");
+  }
+
+  const next = tidyReferenceContent(parsed.data);
+  if (isDeepStrictEqual(next, lesson.reference_content)) {
+    return { ok: true, message: "Nada mudou — nada foi gravado.", content: lesson.reference_content };
+  }
+
+  const { error } = await createServiceClient()
+    .from("lessons")
+    .update({
+      reference_content: next,
+      edited_fields: Array.from(new Set([...(lesson.edited_fields ?? []), "reference_content"])),
+    })
+    .eq("id", lesson.id);
+  if (error) return fail(`Erro ao salvar: ${error.message}`);
+  return { ok: true, message: "Conteúdo de referência salvo (marcado como editado à mão).", content: next };
+}
+
 // ------------------------------------------------------------- task edit --
 
 const IMAGE_DEPENDENCIES = new Set(["visual", "image-only"]);
