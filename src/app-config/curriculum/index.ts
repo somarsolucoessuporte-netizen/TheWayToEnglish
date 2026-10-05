@@ -52,7 +52,7 @@ export interface CurriculumReferenceContent {
   practicePhrases?: CurriculumPracticePhraseGroup[];
 }
 
-interface CurriculumUnitData {
+export interface CurriculumUnitData {
   book: string;
   unit: string;
   unitTheme?: string;
@@ -61,7 +61,7 @@ interface CurriculumUnitData {
   lessons: RawLessonPlan[];
 }
 
-interface RawLessonPlan {
+export interface RawLessonPlan {
   code: string;
   title: string | null;
   skill: string | null;
@@ -101,7 +101,7 @@ export function getGlobalPrinciples(): string[] {
 // MobileVoiceScreen, LessonProgressBar, LessonCompleteCard) working
 // unchanged against data that no longer really has "durationMinutes" or
 // "canDo" goals in the old sense. CurriculumLesson is a SUPERSET: the
-// original fields are synthesized as best-effort (see toCurriculumLesson),
+// original fields are synthesized as best-effort (see buildCurriculumLesson),
 // and the real new-format fields (code, skill, order, tasks,
 // referenceContent, ...) are carried through alongside them so
 // getLessonByCode/getNextLesson can serve BOTH the existing UI and
@@ -186,7 +186,7 @@ function extractExchanges(dialogues: string[][]): { q: string; a: string }[] {
  * "Book 1, Lesson A — Lesson A". The first table caption is the lesson's
  * real heading in the source material, so it comes before that last
  * resort. */
-function lessonTitle(plan: RawLessonPlan): string {
+export function lessonTitle(plan: RawLessonPlan): string {
   return (
     plan.title ??
     plan.skill ??
@@ -195,13 +195,25 @@ function lessonTitle(plan: RawLessonPlan): string {
   );
 }
 
-function toCurriculumLesson(plan: RawLessonPlan): CurriculumLesson {
+/** Where a lesson sits — its unit's display names plus the id prefix
+ * ("book01-unit01") CurriculumLesson.id is built from. */
+export interface LessonUnitInfo {
+  book: string;
+  unit: string;
+  idPrefix: string;
+}
+
+const JSON_UNIT_INFO: LessonUnitInfo = { book: UNIT.book, unit: UNIT.unit, idPrefix: "book01-unit01" };
+
+/** Exported so supabase-source.ts builds the exact same CurriculumLesson
+ * from database rows as this module builds from the JSON. */
+export function buildCurriculumLesson(plan: RawLessonPlan, unitInfo: LessonUnitInfo): CurriculumLesson {
   const title = lessonTitle(plan);
   const exchanges = extractExchanges(plan.referenceContent.dialogues);
   return {
-    id: `book01-unit01-${plan.code.toLowerCase()}`,
-    book: UNIT.book,
-    unit: UNIT.unit,
+    id: `${unitInfo.idPrefix}-${plan.code.toLowerCase()}`,
+    book: unitInfo.book,
+    unit: unitInfo.unit,
     lessonCode: plan.code,
     title,
     type: plan.skill ?? "practice",
@@ -241,10 +253,14 @@ function toCurriculumLesson(plan: RawLessonPlan): CurriculumLesson {
   };
 }
 
+function toJsonLesson(plan: RawLessonPlan): CurriculumLesson {
+  return buildCurriculumLesson(plan, JSON_UNIT_INFO);
+}
+
 export function getLessonByCode(code: string): CurriculumLesson | undefined {
   const normalized = normalize(code);
   const plan = ALL_LESSON_PLANS.find((l) => l.code.toLowerCase() === normalized);
-  return plan ? toCurriculumLesson(plan) : undefined;
+  return plan ? toJsonLesson(plan) : undefined;
 }
 
 /** Safety-net default (see app/api/chat/route.ts's fallback logic) — the
@@ -252,7 +268,7 @@ export function getLessonByCode(code: string): CurriculumLesson | undefined {
  * of this JSON). Used whenever a requested lesson code can't be resolved,
  * so the tutor NEVER runs a session with no roteiro at all. */
 export function getFirstLesson(): CurriculumLesson {
-  return toCurriculumLesson(ALL_LESSON_PLANS[0]);
+  return toJsonLesson(ALL_LESSON_PLANS[0]);
 }
 
 /** Compact list of every lesson in the course — enough for the tutor to
@@ -267,7 +283,7 @@ export function getCourseOverview(): { lessonCode: string; title: string }[] {
  * components/LessonGrid.tsx), as opposed to getCourseOverview's
  * lessonCode+title-only shape (built for injecting into the AI prompt). */
 export function getAllLessons(): CurriculumLesson[] {
-  return ALL_LESSON_PLANS.map(toCurriculumLesson);
+  return ALL_LESSON_PLANS.map(toJsonLesson);
 }
 
 /** The lesson immediately after `code` in the curriculum's own array order
@@ -280,5 +296,5 @@ export function getNextLesson(code: string): CurriculumLesson | undefined {
   const index = ALL_LESSON_PLANS.findIndex((l) => l.code.toLowerCase() === normalized);
   if (index === -1) return undefined;
   const plan = ALL_LESSON_PLANS[index + 1];
-  return plan ? toCurriculumLesson(plan) : undefined;
+  return plan ? toJsonLesson(plan) : undefined;
 }

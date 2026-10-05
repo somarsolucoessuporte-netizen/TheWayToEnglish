@@ -1,0 +1,17 @@
+{
+  "mcpServers": {
+    "supabase": {
+      "type": "stdio",
+      "command": "powershell",
+      "args": [
+        "-NoProfile",
+        "-NonInteractive",
+        "-Command",
+        "$line = Get-Content -LiteralPath '.env.local' | Where-Object { $_ -match '^SUPABASE_ACCESS_TOKEN=' } | Select-Object -Last 1; if (-not $line) { [Console]::Error.WriteLine('SUPABASE_ACCESS_TOKEN missing from .env.local'); exit 1 }; $env:SUPABASE_ACCESS_TOKEN = ($line -replace '^SUPABASE_ACCESS_TOKEN=', '').Trim().Trim('\"'); npx -y @supabase/mcp-server-supabase@latest --project-ref=zauysusadzciuyacihmk"
+      ],
+      "env": {
+        "NODE_EXTRA_CA_CERTS": "C:\\Users\\einst\\AppData\\Local\\Temp\\avg-ca-bundle.pem"
+      }
+    }
+  }
+}
