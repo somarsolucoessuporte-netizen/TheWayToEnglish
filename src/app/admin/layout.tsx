@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { isAdmin } from "@/lib/admin/auth";
-import { logout } from "./login/actions";
 
 export const metadata: Metadata = {
   title: "Admin — The Way To English",
@@ -17,7 +16,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
           The Way To English · <span>Admin do currículo</span>
         </Link>
         {loggedIn && (
-          <form action={logout}>
+          <form method="post" action="/api/admin/logout">
             <button type="submit" className="admin-button is-small is-ghost">
               Sair
             </button>
