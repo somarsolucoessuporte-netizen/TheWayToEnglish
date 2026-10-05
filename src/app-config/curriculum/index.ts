@@ -1,303 +1,97 @@
-import curriculumData from "./book01-unit01.json";
+import "server-only";
+import * as json from "./json-source";
+import type { CurriculumLesson } from "./json-source";
+import { findLessonByCode, nextLessonAfter } from "./lookup";
+import { loadSnapshot } from "./supabase-source";
 
-// ---- New-format shape (book01-unit01.json) — the real curriculum data:
-// a task-by-task script the tutor executes, plus reference material
-// (dialogues/vocabulary/tables) it draws on while executing it. See
-// app/api/chat/route.ts's buildLessonPlanBlock for how this is injected
-// into the system prompt. ----
+// The app's curriculum: read from Supabase (edited in /admin), with the
+// bundled JSON as fallback whenever Supabase errors, times out, or is empty —
+// a lesson must never fail to start because the database is unreachable.
+//
+// Server-only (service-role key). Client code gets the lessons as props from
+// app/page.tsx and looks them up with ./lookup.
+//
+// A snapshot is kept for SNAPSHOT_TTL_MS so a chat turn (3–4 lookups) costs
+// at most one query; /admin edits reach the tutor within that window. A JSON
+// fallback is kept for FALLBACK_TTL_MS: during an outage each window pays the
+// Supabase timeout once, not once per lookup.
 
-/**
- * How much a task depends on seeing an image — per TASK, not per lesson
- * (the old lesson-level `requiresImages` flagged 10 of 22 lessons whole,
- * including ones like B whose spoken practice works fine without any
- * picture). Set by scripts/processar-unit.py's classify_image_dependency.
- * PROVISIONAL: the app has no lesson images yet — revisit when the school
- * answers about the material for these lessons.
- *   oral       — no image needed; runs as written.
- *   visual     — keeps its spoken practice; the part that needs sight is
- *                dropped (people/things are named or described in words).
- *   image-only — nothing is left without the image; skipped, and kept out
- *                of the progress denominator (canDo).
- * Missing = "oral" (older unit JSON without the field).
- */
-export type ImageDependency = "oral" | "visual" | "image-only";
+export * from "./json-source";
+export { findLessonByCode, nextLessonAfter } from "./lookup";
 
-export interface CurriculumTask {
-  order: number;
-  instruction: string;
-  type: string;
-  imageDependency?: ImageDependency;
-  /** Path in the lesson-images bucket — uploaded per task in /admin, so it
-   * exists only in Supabase (supabase-source.ts), never in the unit JSON. */
-  imagePath?: string;
+const SNAPSHOT_TTL_MS = 30_000;
+const FALLBACK_TTL_MS = 15_000;
+const SUPABASE_TIMEOUT_MS = 4_000;
+
+interface Snapshot {
+  lessons: CurriculumLesson[];
+  principles: string[];
+  source: "supabase" | "json";
 }
 
-/** The tasks that can actually run in this app today — see ImageDependency. */
-export function playableTasks(tasks: CurriculumTask[]): CurriculumTask[] {
-  return tasks.filter((t) => t.imageDependency !== "image-only");
+let cached: { snapshot: Snapshot; expiresAt: number } | undefined;
+let inFlight: Promise<Snapshot> | undefined;
+
+function jsonSnapshot(): Snapshot {
+  return { lessons: json.getAllLessons(), principles: json.getGlobalPrinciples(), source: "json" };
 }
 
-export interface CurriculumTable {
-  rows: string[][];
-  caption?: string;
-}
-
-export interface CurriculumPracticePhraseGroup {
-  group: string;
-  phrases: string[];
-}
-
-export interface CurriculumReferenceContent {
-  dialogues: string[][];
-  vocabulary: string[];
-  grammarNotes?: string[];
-  tables?: CurriculumTable[];
-  practicePhrases?: CurriculumPracticePhraseGroup[];
-}
-
-export interface CurriculumUnitData {
-  book: string;
-  unit: string;
-  unitTheme?: string;
-  globalPrinciples: string[];
-  tutorIdentity?: { name: string; age: number; nationality: string; occupation: string };
-  lessons: RawLessonPlan[];
-}
-
-export interface RawLessonPlan {
-  code: string;
-  title: string | null;
-  skill: string | null;
-  order: number;
-  practiceNote?: string;
-  tasks: CurriculumTask[];
-  referenceContent: CurriculumReferenceContent;
-  requiresImages: boolean;
-  imageNote?: string;
-}
-
-const UNIT = curriculumData as CurriculumUnitData;
-const ALL_LESSON_PLANS: RawLessonPlan[] = UNIT.lessons;
-
-function normalize(code: string): string {
-  return code.trim().toLowerCase();
-}
-
-/** Opaque, stable id for a task within a lesson — doubles as a
- * CurriculumLesson.canDo entry (progress-bar bookkeeping; see
- * LessonProgressBar, which only ever counts these, never displays them)
- * and as the string the tutor is asked to echo back into
- * TutorResponse.completedGoals once that task is actually done (see
- * app/api/chat/route.ts's buildLessonPlanBlock and persona.ts's LESSON
- * COMPLETION section). Not lesson-code-prefixed because canDoGoals is
- * always scoped to a single lesson already (see orchestrator.startLesson,
- * which passes lesson?.canDo for the CURRENT lesson only). */
-export function taskId(order: number): string {
-  return `task-${order}`;
-}
-
-export function getGlobalPrinciples(): string[] {
-  return UNIT.globalPrinciples ?? [];
-}
-
-// ---- Legacy-shaped view — keeps the existing UI (page.tsx, TipsPanel,
-// MobileVoiceScreen, LessonProgressBar, LessonCompleteCard) working
-// unchanged against data that no longer really has "durationMinutes" or
-// "canDo" goals in the old sense. CurriculumLesson is a SUPERSET: the
-// original fields are synthesized as best-effort (see buildCurriculumLesson),
-// and the real new-format fields (code, skill, order, tasks,
-// referenceContent, ...) are carried through alongside them so
-// getLessonByCode/getNextLesson can serve BOTH the existing UI and
-// app/api/chat/route.ts's roteiro injection from the exact same object,
-// without renaming the functions the UI already imports. ----
-
-export interface CurriculumLesson {
-  id: string;
-  book: string;
-  unit: string;
-  lessonCode: string;
-  title: string;
-  type: string;
-  /** Allotted time for the lesson timer bar (see LessonTimer) — the new
-   * curriculum format doesn't specify this per lesson, so every lesson
-   * defaults to 15, same as every LEGACY lesson did in practice. */
-  durationMinutes: number;
-  vocabulary: string[];
-  grammarPoints: string[];
-  targetPhrases: string[];
-  /** Synthesized as one opaque taskId() per task (see its doc comment) —
-   * NOT human-readable goal descriptions like the old LEGACY data had.
-   * Nothing renders these as text (confirmed: only ever counted), so this
-   * is safe. */
-  canDo: string[];
-  exampleExchanges: { q: string; a: string }[];
-  prerequisiteLessonIds: string[];
-  notes: string | null;
-  cumulativeScope: string[];
-  tips: string[];
-
-  // ---- Real new-format fields, for app/api/chat/route.ts ----
-  code: string;
-  skill: string | null;
-  order: number;
-  practiceNote?: string;
-  tasks: CurriculumTask[];
-  referenceContent: CurriculumReferenceContent;
-  requiresImages: boolean;
-  imageNote?: string;
-  /** False when the lesson has tasks and every one is image-only — it can't
-   * run until its material exists, so the UI refuses to open it (see
-   * page.tsx). */
-  playable: boolean;
-}
-
-const DEFAULT_DURATION_MINUTES = 15;
-
-/** Vocabulary entries in the source data are often "word - annotation"
- * (e.g. "A - /eI/", "1 – one") — this keeps just the headword for STT
- * vocabulary hinting (see SpeechToTextProvider.setLessonVocabulary),
- * falling back to the whole entry when there's no such separator. */
-function headword(entry: string): string {
-  return entry.split(/\s[-–—]\s/)[0].trim();
-}
-
-/** Pairs up consecutive "A: ..." / "B: ..." lines across every dialogue
- * block into {q, a} exchanges — used for CurriculumLesson.exampleExchanges
- * and targetPhrases. Preamble lines (dialogue titles, Portuguese notes)
- * that don't match the "A:"/"B:" pattern are simply skipped. */
-function extractExchanges(dialogues: string[][]): { q: string; a: string }[] {
-  const exchanges: { q: string; a: string }[] = [];
-  for (const block of dialogues) {
-    let lastA: string | undefined;
-    for (const line of block) {
-      const match = line.match(/^([AB]):\s*(.+)$/);
-      if (!match) continue;
-      const [, speaker, text] = match;
-      if (speaker === "A") {
-        lastA = text.trim();
-      } else if (speaker === "B" && lastA) {
-        exchanges.push({ q: lastA, a: text.trim() });
-        lastA = undefined;
-      }
-    }
+async function fetchSnapshot(): Promise<Snapshot> {
+  let timer: ReturnType<typeof setTimeout> | undefined;
+  try {
+    const timeout = new Promise<never>((_, reject) => {
+      timer = setTimeout(() => reject(new Error(`timed out after ${SUPABASE_TIMEOUT_MS} ms`)), SUPABASE_TIMEOUT_MS);
+    });
+    const { lessons, principles } = await Promise.race([loadSnapshot(), timeout]);
+    const snapshot: Snapshot = { lessons, principles, source: "supabase" };
+    cached = { snapshot, expiresAt: Date.now() + SNAPSHOT_TTL_MS };
+    return snapshot;
+  } catch (error) {
+    const reason = error && typeof error === "object" && "message" in error ? String(error.message) : String(error);
+    console.error("[curriculum] Supabase indisponível — usando o JSON:", reason);
+    const snapshot = jsonSnapshot();
+    cached = { snapshot, expiresAt: Date.now() + FALLBACK_TTL_MS };
+    return snapshot;
+  } finally {
+    clearTimeout(timer);
   }
-  return exchanges;
 }
 
-/** The lesson's descriptive title. A plan with no `title`/`skill` (Lesson A)
- * used to fall back to `Lesson ${code}` — which the tutor then announced as
- * "Book 1, Lesson A — Lesson A". The first table caption is the lesson's
- * real heading in the source material, so it comes before that last
- * resort. */
-export function lessonTitle(plan: RawLessonPlan): string {
-  return (
-    plan.title ??
-    plan.skill ??
-    plan.referenceContent.tables?.find((t) => t.caption)?.caption ??
-    `Lesson ${plan.code}`
-  );
+async function snapshot(): Promise<Snapshot> {
+  if (cached && Date.now() < cached.expiresAt) return cached.snapshot;
+  inFlight ??= fetchSnapshot().finally(() => {
+    inFlight = undefined;
+  });
+  return inFlight;
 }
 
-/** Where a lesson sits — its unit's display names plus the id prefix
- * ("book01-unit01") CurriculumLesson.id is built from. */
-export interface LessonUnitInfo {
-  book: string;
-  unit: string;
-  idPrefix: string;
+/** Where the current curriculum came from — for logs and tests. */
+export async function getCurriculumSource(): Promise<Snapshot["source"]> {
+  return (await snapshot()).source;
 }
 
-const JSON_UNIT_INFO: LessonUnitInfo = { book: UNIT.book, unit: UNIT.unit, idPrefix: "book01-unit01" };
-
-/** Exported so supabase-source.ts builds the exact same CurriculumLesson
- * from database rows as this module builds from the JSON. */
-export function buildCurriculumLesson(plan: RawLessonPlan, unitInfo: LessonUnitInfo): CurriculumLesson {
-  const title = lessonTitle(plan);
-  const exchanges = extractExchanges(plan.referenceContent.dialogues);
-  return {
-    id: `${unitInfo.idPrefix}-${plan.code.toLowerCase()}`,
-    book: unitInfo.book,
-    unit: unitInfo.unit,
-    lessonCode: plan.code,
-    title,
-    type: plan.skill ?? "practice",
-    durationMinutes: DEFAULT_DURATION_MINUTES,
-    vocabulary: Array.from(new Set([
-      ...plan.referenceContent.vocabulary.map(headword),
-      // Symbol names live in the SKILL column, not the vocabulary array.
-      ...(plan.referenceContent.tables ?? []).flatMap((table) => {
-        const column = table.rows[0]?.findIndex((cell) => cell.trim().toUpperCase() === "SKILL") ?? -1;
-        return column < 0 ? [] : table.rows.slice(1).map((row) => row[column]?.trim()).filter((word): word is string => !!word);
-      }),
-    ])),
-    grammarPoints: plan.referenceContent.grammarNotes ?? [],
-    targetPhrases: exchanges.map((e) => e.q),
-    // image-only tasks never run, so they're not part of the progress
-    // denominator — missing material on our side must not lower the
-    // student's score.
-    canDo: playableTasks(plan.tasks).map((t) => taskId(t.order)),
-    exampleExchanges: exchanges,
-    prerequisiteLessonIds: [],
-    notes: plan.practiceNote ?? null,
-    cumulativeScope: [],
-    tips: [],
-
-    code: plan.code,
-    skill: plan.skill,
-    order: plan.order,
-    practiceNote: plan.practiceNote,
-    tasks: plan.tasks,
-    referenceContent: plan.referenceContent,
-    requiresImages: plan.requiresImages,
-    imageNote: plan.imageNote,
-    // Only a lesson EMPTIED by image-only tasks is unplayable — one with no
-    // tasks in the source at all (e.g. 3B) always ran from its reference
-    // content and still does.
-    playable: plan.tasks.length === 0 || playableTasks(plan.tasks).length > 0,
-  };
+export async function getGlobalPrinciples(): Promise<string[]> {
+  return (await snapshot()).principles;
 }
 
-function toJsonLesson(plan: RawLessonPlan): CurriculumLesson {
-  return buildCurriculumLesson(plan, JSON_UNIT_INFO);
+export async function getLessonByCode(code: string): Promise<CurriculumLesson | undefined> {
+  return findLessonByCode((await snapshot()).lessons, code);
 }
 
-export function getLessonByCode(code: string): CurriculumLesson | undefined {
-  const normalized = normalize(code);
-  const plan = ALL_LESSON_PLANS.find((l) => l.code.toLowerCase() === normalized);
-  return plan ? toJsonLesson(plan) : undefined;
+/** Safety-net default for an unresolvable lesson code (see
+ * app/api/chat/route.ts) — the first lesson in curriculum order. */
+export async function getFirstLesson(): Promise<CurriculumLesson> {
+  return (await snapshot()).lessons[0];
 }
 
-/** Safety-net default (see app/api/chat/route.ts's fallback logic) — the
- * first lesson in the curriculum's own array order ("A" — Boas-vindas as
- * of this JSON). Used whenever a requested lesson code can't be resolved,
- * so the tutor NEVER runs a session with no roteiro at all. */
-export function getFirstLesson(): CurriculumLesson {
-  return toJsonLesson(ALL_LESSON_PLANS[0]);
+export async function getCourseOverview(): Promise<{ lessonCode: string; title: string }[]> {
+  return (await snapshot()).lessons.map((l) => ({ lessonCode: l.lessonCode, title: l.title }));
 }
 
-/** Compact list of every lesson in the course — enough for the tutor to
- * recognize and name a lesson the student references, without teaching it. */
-export function getCourseOverview(): { lessonCode: string; title: string }[] {
-  return ALL_LESSON_PLANS.map((l) => ({ lessonCode: l.code, title: lessonTitle(l) }));
+export async function getAllLessons(): Promise<CurriculumLesson[]> {
+  return (await snapshot()).lessons;
 }
 
-/** Every lesson in the course, fully resolved (book/unit/code/title and
- * everything else CurriculumLesson carries) — for UI that needs to group
- * or display lessons using the curriculum's own fields (see
- * components/LessonGrid.tsx), as opposed to getCourseOverview's
- * lessonCode+title-only shape (built for injecting into the AI prompt). */
-export function getAllLessons(): CurriculumLesson[] {
-  return ALL_LESSON_PLANS.map(toJsonLesson);
-}
-
-/** The lesson immediately after `code` in the curriculum's own array order
- * (book01-unit01.json's sequence) — not a prerequisite-based recommendation,
- * just positional order. undefined if `code` isn't found or is the last
- * lesson in the course — see orchestrator.announceLessonComplete's doc
- * comment for how the caller handles that case. */
-export function getNextLesson(code: string): CurriculumLesson | undefined {
-  const normalized = normalize(code);
-  const index = ALL_LESSON_PLANS.findIndex((l) => l.code.toLowerCase() === normalized);
-  if (index === -1) return undefined;
-  const plan = ALL_LESSON_PLANS[index + 1];
-  return plan ? toJsonLesson(plan) : undefined;
+export async function getNextLesson(code: string): Promise<CurriculumLesson | undefined> {
+  return nextLessonAfter((await snapshot()).lessons, code);
 }

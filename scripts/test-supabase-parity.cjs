@@ -4,11 +4,11 @@ const path = require('node:path');
 const ts = require('typescript');
 const { createClient } = require('@supabase/supabase-js');
 
-// The curriculum in Supabase (supabase-source.ts) must be exactly what the
-// app serves today from the bundled JSON (index.ts) — every function, every
-// lesson, field by field. Run after seed-curriculum.cjs and before switching
-// the app to supabase-source. Needs the live database: with no credentials
-// in .env.local it FAILS instead of skipping.
+// The curriculum in Supabase (supabase-source.ts) must be exactly the bundled
+// JSON (json-source.ts, the app's fallback) — every function, every lesson,
+// field by field. Fails as soon as a lesson is edited in /admin: that is the
+// signal that the database has moved on from the JSON. Needs the live
+// database: with no credentials in .env.local it FAILS instead of skipping.
 //
 // Also checks the publishable key sees nothing (RLS on, no public policy).
 
@@ -37,7 +37,7 @@ async function main() {
   assert.ok(url && process.env.SUPABASE_SERVICE_ROLE_KEY && publishableKey,
     'NEXT_PUBLIC_SUPABASE_URL, NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY and SUPABASE_SERVICE_ROLE_KEY must be set in .env.local');
 
-  const json = loadTs(path.join(root, 'src/app-config/curriculum/index.ts'));
+  const json = loadTs(path.join(root, 'src/app-config/curriculum/json-source.ts'));
   const db = loadTs(path.join(root, 'src/app-config/curriculum/supabase-source.ts'));
 
   // Task images (imagePath) are uploaded in /admin and live only in the

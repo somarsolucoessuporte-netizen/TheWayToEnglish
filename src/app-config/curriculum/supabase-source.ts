@@ -8,12 +8,11 @@ import {
   type CurriculumTask,
   type LessonUnitInfo,
   type RawLessonPlan,
-} from "./index";
+} from "./json-source";
 
-// Same functions as ./index.ts, async, reading the curriculum from Supabase
-// instead of the bundled JSON. NOT wired into the app yet — index.ts still
-// serves the student; switching over is a separate commit once
-// scripts/test-supabase-parity.cjs passes against the live database.
+// The curriculum read from Supabase — the same functions as json-source.ts,
+// async. The app reads it through ./index.ts (loadSnapshot + JSON fallback);
+// the per-function exports are what scripts/test-supabase-parity.cjs checks.
 //
 // Server-only: uses SUPABASE_SERVICE_ROLE_KEY (RLS has no policies, so only
 // the service role can read). Never import this from a "use client" file.
@@ -96,6 +95,19 @@ function normalize(code: string): string {
 
 function build({ plan, unitInfo }: LoadedLesson): CurriculumLesson {
   return buildCurriculumLesson(plan, unitInfo);
+}
+
+/** Everything the app needs in one query: every lesson (book → unit → lesson
+ * order) plus the first unit's global principles. Throws on any Supabase
+ * error or an empty curriculum, so the caller can fall back to the JSON. */
+export async function loadSnapshot(): Promise<{ lessons: CurriculumLesson[]; principles: string[] }> {
+  const units = await loadUnits();
+  const lessons = units.flatMap((unit) => {
+    const unitInfo: LessonUnitInfo = { book: unit.book.title, unit: unit.title ?? unit.code, idPrefix: `${unit.book.code}-${unit.code}` };
+    return unit.lessons.map((row) => buildCurriculumLesson(toPlan(row), unitInfo));
+  });
+  if (lessons.length === 0) throw new Error("Supabase curriculum is empty");
+  return { lessons, principles: units[0]?.global_principles ?? [] };
 }
 
 export async function getGlobalPrinciples(): Promise<string[]> {

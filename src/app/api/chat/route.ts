@@ -3,7 +3,7 @@ import { GroqAIProvider } from "@/core/ai/GroqAIProvider";
 import { OpenAIProvider } from "@/core/ai/OpenAIProvider";
 import { TutorResponseSchema, type TutorResponse } from "@/core/ai/TutorResponse";
 import { TUTOR_SYSTEM_PROMPT } from "@/app-config/persona";
-import { getCourseOverview, getFirstLesson, getGlobalPrinciples, getLessonByCode, taskId, type CurriculumLesson } from "@/app-config/curriculum";
+import { getCourseOverview, getCurriculumSource, getFirstLesson, getGlobalPrinciples, getLessonByCode, taskId, type CurriculumLesson } from "@/app-config/curriculum";
 import type { AIOptions, Message } from "@/core/ai/AIProvider";
 import { introductionReply } from "@/core/conversation/introductionReply";
 import { splitOutPortuguese } from "@/core/speech/portugueseGuard";
@@ -342,9 +342,9 @@ export async function POST(req: NextRequest) {
   // by a lesson plan). This was the actual production bug: the old fallback
   // told the model to "treat this as an open conversation" whenever
   // getLessonByCode() came back empty.
-  let lesson = requestedLessonCode ? getLessonByCode(requestedLessonCode) : undefined;
+  let lesson = requestedLessonCode ? await getLessonByCode(requestedLessonCode) : undefined;
   if (!lesson) {
-    lesson = getFirstLesson();
+    lesson = await getFirstLesson();
     console.error(
       "[chat] LIÇÃO NÃO ENCONTRADA para código:",
       requestedLessonCode ?? "(nenhum enviado)",
@@ -352,19 +352,19 @@ export async function POST(req: NextRequest) {
       lesson.code
     );
   }
-  console.log("[5 api] lição encontrada:", lesson.code);
+  console.log("[5 api] lição encontrada:", lesson.code, "| fonte:", await getCurriculumSource());
   console.log("[6 api] tasks:", lesson.tasks?.length);
 
   if (studentName) {
     hints.push({ role: "system", content: `Student name: ${studentName}.` });
   }
 
-  const lessonPlanBlock = buildLessonPlanBlock(lesson, getGlobalPrinciples());
+  const lessonPlanBlock = buildLessonPlanBlock(lesson, await getGlobalPrinciples());
   console.log("[7 api] plano injetado:", lessonPlanBlock.slice(0, 200));
   hints.push({ role: "system", content: lessonPlanBlock });
   const progressNote = buildLessonProgressNote(body.completedGoals, body.currentTaskId);
   if (progressNote) hints.push({ role: "system", content: progressNote });
-  const overview = getCourseOverview()
+  const overview = (await getCourseOverview())
     .map((l) => `${l.lessonCode} — ${l.title}`)
     .join("; ");
   hints.push({

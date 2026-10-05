@@ -52,7 +52,7 @@ assert.deepEqual(dep('4C'), ['visual'], '4C: a/an sentences about named characte
 assert.deepEqual(dep('4D'), ['visual', 'image-only'], '4D: the "USAR AS MESMAS IMAGENS" note is not a task');
 
 // 2. Progress denominator and playability.
-const { getLessonByCode, playableTasks } = loadTs(path.resolve(__dirname, '../src/app-config/curriculum/index.ts'));
+const { getLessonByCode, playableTasks } = loadTs(path.resolve(__dirname, '../src/app-config/curriculum/json-source.ts'));
 assert.deepEqual(getLessonByCode('A').canDo, ['task-1'], 'image-only tasks are not in the denominator');
 assert.deepEqual(getLessonByCode('B').canDo, ['task-1', 'task-2']);
 assert.deepEqual(getLessonByCode('4E').canDo, ['task-1', 'task-2']);

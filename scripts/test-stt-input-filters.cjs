@@ -144,7 +144,7 @@ async function micNeverOpensOverTheTutor() {
 }
 
 function lessonATitle() {
-  const { getLessonByCode, getCourseOverview } = loadTs(src('app-config/curriculum/index.ts'));
+  const { getLessonByCode, getCourseOverview } = loadTs(src('app-config/curriculum/json-source.ts'));
   assert.equal(getLessonByCode('A').title, 'Symbols used in The Way to English');
   for (const l of getCourseOverview()) {
     assert.notEqual(l.title, `Lesson ${l.lessonCode}`, `lesson ${l.lessonCode} has no descriptive title`);
