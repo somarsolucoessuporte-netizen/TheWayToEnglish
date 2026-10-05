@@ -4,6 +4,7 @@ import { connection } from "next/server";
 import { requireAdmin } from "@/lib/admin/auth";
 import { LESSON_STATUSES, findLessons, listLessonImages, listSteps } from "@/lib/admin/data";
 import { releaseField } from "../../actions";
+import { DataError } from "../../DataError";
 import { ImageUploadForm, LessonEditForm } from "../../forms";
 
 export default async function AdminLessonPage({
@@ -20,7 +21,12 @@ export default async function AdminLessonPage({
   const lessonCode = decodeURIComponent(code);
   const unitId = typeof unit === "string" && /^[0-9a-f-]{36}$/i.test(unit) ? unit : undefined;
 
-  const matches = await findLessons(lessonCode, unitId);
+  let matches: Awaited<ReturnType<typeof findLessons>>;
+  try {
+    matches = await findLessons(lessonCode, unitId);
+  } catch (error) {
+    return <DataError error={error} />;
+  }
   if (matches.length === 0) notFound();
 
   // Codes repeat across units — without ?unit= the choice is the user's.
@@ -43,7 +49,13 @@ export default async function AdminLessonPage({
   }
 
   const lesson = matches[0];
-  const [steps, images] = await Promise.all([listSteps(lesson.id), listLessonImages(lesson)]);
+  let steps: Awaited<ReturnType<typeof listSteps>>;
+  let images: Awaited<ReturnType<typeof listLessonImages>>;
+  try {
+    [steps, images] = await Promise.all([listSteps(lesson.id), listLessonImages(lesson)]);
+  } catch (error) {
+    return <DataError error={error} />;
+  }
 
   return (
     <>
