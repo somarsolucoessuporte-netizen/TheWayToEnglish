@@ -18,18 +18,17 @@ type DropdownKey = "book" | "unit" | "lesson";
  * Initial "pick a lesson" screen (see page.tsx) — the entry point at "/"
  * whenever there's no ?licao= in the URL. Three dependent dropdowns
  * (Book, Unit, Lesson), each filtered by whatever was picked above it,
- * plus a Start button that navigates to ?licao=CODE once all three are
- * resolved — a real navigation (window.location.href), not a callback
- * prop, so the existing ?licao=-only auto-start effect in page.tsx (see
- * its own handling of the "Aluno" placeholder for a non-1A lesson) is
- * the ONE code path that ever kicks off a lesson, whether reached from
- * here, a bookmark, or a deep link.
+ * plus a Start button that hands the chosen lesson to `onStart` once all
+ * three are resolved. It used to navigate to ?licao=CODE instead, which left
+ * that code in the address bar: a reload, a restored tab or the browser's
+ * autocomplete then restarted the lesson with no pick at all. ?licao= in the
+ * URL is now only the school's deep link (see TutorApp's URL effect).
  *
  * Every label (`lesson.book` / `lesson.unit` / `lesson.code` /
  * `lesson.title`) is exactly what app-config/curriculum already
  * carries — never translated or reformatted.
  */
-export function LessonGrid({ lessons }: { lessons: CurriculumLesson[] }) {
+export function LessonGrid({ lessons, onStart }: { lessons: CurriculumLesson[]; onStart: (lesson: CurriculumLesson) => void }) {
   const books = useMemo(() => uniqueInOrder(lessons.map((lesson) => lesson.book)), [lessons]);
 
   // Pre-selected (not skipped) when there's only one book — the dropdown
@@ -88,7 +87,7 @@ export function LessonGrid({ lessons }: { lessons: CurriculumLesson[] }) {
 
   function handleStart() {
     if (!selectedLesson) return;
-    window.location.href = `/?licao=${encodeURIComponent(selectedLesson.code)}`;
+    onStart(selectedLesson);
   }
 
   return (

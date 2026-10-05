@@ -158,6 +158,18 @@ const STATE_LABELS: Record<CharacterState, string> = {
 
 /** The whole student app. `lessons` comes from the server (app/page.tsx),
  * read from Supabase with the bundled JSON as fallback. */
+/** The student a lesson starts for: the school's ?aluno= when present;
+ * otherwise test mode — no name, except 1A (whose introduction exchange
+ * needs one, so it gets the "Aluno" placeholder). */
+function urlOrTestStudent(lessonCode: string, aluno: string | null): DemoStudent {
+  return {
+    id: aluno ?? "url-student",
+    name: aluno ?? (lessonCode.toLowerCase() === "1a" ? "Aluno" : ""),
+    currentLesson: lessonCode,
+    lastSession: "",
+  };
+}
+
 export default function TutorApp({ lessons }: { lessons: CurriculumLesson[] }) {
   const avatarEngine = useMemo(() => new AvatarEngine(), []);
   // 2000ms (not the default 1500) so the praise video (see Avatar.tsx) —
@@ -690,19 +702,20 @@ export default function TutorApp({ lessons }: { lessons: CurriculumLesson[] }) {
     autoStartedFromUrlRef.current = true;
     const alunoParam = params.get("aluno");
     console.log("[url] parâmetros recebidos — aluno:", alunoParam, "licao:", licaoParam);
-    void handleStudentPick({
-      id: alunoParam ?? "url-student",
-      // Same placeholder rule as LessonGrid's onPick (see handleLessonPick)
-      // — no name for test mode (?licao= alone), except 1A.
-      name: alunoParam ?? (licaoParam.toLowerCase() === "1a" ? "Aluno" : ""),
-      currentLesson: licaoParam,
-      lastSession: "",
-    });
+    void handleStudentPick(urlOrTestStudent(licaoParam, alunoParam));
     // handleStudentPick is re-created every render — depending on it would
     // re-fire this effect on unrelated renders; autoStartedFromUrlRef
     // already guarantees it runs at most once.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [bootState, started]);
+
+  // Test mode: the grid's Start begins the lesson right here, inside the
+  // click — no ?licao= in the address bar (so a reload goes back to the
+  // grid instead of restarting the lesson), and the click stays the user
+  // gesture iOS needs to unlock audio.
+  function handleGridStart(lesson: CurriculumLesson) {
+    void handleStudentPick(urlOrTestStudent(lesson.code, null));
+  }
 
   // The ONLY call site for orchestrator.startListening() in the whole app
   // — push-to-talk is a hard rule (see orchestrator.ts's comments): the
@@ -826,7 +839,7 @@ export default function TutorApp({ lessons }: { lessons: CurriculumLesson[] }) {
       {(bootState === "fading" || bootState === "ready") && (
         <div className={`app-shell${bootState === "fading" ? " app-fade-in" : ""}`}>
           {!started ? (
-            <LessonGrid lessons={allLessons} />
+            <LessonGrid lessons={allLessons} onStart={handleGridStart} />
           ) : (
           <>
           {/* Mobile renders its own floating header over the full-screen
