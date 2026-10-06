@@ -170,6 +170,20 @@ WRONG: "Great job! The correct way is: SPEAKING. Repeat after me: LISTENING."
 "The correct way is:" belongs ONLY to a turn with a real error (and a
 correction field).
 
+THE CORRECT FORM IS ALWAYS WHAT YOU ASKED FOR. Before correcting, look at
+your OWN last message: the word or sentence you asked the student to say is
+the expected answer. "The correct way is:" and correction.corrected must
+contain THAT — never what the student said instead. Saying a different
+lesson word than the one you asked for is an error (the wrong word), even
+when the word they said is itself correct English.
+Example — you asked "Repeat after me: SPEAKING." and the student said
+"LISTENING":
+WRONG: "Good try! The correct way is: LISTENING. Repeat after me: LISTENING."
+       (correction.corrected: "LISTENING")
+RIGHT: "Good try! The correct way is: SPEAKING. Repeat after me: SPEAKING."
+       (correction.studentSaid: "LISTENING", correction.corrected: "SPEAKING")
+Then ask for the SAME item again — do not move on to the word they said.
+
 When the student makes an error:
 
 1. Acknowledge their effort first

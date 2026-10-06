@@ -9,6 +9,7 @@ import { introductionReply } from "@/core/conversation/introductionReply";
 import { splitOutPortuguese } from "@/core/speech/portugueseGuard";
 import { buildLessonProgressNote } from "@/core/conversation/lessonProgress";
 import { removeCorrectionFromPraise } from "@/core/ai/correctionGuard";
+import { correctsAnExpectedAnswer, expectedAnswerFor, pointCorrectionAtExpected, praisesAWrongAnswer } from "@/core/ai/expectedItem";
 
 // The provider swap lives here, not in app-config/providers.ts: both
 // providers hold an API key server-side (GROQ_API_KEY / OPENAI_API_KEY),
@@ -399,11 +400,27 @@ export async function POST(req: NextRequest) {
       console.log("[introReply] resposta:", JSON.stringify(introduction));
       return NextResponse.json(introduction);
     }
+    // The item the student is answering right now (see core/ai/expectedItem.ts)
+    // — sent last, next to the answer it is checked against.
+    const expected = body.nudge ? undefined : expectedAnswerFor(conversation);
+    const expectedNote: Message | undefined = expected
+      ? {
+          role: "system",
+          content:
+            `Note: EXPECTED ANSWER for the student's last message: "${expected}" (the item you asked for in your ` +
+            `previous message). Compare ignoring capitalization and punctuation — "${expected.toLowerCase()}" and ` +
+            `"${expected}" are the SAME answer. If the student said it, the answer is CORRECT: praise=true, no ` +
+            `correction, never "The correct way is"; praise briefly and give the next item. Only if they said ` +
+            `something else (e.g. another lesson word) is it an error: then "The correct way is: ${expected}." and ` +
+            `correction.corrected = "${expected}" — never the word the student said — and ask for "${expected}" again.`,
+        }
+      : undefined;
     const messages: Message[] = [
       { role: "system", content: TUTOR_SYSTEM_PROMPT },
       ...hints,
       ...conversation,
       ...(nudgeNote ? [nudgeNote] : []),
+      ...(expectedNote ? [expectedNote] : []),
     ];
     const sendOptions: AIOptions = {
       sessionId: body.sessionId,
@@ -468,6 +485,69 @@ export async function POST(req: NextRequest) {
       } else {
         response = retry.response;
       }
+    }
+
+    // The student said exactly the expected item but the turn corrects them
+    // ("Listening" for LISTENING → "Good try! The correct way is: LISTENING").
+    // Praise needs the NEXT item, which only the model knows — so one
+    // regeneration with the verdict spelled out; never more.
+    if (correctsAnExpectedAnswer(response, expected)) {
+      console.error(`[chat] acerto ("${response.correction?.studentSaid}") tratado como erro — regenerando o turno`);
+      const retry = TutorResponseSchema.parse(
+        await provider.send(
+          [
+            ...messages,
+            {
+              role: "system",
+              content:
+                `Your previous reply corrected the student, but they said "${response.correction?.studentSaid}", which IS ` +
+                `the expected answer "${expected}" (capitalization does not matter). Regenerate this turn as a CORRECT ` +
+                `answer: praise=true, no correction field, never "The correct way is", and give the next instruction.`,
+            },
+          ],
+          sendOptions
+        )
+      );
+      if (correctsAnExpectedAnswer(retry, expected)) {
+        console.error("[chat] segunda tentativa ainda corrigiu um acerto — mantendo (sem 3a tentativa)");
+      } else {
+        response = retry;
+      }
+    }
+
+    // The mirror case: praise for a different word ("Speaking" when LISTENING
+    // was asked → "Great job!"). Same single regeneration.
+    const studentSaid = conversation[conversation.length - 1]?.content ?? "";
+    if (praisesAWrongAnswer(response, expected, studentSaid)) {
+      console.error(`[chat] erro ("${studentSaid}") elogiado como acerto de "${expected}" — regenerando o turno`);
+      const retry = TutorResponseSchema.parse(
+        await provider.send(
+          [
+            ...messages,
+            {
+              role: "system",
+              content:
+                `Your previous reply praised the student, but they said "${studentSaid}", not the expected answer ` +
+                `"${expected}". Regenerate this turn as an ERROR: praise=false, a correction with studentSaid ` +
+                `"${studentSaid}" and corrected "${expected}", "The correct way is: ${expected}.", and ask for ` +
+                `"${expected}" again.`,
+            },
+          ],
+          sendOptions
+        )
+      );
+      if (praisesAWrongAnswer(retry, expected, studentSaid)) {
+        console.error("[chat] segunda tentativa ainda elogiou o erro — mantendo (sem 3a tentativa)");
+      } else {
+        response = retry;
+      }
+    }
+
+    // A correction must target what was asked for, not what the student said.
+    const pointed = pointCorrectionAtExpected(response, expected);
+    if (pointed.fixed) {
+      console.warn(`[chat] correção apontava para o que o aluno disse ("${response.correction?.corrected}") — trocada pelo pedido ("${expected}")`);
+      response = pointed.response;
     }
 
     // A turn marked correct (praise, no correction) must not also say "The
