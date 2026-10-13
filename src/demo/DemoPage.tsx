@@ -7,15 +7,13 @@ import { useDemoConfig } from "./useDemoConfig";
 import { DemoBanner } from "./DemoBanner";
 
 /**
- * Wrapper white-label para prospecção. Envolve o TutorApp que já existe, sem
- * alterá-lo: aplica as cores da escola (via useDemoConfig) e esconde as
- * marcas "The Way To English" por CSS escopado sob `.demo-root` — nada no
- * componente do tutor ou em produção é tocado.
- *
- * Limitação conhecida: o nome falado da tutora ("Debbie") e "The Way To
- * English" estão embutidos em app-config/persona.ts, que o TutorApp importa
- * direto. Trocar isso por `nome_tutor` exigiria editar o componente/persona
- * de produção — fora do escopo desta demo. O white-label aqui é visual.
+ * Wrapper white-label para prospecção. Envolve o TutorApp que já existe:
+ * aplica as cores da escola (via useDemoConfig), esconde as marcas "The Way
+ * To English" por CSS escopado sob `.demo-root`, e passa um `personaOverride`
+ * para que a IA se apresente com o nome do tutor e a escola desta demo
+ * (ex.: "Brit" / "Britanic") em vez de "Debbie Ann Pamp" / "The Way To
+ * English". As rotas de produção não passam override e mantêm a persona
+ * original intacta.
  */
 export function DemoPage({
   slug,
@@ -83,7 +81,13 @@ export function DemoPage({
         </div>
       )}
 
-      <TutorApp lessons={lessons} />
+      <TutorApp
+        lessons={lessons}
+        personaOverride={{
+          nome_tutor: config.nome_tutor,
+          escola_nome_ia: config.escola_nome_ia,
+        }}
+      />
 
       <DemoBanner escolaNome={config.nome} />
     </div>

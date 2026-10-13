@@ -1,4 +1,5 @@
 import type { TutorResponse } from "./TutorResponse";
+import type { Persona } from "../../app-config/persona";
 
 export interface Message {
   role: "system" | "user" | "assistant";
@@ -8,6 +9,12 @@ export interface Message {
 export interface AIOptions {
   sessionId?: string;
   systemPrompt?: string;
+  /** White-label identity for the demo route (see src/demo). Sent as
+   * structured data — NOT a client-supplied system prompt — because
+   * /api/chat discards any client "system" message and rebuilds the persona
+   * server-side (and re-sanitizes this). Undefined on every production turn,
+   * which keeps the shipped Debbie / The Way To English persona. */
+  personaOverride?: Partial<Persona>;
   /** Language Whisper detected in the student's last voice message (raw,
    * whatever /api/stt reported — usually "en"/"pt" but not guaranteed;
    * omitted for typed messages), so the tutor can weigh the sandwich

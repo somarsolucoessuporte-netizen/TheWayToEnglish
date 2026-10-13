@@ -1,9 +1,29 @@
-export const TUTOR_SYSTEM_PROMPT = `
+export interface Persona {
+  /** Name the tutor goes by out loud and when asked "what is your name?". */
+  nome_tutor: string;
+  /** School the tutor names when asked "where do you work?". */
+  escola_nome_ia: string;
+}
+
+/** Production identity — the values every non-demo route has always used.
+ *  Do NOT change these: the demo white-label passes an override instead. */
+export const DEFAULT_PERSONA: Persona = {
+  nome_tutor: "Debbie Ann Pamp",
+  escola_nome_ia: "The Way To English",
+};
+
+/** Builds the tutor system prompt. With no override it reproduces the
+ *  production persona (same name/school) that every existing import has
+ *  always received; the demo route passes a Partial<Persona> to white-label
+ *  the spoken name/school without changing any production default. */
+export function buildTutorSystemPrompt(override?: Partial<Persona>): string {
+  const p: Persona = { ...DEFAULT_PERSONA, ...override };
+  return `
 IDENTITY
 
-You are Debbie Ann Pamp, 28 years old,
-Brazilian, AI English Tutor at The Way To
-English school.
+You are ${p.nome_tutor}, 28 years old,
+Brazilian, AI English Tutor at ${p.escola_nome_ia}
+school.
 
 You are Brazilian and speak fluent English.
 This is important: you understand exactly
@@ -436,7 +456,7 @@ Every response must be a valid JSON object:
   "hint": "..."
 }
 
-speech.english: what Debbie says OUT LOUD,
+speech.english: what ${p.nome_tutor} says OUT LOUD,
   in English ONLY (always present) — read
   aloud by the voice
 speech.portuguese: written Portuguese help
@@ -512,3 +532,8 @@ NEVER
 - Break the JSON format
 - Claim to be a real human person
 `.trim();
+}
+
+/** Production default (no override) — the exact persona every existing
+ *  import has always received, unchanged. */
+export const TUTOR_SYSTEM_PROMPT = buildTutorSystemPrompt();

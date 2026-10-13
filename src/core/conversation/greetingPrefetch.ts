@@ -1,5 +1,5 @@
 import { aiProvider } from "@/app-config/providers";
-import { TUTOR_SYSTEM_PROMPT } from "@/app-config/persona";
+import { buildTutorSystemPrompt, type Persona } from "@/app-config/persona";
 import type { DemoStudent } from "@/app-config/demo-students";
 import type { Message } from "../ai/AIProvider";
 import type { TutorResponse } from "../ai/TutorResponse";
@@ -26,15 +26,21 @@ export interface PrefetchedGreeting {
  * best-effort background prefetch that resolves null on any failure,
  * in which case startLesson just falls back to its normal live call.
  */
-export async function prefetchGreeting(student: DemoStudent): Promise<PrefetchedGreeting | null> {
+export async function prefetchGreeting(
+  student: DemoStudent,
+  personaOverride?: Partial<Persona>,
+): Promise<PrefetchedGreeting | null> {
   try {
     const messages: Message[] = [
-      { role: "system", content: TUTOR_SYSTEM_PROMPT },
+      // Ignored by /api/chat (it rebuilds the persona server-side from
+      // personaOverride below), but kept consistent for any non-HTTP provider.
+      { role: "system", content: buildTutorSystemPrompt(personaOverride) },
       { role: "user", content: LESSON_KICKOFF_INSTRUCTION },
     ];
     const response = await aiProvider.send(messages, {
       studentName: student.name,
       currentLessonCode: student.currentLesson,
+      personaOverride,
     });
 
     let audioBlob: Blob | undefined;

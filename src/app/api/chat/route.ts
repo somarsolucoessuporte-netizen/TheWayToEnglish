@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { GroqAIProvider } from "@/core/ai/GroqAIProvider";
 import { OpenAIProvider } from "@/core/ai/OpenAIProvider";
 import { TutorResponseSchema, type TutorResponse } from "@/core/ai/TutorResponse";
-import { TUTOR_SYSTEM_PROMPT } from "@/app-config/persona";
+import { buildTutorSystemPrompt, DEFAULT_PERSONA, type Persona } from "@/app-config/persona";
 import { getCourseOverview, getCurriculumSource, getFirstLesson, getGlobalPrinciples, getLessonByCode, taskId, type CurriculumLesson } from "@/app-config/curriculum";
 import type { AIOptions, Message } from "@/core/ai/AIProvider";
 import { introductionReply } from "@/core/conversation/introductionReply";
@@ -43,6 +43,10 @@ interface ChatRequestBody {
   /** See AIOptions.completedGoals / currentTaskId. */
   completedGoals?: string[];
   currentTaskId?: string;
+  /** White-label identity for the demo route (see src/demo). Treated as
+   * untrusted client input: re-sanitized here (see sanitizePersonaOverride)
+   * before it ever reaches the persona, never used as a raw system prompt. */
+  personaOverride?: Partial<Record<keyof Persona, unknown>>;
 }
 
 /** Level-specific instruction for a NUDGE EVENT (see ChatRequestBody.nudge
@@ -87,6 +91,58 @@ const NUDGE_INSTRUCTIONS: Record<NonNullable<ChatRequestBody["nudge"]>, string> 
 };
 
 const MAX_NAME_LEN = 80;
+
+/** Max length for a white-labeled persona field (tutor name / school name). */
+const MAX_PERSONA_FIELD_LEN = 60;
+
+/**
+ * The persona override arrives from the browser (see HttpAIProvider / the
+ * /demo route), so it is untrusted: it gets folded into the system prompt and
+ * would otherwise be a prompt-injection surface. Keep ONLY the two known
+ * fields, force them to short single-line strings (no newlines/backticks, so
+ * nothing can break out of or append to the prompt), and drop everything
+ * else. An empty result returns undefined, which makes buildTutorSystemPrompt
+ * fall back to the production persona.
+ */
+function sanitizePersonaOverride(
+  raw: ChatRequestBody["personaOverride"],
+): Partial<Persona> | undefined {
+  if (!raw || typeof raw !== "object") return undefined;
+  const clean = (value: unknown): string | undefined => {
+    if (typeof value !== "string") return undefined;
+    const trimmed = value.replace(/[`\r\n]+/g, " ").replace(/\s+/g, " ").trim().slice(0, MAX_PERSONA_FIELD_LEN);
+    return trimmed || undefined;
+  };
+  const override: Partial<Persona> = {};
+  const nome = clean(raw.nome_tutor);
+  const escola = clean(raw.escola_nome_ia);
+  if (nome) override.nome_tutor = nome;
+  if (escola) override.escola_nome_ia = escola;
+  return Object.keys(override).length > 0 ? override : undefined;
+}
+
+/**
+ * The tutor's default name ("Debbie Ann Pamp" / "Debbie") and school are also
+ * baked into the lesson REFERENCE CONTENT (the dialogue scripts and the "AI
+ * Tutor" info block in the curriculum), which is injected into every turn's
+ * lesson plan — so without this the model would still introduce itself as
+ * Debbie even with an overridden persona. When a demo override is active, swap
+ * those defaults inside the injected text too. No override (production) => the
+ * text is returned untouched.
+ */
+function applyPersonaToText(text: string, override?: Partial<Persona>): string {
+  if (!override) return text;
+  let out = text;
+  if (override.nome_tutor) {
+    out = out.split(DEFAULT_PERSONA.nome_tutor).join(override.nome_tutor);
+    const firstName = DEFAULT_PERSONA.nome_tutor.split(" ")[0];
+    out = out.replace(new RegExp(`\\b${firstName}\\b`, "g"), override.nome_tutor);
+  }
+  if (override.escola_nome_ia) {
+    out = out.split(DEFAULT_PERSONA.escola_nome_ia).join(override.escola_nome_ia);
+  }
+  return out;
+}
 
 /**
  * Renders the current lesson's full roteiro (global principles + ordered
@@ -343,6 +399,8 @@ export async function POST(req: NextRequest) {
   }
 
   const studentName = body.studentName?.slice(0, MAX_NAME_LEN).trim();
+  // Demo white-label identity (undefined on every production turn).
+  const personaOverride = sanitizePersonaOverride(body.personaOverride);
   const requestedLessonCode = body.currentLessonCode ?? body.lessonCode;
   console.log("[4 api] body.lessonCode:", requestedLessonCode);
 
@@ -371,7 +429,10 @@ export async function POST(req: NextRequest) {
     hints.push({ role: "system", content: `Student name: ${studentName}.` });
   }
 
-  const lessonPlanBlock = buildLessonPlanBlock(lesson, await getGlobalPrinciples());
+  const lessonPlanBlock = applyPersonaToText(
+    buildLessonPlanBlock(lesson, await getGlobalPrinciples()),
+    personaOverride,
+  );
   console.log("[7 api] plano injetado:", lessonPlanBlock.slice(0, 200));
   hints.push({ role: "system", content: lessonPlanBlock });
   const progressNote = buildLessonProgressNote(body.completedGoals, body.currentTaskId);
@@ -415,8 +476,9 @@ export async function POST(req: NextRequest) {
             `correction.corrected = "${expected}" — never the word the student said — and ask for "${expected}" again.`,
         }
       : undefined;
+    const systemPrompt = buildTutorSystemPrompt(personaOverride);
     const messages: Message[] = [
-      { role: "system", content: TUTOR_SYSTEM_PROMPT },
+      { role: "system", content: systemPrompt },
       ...hints,
       ...conversation,
       ...(nudgeNote ? [nudgeNote] : []),

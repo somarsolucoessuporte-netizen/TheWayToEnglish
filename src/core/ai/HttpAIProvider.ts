@@ -40,6 +40,7 @@ export class HttpAIProvider implements AIProvider {
           usedNudges: opts?.usedNudges,
           completedGoals: opts?.completedGoals,
           currentTaskId: opts?.currentTaskId,
+          personaOverride: opts?.personaOverride,
         }),
         signal: controller.signal,
       });

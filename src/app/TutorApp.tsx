@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { branding } from "@/app-config/branding";
-import { TUTOR_SYSTEM_PROMPT } from "@/app-config/persona";
+import { buildTutorSystemPrompt, type Persona } from "@/app-config/persona";
 import { DEMO_STUDENTS, type DemoStudent } from "@/app-config/demo-students";
 import type { CurriculumLesson } from "@/app-config/curriculum";
 import { findLessonByCode, nextLessonAfter } from "@/app-config/curriculum/lookup";
@@ -170,8 +170,25 @@ function urlOrTestStudent(lessonCode: string, aluno: string | null): DemoStudent
 
 /** The whole student app. `lessons` comes from the server (app/page.tsx),
  * read from Supabase with the bundled JSON as fallback. */
-export default function TutorApp({ lessons }: { lessons: CurriculumLesson[] }) {
+export default function TutorApp({
+  lessons,
+  personaOverride,
+}: {
+  lessons: CurriculumLesson[];
+  /** White-label override for the demo route (see src/demo). Undefined on
+   * every production route, which keeps the shipped Debbie / The Way To
+   * English persona verbatim. */
+  personaOverride?: Partial<Persona>;
+}) {
   const avatarEngine = useMemo(() => new AvatarEngine(), []);
+  // Resolved once: the production persona when personaOverride is undefined
+  // (all non-demo routes), or the school's white-labeled name/school on the
+  // /demo/:escola route. Threaded into BOTH the orchestrator and the boot
+  // greeting prefetch below so the two always speak as the same tutor.
+  const systemPrompt = useMemo(
+    () => buildTutorSystemPrompt(personaOverride),
+    [personaOverride]
+  );
   // 2000ms (not the default 1500) so the praise video (see Avatar.tsx) —
   // a one-shot reaction clip, not a loop — gets its full "fica visível
   // por 2 segundos" before reverting. Also applies to the "correction"
@@ -187,9 +204,10 @@ export default function TutorApp({ lessons }: { lessons: CurriculumLesson[] }) {
         ai: aiProvider,
         avatar: avatarEngine,
         stateMachine,
-        systemPrompt: TUTOR_SYSTEM_PROMPT,
+        systemPrompt,
+        personaOverride,
       }),
-    [avatarEngine, stateMachine]
+    [avatarEngine, stateMachine, systemPrompt, personaOverride]
   );
 
   // On-screen diagnostics (see components/DebugPanel.tsx) for ?debug=1 —
@@ -367,7 +385,7 @@ export default function TutorApp({ lessons }: { lessons: CurriculumLesson[] }) {
     setBootAssets(INITIAL_BOOT_ASSETS);
     greetingCacheRef.current.clear();
     for (const student of DEMO_STUDENTS) {
-      void prefetchGreeting(student).then((greeting) => {
+      void prefetchGreeting(student, personaOverride).then((greeting) => {
         greetingCacheRef.current.set(student.id, greeting);
       });
     }
@@ -462,7 +480,7 @@ export default function TutorApp({ lessons }: { lessons: CurriculumLesson[] }) {
       settled = true;
       window.clearTimeout(timeoutId);
     };
-  }, []);
+  }, [personaOverride]);
 
   useEffect(() => runBoot(), [runBoot]);
 

@@ -7,7 +7,10 @@ export interface DemoSchoolConfig {
   logo_url: string | null;
   cor_primaria: string;
   cor_secundaria: string;
+  /** Name the tutor speaks as on this demo (feeds TutorApp's personaOverride). */
   nome_tutor: string;
+  /** School the tutor names when asked where it works (personaOverride). */
+  escola_nome_ia: string;
   mensagem_boas_vindas: string;
   /** ISO date string (YYYY-MM-DD or full ISO); null = never expires. */
   expira_em: string | null;
@@ -22,6 +25,7 @@ const DEFAULT_CONFIG: DemoSchoolConfig = {
   cor_primaria: "#1a237e",
   cor_secundaria: "#ffffff",
   nome_tutor: "Tutor",
+  escola_nome_ia: "English Tutor",
   mensagem_boas_vindas: "Olá! Como posso te ajudar a aprender inglês hoje?",
   expira_em: null,
 };

@@ -1,6 +1,7 @@
 import type { SpeechProvider } from "../speech/SpeechProvider";
 import type { SpeechToTextProvider, SttResult } from "../stt/SpeechToTextProvider";
 import type { AIProvider, Message } from "../ai/AIProvider";
+import type { Persona } from "../../app-config/persona";
 import type { TutorResponse } from "../ai/TutorResponse";
 import type { AvatarEngine } from "../avatar-engine/AvatarEngine";
 import { playCorrectSound } from "../audio/playCorrectSound";
@@ -15,6 +16,9 @@ export interface ConversationOrchestratorOptions {
   avatar: AvatarEngine;
   stateMachine?: CharacterStateMachine;
   systemPrompt: string;
+  /** White-label identity for the demo route (see src/demo), forwarded to
+   * /api/chat on every turn as structured data. Undefined in production. */
+  personaOverride?: Partial<Persona>;
   sessionId?: string;
 }
 
@@ -118,6 +122,7 @@ export class ConversationOrchestrator {
   private readonly avatar: AvatarEngine;
   private readonly stateMachine: CharacterStateMachine;
   private readonly systemPrompt: string;
+  private readonly personaOverride?: Partial<Persona>;
   private readonly sessionId: string;
 
   private history: Message[] = [];
@@ -281,6 +286,7 @@ export class ConversationOrchestrator {
     this.avatar = opts.avatar;
     this.stateMachine = opts.stateMachine ?? new CharacterStateMachine();
     this.systemPrompt = opts.systemPrompt;
+    this.personaOverride = opts.personaOverride;
     this.sessionId = opts.sessionId ?? Math.random().toString(36).slice(2);
 
     // Instrumentation: every CharacterState transition, timestamped —
@@ -1250,6 +1256,7 @@ export class ConversationOrchestrator {
           usedNudges: this.usedNudgePhrases,
           completedGoals: Array.from(this.completedGoals),
           currentTaskId: this.currentTaskId(),
+          personaOverride: this.personaOverride,
         });
         awaitingChatResponse = false;
         if (this.chatAbort === chatAbort) this.chatAbort = null;
