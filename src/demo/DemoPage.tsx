@@ -39,13 +39,25 @@ export function DemoPage({
   if (expirado) {
     return (
       <div style={{ ...centerScreen, textAlign: "center", padding: 24 }}>
-        {config.logo_url && logoOk && (
+        {config.logo_url && logoOk ? (
           <img
             src={config.logo_url}
             alt={config.nome}
             onError={() => setLogoOk(false)}
             style={{ maxHeight: 80, marginBottom: 24 }}
           />
+        ) : (
+          <div
+            style={{
+              fontSize: 28,
+              fontWeight: 700,
+              letterSpacing: "0.02em",
+              color: config.cor_primaria,
+              marginBottom: 24,
+            }}
+          >
+            {config.nome}
+          </div>
         )}
         <h2 style={{ margin: 0 }}>Demonstração encerrada</h2>
         <p>
@@ -70,16 +82,20 @@ export function DemoPage({
       <style dangerouslySetInnerHTML={{ __html: DEMO_SCOPED_CSS }} />
 
       {/* Logo flutuante da escola — não reserva espaço no layout, então não
-          quebra o 100dvh que o avatar (sobretudo no mobile) depende. */}
-      {config.logo_url && logoOk && (
-        <div className="demo-logo-badge" title={config.mensagem_boas_vindas}>
+          quebra o 100dvh que o avatar (sobretudo no mobile) depende. Se a
+          imagem falhar (URL morta/alterada), cai no nome da escola em texto
+          estilizado — o header nunca fica vazio. */}
+      <div className="demo-logo-badge" title={config.mensagem_boas_vindas}>
+        {config.logo_url && logoOk ? (
           <img
             src={config.logo_url}
             alt={config.nome}
             onError={() => setLogoOk(false)}
           />
-        </div>
-      )}
+        ) : (
+          <span className="demo-logo-fallback">{config.nome}</span>
+        )}
+      </div>
 
       <TutorApp
         lessons={lessons}
@@ -129,5 +145,16 @@ const DEMO_SCOPED_CSS = `
   max-height: 36px;
   max-width: 160px;
   object-fit: contain;
+}
+/* Fallback em texto quando a logo não carrega — nunca header vazio. */
+.demo-root .demo-logo-fallback {
+  display: block;
+  font-family: 'Poppins', ui-sans-serif, system-ui, sans-serif;
+  font-weight: 700;
+  font-size: 18px;
+  line-height: 24px;
+  letter-spacing: 0.02em;
+  color: var(--cor-primaria, #1a237e);
+  white-space: nowrap;
 }
 `;

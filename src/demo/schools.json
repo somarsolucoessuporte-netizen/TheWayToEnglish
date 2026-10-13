@@ -13,7 +13,7 @@
   "englishprep": {
     "nome": "English Prep",
     "cidade": "Recife, PE",
-    "logo_url": "https://www.englishprep.com.br/wp-content/uploads/logo.png",
+    "logo_url": "https://englishprep.com.br/wp-content/uploads/2024/03/english-prep-logo-horizontal.png",
     "cor_primaria": "#0d47a1",
     "cor_secundaria": "#ffffff",
     "nome_tutor": "Prep",
@@ -24,7 +24,7 @@
   "lbe-school": {
     "nome": "LBE School",
     "cidade": "Campinas, SP",
-    "logo_url": "https://www.lbeschool.com.br/wp-content/uploads/logo-lbe.png",
+    "logo_url": "https://www.lbeschool.com.br/wp-content/uploads/2017/08/logo.png",
     "cor_primaria": "#1a237e",
     "cor_secundaria": "#ffffff",
     "nome_tutor": "Leo",
@@ -35,7 +35,7 @@
   "talken": {
     "nome": "Talken",
     "cidade": "Curitiba, PR",
-    "logo_url": "https://www.talken.com.br/wp-content/uploads/logo-talken.png",
+    "logo_url": "https://www.talken.com.br/images/talken-logo.png",
     "cor_primaria": "#e65100",
     "cor_secundaria": "#ffffff",
     "nome_tutor": "Talk",
@@ -46,7 +46,7 @@
   "uptime": {
     "nome": "Uptime English",
     "cidade": "Belo Horizonte, MG",
-    "logo_url": "https://www.uptime.com.br/wp-content/uploads/logo-uptime.png",
+    "logo_url": "https://uptime.com.br/wp-content/uploads/2025/01/UPTIMEOFICIAL-2.png",
     "cor_primaria": "#6a1b9a",
     "cor_secundaria": "#ffffff",
     "nome_tutor": "Up",
@@ -57,7 +57,7 @@
   "united-idiomas": {
     "nome": "United Idiomas",
     "cidade": "Goiânia, GO",
-    "logo_url": "https://www.unitedidiomas.com/wp-content/uploads/logo-united.webp",
+    "logo_url": "https://www.unitedidiomas.com/assets/images/logo-united-idiomas-lossless.webp",
     "cor_primaria": "#212121",
     "cor_secundaria": "#f5c518",
     "nome_tutor": "Unite",
@@ -68,7 +68,7 @@
   "ibeu": {
     "nome": "IBEU",
     "cidade": "Rio de Janeiro, RJ",
-    "logo_url": "https://portal.ibeu.org.br/wp-content/uploads/logo-ibeu.svg",
+    "logo_url": "https://portal.ibeu.org.br/wp-content/uploads/2024/10/logo-ibeu-1080x1080-1.png",
     "cor_primaria": "#1565c0",
     "cor_secundaria": "#ffffff",
     "nome_tutor": "IB",
