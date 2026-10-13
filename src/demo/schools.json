@@ -1,0 +1,72 @@
+{
+  "britanic": {
+    "nome": "Britanic",
+    "cidade": "Vitória, ES",
+    "logo_url": "https://www.britanic.com.br/wp-content/uploads/logo-britanic.png",
+    "cor_primaria": "#003087",
+    "cor_secundaria": "#ffffff",
+    "nome_tutor": "Brit",
+    "mensagem_boas_vindas": "Olá! Sou o Brit, seu tutor de inglês da Britanic. Vamos aprender juntos?",
+    "expira_em": null
+  },
+  "englishprep": {
+    "nome": "English Prep",
+    "cidade": "Recife, PE",
+    "logo_url": "https://www.englishprep.com.br/wp-content/uploads/logo.png",
+    "cor_primaria": "#0d47a1",
+    "cor_secundaria": "#ffffff",
+    "nome_tutor": "Prep",
+    "mensagem_boas_vindas": "Hi! I'm Prep, your English tutor at English Prep. Ready to start?",
+    "expira_em": null
+  },
+  "lbe-school": {
+    "nome": "LBE School",
+    "cidade": "Campinas, SP",
+    "logo_url": "https://www.lbeschool.com.br/wp-content/uploads/logo-lbe.png",
+    "cor_primaria": "#1a237e",
+    "cor_secundaria": "#ffffff",
+    "nome_tutor": "Leo",
+    "mensagem_boas_vindas": "Olá! Sou o Leo, tutor da LBE School. Vamos evoluir seu inglês hoje?",
+    "expira_em": null
+  },
+  "talken": {
+    "nome": "Talken",
+    "cidade": "Curitiba, PR",
+    "logo_url": "https://www.talken.com.br/wp-content/uploads/logo-talken.png",
+    "cor_primaria": "#e65100",
+    "cor_secundaria": "#ffffff",
+    "nome_tutor": "Talk",
+    "mensagem_boas_vindas": "Hello! I'm Talk, your English coach at Talken. Let's get started!",
+    "expira_em": null
+  },
+  "uptime": {
+    "nome": "Uptime English",
+    "cidade": "Belo Horizonte, MG",
+    "logo_url": "https://www.uptime.com.br/wp-content/uploads/logo-uptime.png",
+    "cor_primaria": "#6a1b9a",
+    "cor_secundaria": "#ffffff",
+    "nome_tutor": "Up",
+    "mensagem_boas_vindas": "Hi! I'm Up, your English tutor at Uptime. Let's level up your English!",
+    "expira_em": null
+  },
+  "united-idiomas": {
+    "nome": "United Idiomas",
+    "cidade": "Goiânia, GO",
+    "logo_url": "https://www.unitedidiomas.com/wp-content/uploads/logo-united.webp",
+    "cor_primaria": "#212121",
+    "cor_secundaria": "#f5c518",
+    "nome_tutor": "Unite",
+    "mensagem_boas_vindas": "Olá! Sou Unite, seu tutor da United Idiomas. Bora falar inglês?",
+    "expira_em": null
+  },
+  "ibeu": {
+    "nome": "IBEU",
+    "cidade": "Rio de Janeiro, RJ",
+    "logo_url": "https://portal.ibeu.org.br/wp-content/uploads/logo-ibeu.svg",
+    "cor_primaria": "#1565c0",
+    "cor_secundaria": "#ffffff",
+    "nome_tutor": "IB",
+    "mensagem_boas_vindas": "Olá! Sou IB, seu tutor de inglês do IBEU. Vamos começar?",
+    "expira_em": null
+  }
+}
