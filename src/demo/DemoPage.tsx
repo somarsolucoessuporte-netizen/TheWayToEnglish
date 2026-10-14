@@ -1,10 +1,11 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import type { CurriculumLesson } from "@/app-config/curriculum";
 import TutorApp from "@/app/TutorApp";
 import { useDemoConfig } from "./useDemoConfig";
 import { DemoBanner } from "./DemoBanner";
+import { whiteLabelLessons } from "./whiteLabel";
 
 /**
  * Wrapper white-label para prospecção. Envolve o TutorApp que já existe:
@@ -24,6 +25,18 @@ export function DemoPage({
 }) {
   const { config, expirado, escolaValida } = useDemoConfig(slug);
   const [logoOk, setLogoOk] = useState(true);
+
+  const personaOverride = useMemo(
+    () => ({ nome_tutor: config.nome_tutor, escola_nome_ia: config.escola_nome_ia }),
+    [config.nome_tutor, config.escola_nome_ia],
+  );
+  // Lesson titles/tips carry "The Way to English" in the data — swap it for
+  // the school's name in the UI (display only; the AI prompt is handled
+  // server-side in /api/chat). See whiteLabel.ts.
+  const demoLessons = useMemo(
+    () => whiteLabelLessons(lessons, personaOverride),
+    [lessons, personaOverride],
+  );
 
   if (!escolaValida) {
     return (
@@ -97,13 +110,7 @@ export function DemoPage({
         )}
       </div>
 
-      <TutorApp
-        lessons={lessons}
-        personaOverride={{
-          nome_tutor: config.nome_tutor,
-          escola_nome_ia: config.escola_nome_ia,
-        }}
-      />
+      <TutorApp lessons={demoLessons} personaOverride={personaOverride} />
 
       <DemoBanner escolaNome={config.nome} />
     </div>
@@ -123,6 +130,9 @@ const centerScreen: React.CSSProperties = {
 const DEMO_SCOPED_CSS = `
 /* Marca textual/logo da The Way To English — ocultas só dentro da demo. */
 .demo-root .topbar .brand { display: none !important; }
+/* A tela de seleção de lição tem seu PRÓPRIO bloco de marca (dot + "Tutor IA
+   de Inglês" + "The Way To English"), fora do .topbar — some também. */
+.demo-root .lesson-select-brand { display: none !important; }
 .demo-root .footer { display: none !important; }
 .demo-root .wtes-wordmark { display: none !important; }
 .demo-root .wtes-logo-big { visibility: hidden !important; }

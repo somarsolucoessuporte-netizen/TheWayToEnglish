@@ -130,16 +130,30 @@ function sanitizePersonaOverride(
  * those defaults inside the injected text too. No override (production) => the
  * text is returned untouched.
  */
+function escapeRegExp(s: string): string {
+  return s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
+
 function applyPersonaToText(text: string, override?: Partial<Persona>): string {
   if (!override) return text;
   let out = text;
-  if (override.nome_tutor) {
-    out = out.split(DEFAULT_PERSONA.nome_tutor).join(override.nome_tutor);
-    const firstName = DEFAULT_PERSONA.nome_tutor.split(" ")[0];
-    out = out.replace(new RegExp(`\\b${firstName}\\b`, "g"), override.nome_tutor);
-  }
+  // Case-INSENSITIVE on purpose: the curriculum content writes the school as
+  // "The Way to English" (lowercase "to") while DEFAULT_PERSONA has "The Way
+  // To English". A case-sensitive swap missed it and the name leaked into a
+  // lesson title ("Symbols used in The Way to English").
   if (override.escola_nome_ia) {
-    out = out.split(DEFAULT_PERSONA.escola_nome_ia).join(override.escola_nome_ia);
+    out = out.replace(
+      new RegExp(escapeRegExp(DEFAULT_PERSONA.escola_nome_ia), "gi"),
+      override.escola_nome_ia,
+    );
+  }
+  if (override.nome_tutor) {
+    out = out.replace(
+      new RegExp(escapeRegExp(DEFAULT_PERSONA.nome_tutor), "gi"),
+      override.nome_tutor,
+    );
+    const firstName = DEFAULT_PERSONA.nome_tutor.split(" ")[0];
+    out = out.replace(new RegExp(`\\b${escapeRegExp(firstName)}\\b`, "gi"), override.nome_tutor);
   }
   return out;
 }
@@ -437,9 +451,10 @@ export async function POST(req: NextRequest) {
   hints.push({ role: "system", content: lessonPlanBlock });
   const progressNote = buildLessonProgressNote(body.completedGoals, body.currentTaskId);
   if (progressNote) hints.push({ role: "system", content: progressNote });
-  const overview = (await getCourseOverview())
-    .map((l) => `${l.lessonCode} — ${l.title}`)
-    .join("; ");
+  const overview = applyPersonaToText(
+    (await getCourseOverview()).map((l) => `${l.lessonCode} — ${l.title}`).join("; "),
+    personaOverride,
+  );
   hints.push({
     role: "system",
     content: `Full course overview (for recognizing content from other lessons, not for teaching ahead): ${overview}.`,
