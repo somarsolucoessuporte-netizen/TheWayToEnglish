@@ -44,23 +44,25 @@ const DEFAULT_CONFIG: DemoSchoolConfig = {
 const BRAND_TOKENS = ["--accent", "--brand-navy"] as const;
 
 export function useDemoConfig(slug: string | null | undefined) {
-  const [config, setConfig] = useState<DemoSchoolConfig>(DEFAULT_CONFIG);
+  // Resolvidos de forma SÍNCRONA no primeiro render (schools.json é import
+  // estático): a config nunca pode mudar depois do mount. Antes ela nascia
+  // como DEFAULT_CONFIG e era trocada num useEffect — o personaOverride do
+  // TutorApp mudava uma vez, recriava o ConversationOrchestrator e o
+  // anterior continuava vivo nos providers singleton, roubando o transcript
+  // do aluno (voz de um orchestrator, texto do chat de outro).
+  const [config] = useState<DemoSchoolConfig>(() =>
+    slug && schools[slug] ? { ...DEFAULT_CONFIG, ...schools[slug] } : DEFAULT_CONFIG,
+  );
+  const [escolaValida] = useState(() => Boolean(slug && schools[slug]));
   const [expirado, setExpirado] = useState(false);
-  const [escolaValida, setEscolaValida] = useState(true);
 
   useEffect(() => {
-    if (!slug || !schools[slug]) {
-      setEscolaValida(false);
-      return;
-    }
+    if (!escolaValida) return;
 
-    setEscolaValida(true);
-    setExpirado(false);
+    const escolaConfig = config;
 
-    const escolaConfig: DemoSchoolConfig = { ...DEFAULT_CONFIG, ...schools[slug] };
-    setConfig(escolaConfig);
-
-    // Expiração
+    // Expiração — fica no effect porque depende de new Date() (evita
+    // hydration mismatch entre o render do servidor e o do cliente).
     if (escolaConfig.expira_em) {
       const expira = new Date(escolaConfig.expira_em);
       if (!Number.isNaN(expira.getTime()) && new Date() > expira) {
@@ -85,7 +87,7 @@ export function useDemoConfig(slug: string | null | undefined) {
         root.style.removeProperty(token);
       }
     };
-  }, [slug]);
+  }, [config, escolaValida]);
 
   return { config, expirado, escolaValida };
 }
