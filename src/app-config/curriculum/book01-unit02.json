@@ -1,0 +1,2196 @@
+{
+  "book": "Book 1",
+  "unit": "Unit 2",
+  "unitTheme": "Vocabulary; Speaking; READING; Grammar and Speaking; The pronunciation of the letters S and Z; Listening; Presentation and Vocabulary; Grammar; Speaking and Bible Search; Listening and Song; Reading and Vocabulary; Vocabulary and Writing",
+  "sourceFile": "THE WAY for AI_Book 1_Unit 2_prompts.docx",
+  "globalPrinciples": [],
+  "tutorIdentity": {
+    "name": "Debbie Ann Pamp",
+    "age": 28,
+    "nationality": "Brazilian",
+    "occupation": "AI Tutor"
+  },
+  "lessons": [
+    {
+      "code": "6A",
+      "title": "Vocabulary – CLASSROOM LANGUAGE",
+      "skill": "Vocabulary",
+      "order": 1,
+      "tasks": [
+        {
+          "order": 1,
+          "instruction": "A IA mostra as imagens e pede pro aluno repetir (1x cada símbolo)",
+          "type": "student_repeats",
+          "imageDependency": "visual",
+          "items": [
+            {
+              "prompt": "Fill in the blanks. / Complete the sentence.",
+              "expectedAnswer": null,
+              "fromReference": true,
+              "imagePath": "book01/unit02/6A/task-1-item-1.png"
+            },
+            {
+              "prompt": "Choose the correct answer.",
+              "expectedAnswer": null,
+              "fromReference": true,
+              "imagePath": "book01/unit02/6A/task-1-item-2.png"
+            },
+            {
+              "prompt": "Underline.",
+              "expectedAnswer": null,
+              "fromReference": true,
+              "imagePath": "book01/unit02/6A/task-1-item-3.png"
+            },
+            {
+              "prompt": "Mark",
+              "expectedAnswer": null,
+              "fromReference": true,
+              "imagePath": "book01/unit02/6A/task-1-item-4.png"
+            },
+            {
+              "prompt": "Draw",
+              "expectedAnswer": null,
+              "fromReference": true,
+              "imagePath": "book01/unit02/6A/task-1-item-5.png"
+            },
+            {
+              "prompt": "Match.",
+              "expectedAnswer": null,
+              "fromReference": true,
+              "imagePath": "book01/unit02/6A/task-1-item-6.png"
+            }
+          ]
+        },
+        {
+          "order": 2,
+          "instruction": "A IA pronuncia o nome de cada símbolo, mostrando as imagens e pedindo para o aluno identificar o nome e o símbolo.",
+          "type": "student_answers",
+          "imageDependency": "image-only",
+          "items": []
+        },
+        {
+          "order": 3,
+          "instruction": "A IA mostra as imagens e pede pro aluno repetir (1x cada símbolo) – Ela diz, “Repeat, please”.",
+          "type": "student_repeats",
+          "imageDependency": "visual",
+          "items": [
+            {
+              "prompt": "",
+              "expectedAnswer": null,
+              "fromReference": true,
+              "imagePath": "book01/unit02/6A/task-3-item-1.png"
+            },
+            {
+              "prompt": "",
+              "expectedAnswer": null,
+              "fromReference": true,
+              "imagePath": "book01/unit02/6A/task-3-item-2.png"
+            },
+            {
+              "prompt": "",
+              "expectedAnswer": null,
+              "fromReference": true,
+              "imagePath": "book01/unit02/6A/task-3-item-3.png"
+            },
+            {
+              "prompt": "",
+              "expectedAnswer": null,
+              "fromReference": true,
+              "imagePath": "book01/unit02/6A/task-3-item-4.jpg"
+            },
+            {
+              "prompt": "",
+              "expectedAnswer": null,
+              "fromReference": true,
+              "imagePath": "book01/unit02/6A/task-3-item-5.jpg"
+            },
+            {
+              "prompt": "",
+              "expectedAnswer": null,
+              "fromReference": true,
+              "imagePath": "book01/unit02/6A/task-3-item-6.jpg"
+            },
+            {
+              "prompt": "",
+              "expectedAnswer": null,
+              "fromReference": true,
+              "imagePath": "book01/unit02/6A/task-3-item-7.png"
+            },
+            {
+              "prompt": "",
+              "expectedAnswer": null,
+              "fromReference": true,
+              "imagePath": "book01/unit02/6A/task-3-item-8.png"
+            }
+          ]
+        },
+        {
+          "order": 4,
+          "instruction": "A IA mostra as imagens e pede para o aluno dizer qual a ação. What is the instruction?",
+          "type": "student_answers",
+          "imageDependency": "visual",
+          "items": []
+        }
+      ],
+      "referenceContent": {
+        "dialogues": [],
+        "vocabulary": [],
+        "grammarNotes": [
+          "This video is about Classroom language.",
+          "A fim de falar cada vez menos português em nossos vídeos, vamos dar um passo nessa direção. Vamos ver vocabulário básico para dar as instruções para os próximos exercícios.",
+          "SLIDE 1 – INSTRUCTIONS 1",
+          "SLIDE 2 – INSTRUCTIONS",
+          "A partir de agora, vamos dar as instruções em inglês."
+        ],
+        "tables": [
+          {
+            "rows": [
+              [
+                "Fill in the blanks. / Complete the sentence.",
+                ""
+              ],
+              [
+                "Choose the correct answer.",
+                ""
+              ],
+              [
+                "Underline.",
+                ""
+              ],
+              [
+                "Mark",
+                ""
+              ],
+              [
+                "Draw",
+                ""
+              ],
+              [
+                "Match.",
+                ""
+              ]
+            ],
+            "caption": "SLIDE 1 – INSTRUCTIONS 1"
+          },
+          {
+            "rows": [
+              [
+                "Listen.",
+                "Read",
+                "Look at the pictures.",
+                "Talk"
+              ],
+              [
+                "",
+                "",
+                "",
+                ""
+              ],
+              [
+                "Ask",
+                "Answer",
+                "I don’t know.",
+                "Write"
+              ],
+              [
+                "",
+                "",
+                "",
+                ""
+              ]
+            ]
+          }
+        ],
+        "practicePhrases": []
+      },
+      "requiresImages": true,
+      "imageNote": "A IA mostra as imagens e pede pro aluno repetir (1x cada símbolo)"
+    },
+    {
+      "code": "6B",
+      "title": "Speaking – Who’s that?",
+      "skill": "Speaking",
+      "order": 2,
+      "tasks": [
+        {
+          "order": 1,
+          "instruction": "The AI asks the student who the people in the pictures are by using the dialogue below. Use the pictures below, Bible characters from Unit 1. The AI can point out that in the answer the expression “That’s” can be omitted.\nThe AI can suggest other famous people, like politicians, actors, singers, etc. and do the same as a.",
+          "type": "student_answers",
+          "imageDependency": "visual",
+          "items": [],
+          "itemsAreExamples": true
+        }
+      ],
+      "referenceContent": {
+        "dialogues": [
+          [
+            "A: “Who’s that?",
+            "B: That’s Jesus.”"
+          ]
+        ],
+        "vocabulary": [],
+        "grammarNotes": [
+          "The name of this lesson is “Who’s that?” That is the question you ask when you want to identify a person."
+        ],
+        "tables": [
+          {
+            "rows": [
+              [
+                "Moses\nGod",
+                "Joseph",
+                "Jesus\nJohn, the Baptist"
+              ],
+              [
+                "Matthew",
+                "Peter",
+                "David"
+              ]
+            ]
+          }
+        ],
+        "practicePhrases": []
+      },
+      "requiresImages": true,
+      "imageNote": "The AI asks the student who the people in the pictures are by using the dialogue below. Use the pictures below, Bible characters from Unit 1. The AI can point out that in the answer the expression “That’s” can be omitted."
+    },
+    {
+      "code": "6C",
+      "title": "Vocabulary – Families / Grammar – Possessive – the Genitive Case",
+      "skill": "Vocabulary",
+      "order": 3,
+      "tasks": [
+        {
+          "order": 1,
+          "instruction": "The AI Tutor asks the student to describe members of his family with the following dialogue. Repeat at least 6 times.",
+          "type": "student_answers",
+          "imageDependency": "oral",
+          "items": [
+            {
+              "prompt": "Say the name of a member of your family. (translate if necessary)",
+              "expectedAnswer": "Lucio"
+            },
+            {
+              "prompt": "Who’s Lucio?",
+              "expectedAnswer": "He’s my brother."
+            }
+          ]
+        },
+        {
+          "order": 2,
+          "instruction": "A IA perguntar ao aluno quem é cada personagem, usando a pergunta da Lição 6B, “Who’s Abraham”? Na respostas o aluno deverá usar o genitive case “s, for example, “Abraham is Sarah’s husband.” Usar as informações das frases abaixo de 1 a 8.\nNota: Esse assunto é um desafio para falantes de língua portuguesa, pois é uma estrutura completamente diferente. A atividade deverá ser feita quantas vezes forem necessárias para o aluno dominar o assunto.",
+          "type": "student_answers",
+          "imageDependency": "oral",
+          "items": [],
+          "itemsAreExamples": true,
+          "schoolCheck": "\"A IA perguntar ao aluno…\" — gravado como está. (pergunta 36)"
+        },
+        {
+          "order": 3,
+          "instruction": "The AI Tutor asks the students yes-no questions about Abraham’s family tree, for example, “Is Sarah Abraham’s sister?” The student should answer with short answers, “Yes, she is”, “No, she’s not”, “Yes, he is”, “No,he’s not” and correct it according to sentences 1 to 8 below.",
+          "type": "student_answers",
+          "imageDependency": "oral",
+          "items": [
+            {
+              "prompt": "Is Sarah Abrham’s sister?",
+              "expectedAnswer": "No, she’s not. She’s Abraham’s wife.",
+              "label": "Example:",
+              "schoolCheck": "\"Abrham’s\" no exemplo — erro de digitação de \"Abraham’s\"? (pergunta 37)"
+            }
+          ],
+          "itemsAreExamples": true
+        }
+      ],
+      "referenceContent": {
+        "dialogues": [],
+        "vocabulary": [],
+        "grammarNotes": [
+          "This lesson is about FAMILIES. The Bible describes some families, for example, Abraham’s Family. Look at Abraham’s Family tree. Abraham, Sarah, Isaac, Rebecca, Esau, and Jacob.",
+          "*Note: A “family tree” é uma representação gráfica e visual de uma família. Lembrando que um traço horizontal entre as pessoas liga casais, ou seja, são marido e mulher. Um traço vertical liga os filhos aos pais.",
+          "Look at Abraham’s family tree. Write the names of the people in Abraham’s family tree next to the members of the family.",
+          "1. Father Abraham, Isaac",
+          "2. Mother Sarah, Rebecca",
+          "3. Parents Abraham and Sarah, Isaac and Rebecca",
+          "4. Son Isaac, Esau, Jacob",
+          "5. Daughter     X",
+          "6. Child / Children Isaac, Esau, Jacob",
+          "7. Husband Abraham, Isaac",
+          "8. Wife Sarah, Rebecca",
+          "9. Brother Esau, Jacob",
+          "10. Sister      X",
+          "11. Grandfather Abraham",
+          "12. Grandmother Sarah",
+          "13. Grandparents Abraham and Sarah",
+          "14. Grandson Esau, Jacob",
+          "15. Granddaughter    X",
+          "16. Grandchildren Esau, Jacob",
+          "17. Uncle     X",
+          "18. Aunt      X",
+          "Look at the chart. The family words are masculine, feminine or neutral. Fill out the chart with the family words from the previous exercise. For example, Father (masculine) (feminine) Mother – (neutral) parents.",
+          "Masculine                  Feminine\t\tNeutral",
+          "father                       \tmother\t            \tparents",
+          "son                              daughter         \tchild / children",
+          "husband                      wife                                    -",
+          "brother                         sister                                 -",
+          "uncle                            aunt                                   -",
+          "-                                -                               cousin",
+          "grandfather            \tgrandmother   \t\tgrandparents",
+          "grandson                     granddaughter      \tgrandchildren",
+          "1. Abraham is Sarah’s    husband  .",
+          "2. Sarah is Abraham’s   wife     .",
+          "3. Isaac is Abraham’s      son       .",
+          "4. Abraham and Sarah are Isaac’s    parents   .",
+          "5. Isaac is Esau and Jacob’s       father    .",
+          "6. Rebecca is Esau and Jacob’s       mother     .",
+          "7. Esau is Jacob’s      brother     .",
+          "8. Esau and Jacob are Rebecca’s       children / sons",
+          "This is the first Grammar video of Lesson 6. We will study the possessive form in English, also called the GENITIVE CASE. Before the grammar explanation, look at these sentences about Abraham’s family tree.",
+          "1. Abraham is Sarah’s    husband  .",
+          "2. Sarah is Abraham’s   wife     .",
+          "3. Isaac is Abraham’s      son       .",
+          "4. Abraham and Sarah are Isaac’s    parents   .",
+          "5. Isaac is Esau and Jacob’s       father    .",
+          "6. Rebecca is Esau and Jacob’s       mother     .",
+          "7. Esau is Jacob’s      brother     .",
+          "8. Esau and Jacob are Rebecca’s       children / sons    .",
+          "The possessive or the genitive case in English are with ‘s. They express POSSESSION or RELATIONSHIPS. For example, McDonald’s – os primeiros donos do restaurante eram os irmãos Richard e Maurice McDonald. Porém, o ‘s também identifica um relacionamento entre duas ou mais pessoas. Quando se diz “Abraham’s wife” não significa que Sarah é posse de Abraham, mas indica o relacionamento entre eles. Use ‘s após o nome da pessoa que possui ou a natureza da relação entre a pessoa cujo nome recebe o ‘s e a outra pessoa ou pessoas.",
+          "This is Abraham’s family tree = This is the family tree of Abraham.",
+          "Abraham is Sarah’s husband = Abraham is the husband of Sarah.",
+          "Esau is Jacob’s brother = Esau is the brother of Jacob.",
+          "Atenção: As duas formas estão corretas, mas o ‘s é mais informal e mais usado no dia a dia.",
+          "Variações da regra:",
+          "When the word finishes in S, for example, Jesus, the apostrophe is optional.",
+          "Mary is Jesus’s mother. Or Mary is Jesus’ mother.",
+          "When the word is plural with -S, for example, PARENTS, you use no apostrophe.",
+          "What are your parents’ names? Abraham and Sarah.",
+          "When it’s the plural with no -S, use the apostrophe.",
+          "What are your children’s names? Esau and Jacob.",
+          "When it’s two people and one possession or relationship, the apostrophe is on the second.",
+          "Isaac is Esau and Jacob’s father. = Isaac is Esau’s father and Jacob’s father, or Isaac is the Father of Esau and the Father of Jacob."
+        ],
+        "tables": [],
+        "practicePhrases": [],
+        "schoolChecks": [
+          "O .docx tem dois títulos \"Lesson 6C\" (Vocabulary – Families e Grammar – Possessive – the Genitive Case). Gravamos como uma lição 6C só, com as tasks na ordem do arquivo. São duas lições? Qual o código da segunda? (pergunta 36)"
+        ]
+      },
+      "requiresImages": false
+    },
+    {
+      "code": "6D",
+      "title": "READING – Jesus´s family",
+      "skill": "READING",
+      "order": 4,
+      "tasks": [
+        {
+          "order": 1,
+          "instruction": "The AI asks the student questions about Jesus’s family tree, using the question,\nUse the information 1-8 below, based on the passage from Matthew 13:54-55.",
+          "type": "student_answers",
+          "imageDependency": "oral",
+          "items": [
+            {
+              "prompt": "Who’s Mary?",
+              "expectedAnswer": "(Mary is) Jesus’s mother."
+            },
+            {
+              "label": "1",
+              "prompt": "",
+              "expectedAnswer": "Jesus is Mary’s son."
+            },
+            {
+              "label": "2",
+              "prompt": "",
+              "expectedAnswer": "Mary is Jesus(´s) mother."
+            },
+            {
+              "label": "3",
+              "prompt": "",
+              "expectedAnswer": "Mary is Joseph´s wife."
+            },
+            {
+              "label": "4",
+              "prompt": "",
+              "expectedAnswer": "Joseph is Mary´s husband."
+            },
+            {
+              "label": "5",
+              "prompt": "",
+              "expectedAnswer": "James is Jesus(´s) brother."
+            },
+            {
+              "label": "6",
+              "prompt": "",
+              "expectedAnswer": "Judas is Simon´s brother."
+            },
+            {
+              "label": "7",
+              "prompt": "",
+              "expectedAnswer": "Mary is James´(s) mother."
+            },
+            {
+              "label": "8",
+              "prompt": "",
+              "expectedAnswer": "Judas is Joseph´s son."
+            }
+          ]
+        }
+      ],
+      "referenceContent": {
+        "dialogues": [],
+        "vocabulary": [
+          "Example: Jesus - Mary - Jesus is Mary’s son.",
+          "1. Mary-Jesus – M ary is Jesus(´s) mother",
+          "2. Mary-Joseph – Mary is Joseph´s wife.",
+          "3. Joseph-Mary – Joseph is Mary´s husband.",
+          "4. James-Jesus – James is Jesus(´s) brother.",
+          "5. Judas-Simon – Judas is Simon´s brother.",
+          "6. Mary-James – Mary is James´(s) mother.",
+          "7. Judas-Joseph – Judas is Joseph´s son."
+        ],
+        "grammarNotes": [
+          "In this exercise we will combine Reading, Vocabulary, and Grammar. The Reading passage is from Matthew 13:54-55. It is about Jesus’s family. Read the passage and complete Jesus’s family tree.",
+          "Remember: Use the reading strategy scanning and use the cognate words to understand the text, ok? It’s not necessary to understand all the words.",
+          "Jesus’ family",
+          "Coming to his hometown he taught them in their synagogue, and they were amazed. ‘Where did this man get this wisdom and these miraculous powers?”, they asked. “Isn’t this the carpenter’s son? Isn’t his mother’s name Mary? Aren’t his brothers James, Joseph, Simon and Judas?",
+          "From: Matthew 13:54-55",
+          "And the answers are:",
+          "Write sentences with the information from the text about Jesus’ family tree."
+        ],
+        "tables": [],
+        "practicePhrases": []
+      },
+      "requiresImages": false
+    },
+    {
+      "code": "6E",
+      "title": "Grammar and Speaking – The verb TO HAVE",
+      "skill": "Grammar and Speaking",
+      "order": 5,
+      "tasks": [
+        {
+          "order": 1,
+          "instruction": "The AI asks the student, “Do you have any brothers and sisters?” The student answers, “Yes, I do. I have ____.” Or “No, I don’t. I’m an only child.”",
+          "type": "student_answers",
+          "imageDependency": "oral",
+          "items": []
+        },
+        {
+          "order": 2,
+          "instruction": "The AI suggests that the student ask her the same question from a. The answer is “No, I don’t. I’m an only child.”",
+          "type": "student_answers",
+          "imageDependency": "oral",
+          "items": []
+        },
+        {
+          "order": 3,
+          "instruction": "The AI Tutor asks the students to complete the sentences about Bible characters and their brothers and sisters.",
+          "type": "student_answers",
+          "imageDependency": "oral",
+          "items": [
+            {
+              "prompt": "Jesus has ________ _________.",
+              "expectedAnswer": "four brothers"
+            },
+            {
+              "prompt": "Esau has ________ _________.",
+              "expectedAnswer": "one brother"
+            },
+            {
+              "prompt": "Jacob has ________ _________.",
+              "expectedAnswer": "one brother"
+            },
+            {
+              "prompt": "Isaac is an ________ _________.",
+              "expectedAnswer": "only child"
+            }
+          ]
+        },
+        {
+          "order": 4,
+          "instruction": "The AI asks the students further questions about families in the Bible.",
+          "type": "student_answers",
+          "imageDependency": "oral",
+          "items": [
+            {
+              "label": "D1",
+              "prompt": "What are the names of Jesus’s brothers?",
+              "expectedAnswer": "James, Joseph, Simon, and Judas."
+            },
+            {
+              "label": "D2",
+              "prompt": "Who’s Esau’s brother?",
+              "expectedAnswer": "Jacob."
+            },
+            {
+              "label": "D3",
+              "prompt": "Who’s Jacob’s brother?",
+              "expectedAnswer": "Esau"
+            },
+            {
+              "label": "D4",
+              "prompt": "Does Isaac have any brothers and sisters?",
+              "expectedAnswer": "No, he’s an only child."
+            }
+          ]
+        }
+      ],
+      "referenceContent": {
+        "dialogues": [],
+        "vocabulary": [],
+        "grammarNotes": [
+          "This video is about the verb TO HAVE. It means POSSESSION or RELATIONSHIPS, too. For example:",
+          "Jesus has four brothers.",
+          "I have a brother and a sister.",
+          "This is the conjugation of the verb TO HAVE.",
+          "Lembram que com o verbo To Be tinham três formas? Os outros verbos só tem duas. No caso do HAVE, você tem HAVE (para I, you, we, they) e HAS (para he, she e it). Fácil, né?",
+          "Read the conversations.",
+          "Debora: Piedro, do you have any brothers and sisters?",
+          "Piedro: Yes, I have two sisters. And you?",
+          "Debora: Yes, I have one brother and one sister.",
+          "Déb: Cristiano, do you have any brothers and sisters?",
+          "Cristiano: I have two sisters.",
+          "Déb: Joaquim, do you have any brothers and sisters?",
+          "Joaquim: Yes, I have one brother.",
+          "Déb: Sam, do you have any brothers and sisters?",
+          "Sam: I have one brother and two sisters.",
+          "Now complete the sentences.",
+          "Debora _______ one brother and ____ sister.",
+          "Piedro has ________________.",
+          "Joaquim _______ one brother.",
+          "Cristiano has ______________________.",
+          "Sam has __________________________.",
+          "Debora and Joaquim ______ one brother.",
+          "Cristiano and Piedro _____ two _______.",
+          "Answers: 1. has – one 2. two sisters 3. has 4. two sisters 5. one brother and two sisters. 6. have 7. have - sisters"
+        ],
+        "tables": [
+          {
+            "rows": [
+              [
+                "",
+                "SINGULAR",
+                "PLURAL"
+              ],
+              [
+                "First person",
+                "I have",
+                "we have"
+              ],
+              [
+                "Second person",
+                "you have",
+                "you have"
+              ],
+              [
+                "Third person",
+                "he has\nshe has\nit has",
+                "they have"
+              ]
+            ]
+          }
+        ],
+        "practicePhrases": []
+      },
+      "requiresImages": false
+    },
+    {
+      "code": "6F",
+      "title": "Speaking",
+      "skill": null,
+      "order": 6,
+      "tasks": [
+        {
+          "order": 1,
+          "instruction": "The AI asks the student to answer questions about some Bible characters, but in the answer they have to use a ‘s phrase. These are the questions and answers.",
+          "type": "student_answers",
+          "imageDependency": "visual",
+          "items": [
+            {
+              "prompt": "Who’s Jesus?",
+              "expectedAnswer": "God’s son. / Joseph’s son.",
+              "imagePath": "book01/unit02/6F/task-1-item-1.png"
+            },
+            {
+              "prompt": "Who’s Solomon?",
+              "expectedAnswer": "David’s son.",
+              "imageFloatingInCell": true,
+              "imagePath": "book01/unit02/6F/task-1-item-2.jpg"
+            },
+            {
+              "prompt": "Who’s David?",
+              "expectedAnswer": "Solomon’s father. / Jesse´s son.",
+              "imageFloatingInCell": true,
+              "imagePath": "book01/unit02/6F/task-1-item-3.jpg"
+            },
+            {
+              "prompt": "Who’s Matthew?",
+              "expectedAnswer": "Jesus’s disciple / friend.",
+              "imagePath": "book01/unit02/6F/task-1-item-4.jpg"
+            },
+            {
+              "prompt": "Who’s Peter?",
+              "expectedAnswer": "Jesus’s disciple / friend.",
+              "imageFloatingInCell": true,
+              "imagePath": "book01/unit02/6F/task-1-item-5.jpg"
+            },
+            {
+              "prompt": "Who’s Joseph (in the Old Testament)?",
+              "expectedAnswer": "Jacob’s son.",
+              "imageFloatingInCell": true,
+              "imagePath": "book01/unit02/6F/task-1-item-6.jpg"
+            }
+          ]
+        },
+        {
+          "order": 2,
+          "instruction": "The AI asks the student to say the name of a person in their family, but not their mother, father, brothers or sisters. If necessary, the AI can translate the instruction. Then the student has to explain who that person is, using a ‘s phrase. Do this exercise 5 times.",
+          "type": "translate",
+          "imageDependency": "oral",
+          "items": [
+            {
+              "prompt": "Say the name of a person in your family, except your parents and your brothers and sisters.",
+              "expectedAnswer": "Sergio"
+            },
+            {
+              "prompt": "Who’s Sergio?",
+              "expectedAnswer": "(Sergio is) my mother’s brother."
+            }
+          ]
+        }
+      ],
+      "referenceContent": {
+        "dialogues": [
+          [
+            "This lesson is about asking who a person is. For example:",
+            "A: Who’s that?",
+            "B: (That’s) Jesus."
+          ],
+          [
+            "For example:",
+            "A: Who’s Jesus?",
+            "B: That’s God’s son. / That’s Joseph’s son.",
+            "A: Who’s David?",
+            "B: That’s Solomon’s father. / That´s Jesse´s son.",
+            "A: Who’s Matthew?",
+            "B: That’s Jesus’s disciple / friend.",
+            "A: Who’s Peter?",
+            "B: That’s Jesus’s disciple / friend."
+          ]
+        ],
+        "vocabulary": [
+          "Jesus – David – Matthew – God – Peter"
+        ],
+        "grammarNotes": [
+          "This lesson is about asking who a person is. For example:",
+          "Let’s test your memory and your Bible knowledge.",
+          "Look at the descriptions of the people above with an ‘s phrase.",
+          "For example:"
+        ],
+        "tables": [],
+        "practicePhrases": []
+      },
+      "requiresImages": true
+    },
+    {
+      "code": "6G",
+      "title": "The pronunciation of the letters S and Z",
+      "skill": null,
+      "order": 7,
+      "tasks": [],
+      "referenceContent": {
+        "dialogues": [],
+        "vocabulary": [],
+        "grammarNotes": [
+          "Uma das coisas mais irregulares da língua inglesa é o seu sistema fonético. Porque inglês é uma salada de línguas que se misturaram através da história, há uma inconsistência na associação entre as letras e os fonemas. Eu sempre digo: Nunca diga sempre, nunca diga nunca.",
+          "Nessa lição vamos ver a pronúncia das letras S e Z.",
+          "A letra S pode ter som de /s/ ou /z/ no meio e no final da palavra.",
+          "Normalmente, a letra S entre duas vogais tem som de /s/, como Esau. Porém, em Jesus, Isaac e Moses, tem som de /z/.",
+          "No final das palavras, o S pode ter som de /s/ ou /z/.",
+          "Então, você terá que aprender a pronunciar o S a cada nova palavra que você aprender. Sorry!",
+          "Por enquanto, vamos ficar com essas palavras aqui dessas lições?",
+          "Listen to the words. Write them under the correct column.",
+          "1. Esau\t2. This\t\t3. That’s",
+          "4. Jesus\t5. Isaac\t6. Moses",
+          "Find more words from the lesson and write them in the chart."
+        ],
+        "tables": [
+          {
+            "rows": [
+              [
+                "/s/",
+                "/z/"
+              ],
+              [
+                "Esau\nThis\nThat´s",
+                "Isaac\nJesus\nMoses"
+              ]
+            ],
+            "caption": "4. Jesus\t5. Isaac\t6. Moses"
+          }
+        ],
+        "practicePhrases": []
+      },
+      "requiresImages": false
+    },
+    {
+      "code": "6H",
+      "title": "Listening – Family Relationships in the Bible",
+      "skill": "Listening",
+      "order": 8,
+      "tasks": [],
+      "referenceContent": {
+        "dialogues": [],
+        "vocabulary": [],
+        "grammarNotes": [
+          "This is a listening lesson. Before you listen, test your Bible knowledge. Use ‘s for relationships in your answers.",
+          "Who’s Solomon?",
+          "Who’s Joseph (in the Old Testament)?",
+          "Who’s David?",
+          "Who’s John?",
+          "Now listen to more information about these biblical characters. Fill out the chart. The audio track is on our website.",
+          "Script",
+          "1. Solomon was David’s son. His mother’s name was Bathsheba, David’s wife.",
+          "Joseph had eleven brothers and one sister. His father’s name was Jacob.",
+          "David was the son of a man from Bethlehem. His name was Jesse. He had eight sons. David was the youngest.",
+          "John and James were brothers, Zebedee’s sons. Their mother’s name was not in the Bible.",
+          "Answers"
+        ],
+        "tables": [
+          {
+            "rows": [
+              [
+                "NAME",
+                "FATHER",
+                "MOTHER",
+                "NUMBER OF BROTHERS",
+                "NUMBER OF SISTERS"
+              ],
+              [
+                "SOLOMON",
+                "",
+                "",
+                "",
+                ""
+              ],
+              [
+                "JOSEPH",
+                "",
+                "",
+                "",
+                ""
+              ],
+              [
+                "DAVID",
+                "",
+                "",
+                "",
+                ""
+              ],
+              [
+                "JOHN",
+                "",
+                "",
+                "",
+                ""
+              ]
+            ]
+          },
+          {
+            "rows": [
+              [
+                "NAME",
+                "FATHER",
+                "MOTHER",
+                "NUMBER OF BROTHERS",
+                "NUMBER OF SISTERS"
+              ],
+              [
+                "SOLOMON",
+                "David",
+                "Bathsheba",
+                "-",
+                "-"
+              ],
+              [
+                "JOSEPH",
+                "Jacob",
+                "-",
+                "11",
+                "1"
+              ],
+              [
+                "DAVID",
+                "Jesse",
+                "-",
+                "7",
+                "-"
+              ],
+              [
+                "JOHN",
+                "Zebedee",
+                "-",
+                "1",
+                "-"
+              ]
+            ],
+            "caption": "Answers"
+          }
+        ],
+        "practicePhrases": []
+      },
+      "requiresImages": false
+    },
+    {
+      "code": "7A",
+      "title": "Presentation and Vocabulary – describe people",
+      "skill": "Presentation and Vocabulary",
+      "order": 9,
+      "tasks": [
+        {
+          "order": 1,
+          "instruction": "The AI shows pictures of people and asks, “What does he/she look like?” The student describes the pictures according to the table below.",
+          "type": "student_answers",
+          "imageDependency": "visual",
+          "items": [
+            {
+              "prompt": "",
+              "expectedAnswer": "He’s thin.",
+              "imageFloatingInCell": true,
+              "imagePath": "book01/unit02/7A/task-1-item-1.png"
+            },
+            {
+              "prompt": "",
+              "expectedAnswer": "He’s fat.\nHe’s overweight.",
+              "imageFloatingInCell": true,
+              "imagePath": "book01/unit02/7A/task-1-item-2.png"
+            },
+            {
+              "prompt": "",
+              "expectedAnswer": "The grandfather is old.\nThe grandson is young.",
+              "imagePath": "book01/unit02/7A/task-1-item-3.jpg"
+            },
+            {
+              "prompt": "",
+              "expectedAnswer": "He’s tall.\nShe’s short.",
+              "imageFloatingInCell": true,
+              "imagePath": "book01/unit02/7A/task-1-item-4.png"
+            },
+            {
+              "prompt": "",
+              "expectedAnswer": "He has brown hair.\nHe has short hair.\nHe has short black hair.",
+              "imageFloatingInCell": true,
+              "imagePath": "book01/unit02/7A/task-1-item-5.jpg"
+            },
+            {
+              "prompt": "",
+              "expectedAnswer": "She has grey hair.",
+              "imageFloatingInCell": true,
+              "imagePath": "book01/unit02/7A/task-1-item-6.jpg"
+            },
+            {
+              "prompt": "",
+              "expectedAnswer": "She has red hair.",
+              "imageFloatingInCell": true,
+              "imagePath": "book01/unit02/7A/task-1-item-7.jpg"
+            },
+            {
+              "prompt": "",
+              "expectedAnswer": "He has long hair.\nHe has brown hair.\nHe has long brown hair.",
+              "imageFloatingInCell": true,
+              "imagePath": "book01/unit02/7A/task-1-item-8.jpg"
+            },
+            {
+              "prompt": "",
+              "expectedAnswer": "She has blond hair.",
+              "imageFloatingInCell": true,
+              "imagePath": "book01/unit02/7A/task-1-item-9.jpg"
+            },
+            {
+              "prompt": "",
+              "expectedAnswer": "She has black eyes.\nShe has big black eyes.",
+              "imageFloatingInCell": true,
+              "imagePath": "book01/unit02/7A/task-1-item-10.jpg"
+            },
+            {
+              "prompt": "",
+              "expectedAnswer": "She has brown eyes.",
+              "imageFloatingInCell": true,
+              "imagePath": "book01/unit02/7A/task-1-item-11.jpg"
+            },
+            {
+              "prompt": "",
+              "expectedAnswer": "She has blue eyes.\nShe has small blue eyes.",
+              "imageFloatingInCell": true,
+              "imagePath": "book01/unit02/7A/task-1-item-12.jpg"
+            },
+            {
+              "prompt": "He has green eyes.",
+              "expectedAnswer": null,
+              "imageFloatingInCell": true,
+              "imagePath": "book01/unit02/7A/task-1-item-13.jpg"
+            }
+          ]
+        }
+      ],
+      "referenceContent": {
+        "dialogues": [],
+        "vocabulary": [
+          "BODY – WEIGHT (verb to be)",
+          "BODY – AGE (verb to be)",
+          "(Note: size + color – small brown eyes, not brown small eyes)"
+        ],
+        "grammarNotes": [
+          "This is Book 1 Lesson 7. In this lesson, you’ll learn to describe appearances. The question for describing appearances is",
+          "WHAT DOES HE LOOK LIKE?",
+          "WHAT DOES SHE LOOK LIKE?",
+          "A story in the Bible describes two characters. Look at the pictures. Match the adjectives to the characters.",
+          "WHO ARE THEY?",
+          "David is SHORT, STRONG, AND YOUNG.",
+          "Goliath IS TALL AND STRONG.",
+          "Let’s learn some more vocabulary about physical descriptions.",
+          "DICA: Uma boa maneira de aprender vocabulário é agrupando as palavras por assunto. Por exemplo, “words about descriptions”. When you describe people, you describe:",
+          "THE BODY (HEIGHT, WEIGHT, AGE)",
+          "BEAUTY",
+          "HAIR",
+          "EYES",
+          "See the pictures on the next page.",
+          "Mas atenção: algumas palavras podem ser ofensivas. É importante saber essas palavras, mas cuidado ao usá-las! Não chame ninguém de FAT, OLD, UGLY, ok?",
+          "Let´s form sentences with this vocabulary. You use the verbs TO BE or TO HAVE.BODY – HEIGHT (verb to be)",
+          "He is tall. She is short.",
+          "He´s fat. He´s overweight. He´s thin.",
+          "The grandfather is old. The grandson is young.",
+          "BEAUTY (verb to be)",
+          "She´s beautiful. He´s handsome. They´re good-looking. He´s ugly.",
+          "HAIR (verb to have)",
+          "He has short, dark brown hair. She has long, grey hair. She has long, red hair. He has long, blond hair. She has long, blond hair.",
+          "EYES (verb to have)",
+          "She has black eyes. She has blue eyes. She has light brown eyes. He has small green eyes.",
+          "Note: quando há duas informações sobre hair ou eyes você pode juntar na mesma frase:",
+          "You have short hair and you have red hair. = You have short, red hair.",
+          "You have small eyes and your eyes are brown. = You have small, brown eyes."
+        ],
+        "tables": [
+          {
+            "rows": [
+              [
+                "David",
+                "Goliath"
+              ],
+              [
+                "SHORT\nSTRONG\nYOUNG",
+                "TALL\nSTRONG"
+              ]
+            ]
+          },
+          {
+            "rows": [
+              [
+                "HEIGHT",
+                "WEIGHT",
+                "AGE",
+                "BEAUTY",
+                "HAIR",
+                "HAIR",
+                "EYES",
+                "EYES"
+              ],
+              [
+                "tall\nshort",
+                "fat\noverweight\nthin",
+                "Young\nold",
+                "beautiful (for women)\nhandsome (for men)\ngood-looking (for men and women)\nugly (for men and women)",
+                "short\nlong",
+                "black\nbrown\nblond\nred\ngrey",
+                "big\nsmall",
+                "Black\nbrown\ngreen\nblue"
+              ]
+            ]
+          }
+        ],
+        "practicePhrases": []
+      },
+      "requiresImages": true,
+      "imageNote": "The AI shows pictures of people and asks, “What does he/she look like?” The student describes the pictures according to the table below."
+    },
+    {
+      "code": "7B",
+      "title": "Grammar – POSSESSIVE ADJECTIVES",
+      "skill": "Grammar",
+      "order": 10,
+      "tasks": [
+        {
+          "order": 1,
+          "instruction": "The AI Tutor asks the student to transform the sentences with HAVE or HAS to sentences with the possessive adjectives.\nThe sentences are",
+          "type": "student_answers",
+          "imageDependency": "oral",
+          "items": []
+        },
+        {
+          "order": 2,
+          "instruction": "A IA mostra as imagens que foram usadas na Lesson 7 A e pede para os alunos transformarem as frases, tanto do HAVE or HAS quanto com os possessive adjectives.",
+          "type": "demonstrate",
+          "imageDependency": "visual",
+          "items": [
+            {
+              "prompt": "He has black hair.",
+              "expectedAnswer": "His hair is black.",
+              "label": "Exemplo"
+            },
+            {
+              "prompt": "Her eyes are green.",
+              "expectedAnswer": "She has green eyes."
+            },
+            {
+              "label": "HAIR (verb to have)",
+              "prompt": "He has brown hair.",
+              "expectedAnswer": "His hair is brown.",
+              "imagePath": "book01/unit02/7B/task-2-item-3.jpg"
+            },
+            {
+              "label": "HAIR (verb to have)",
+              "prompt": "She has grey hair.",
+              "expectedAnswer": "Her hair is grey.",
+              "imageFloatingInCell": true,
+              "imagePath": "book01/unit02/7B/task-2-item-4.jpg"
+            },
+            {
+              "label": "HAIR (verb to have)",
+              "prompt": "She has red hair.",
+              "expectedAnswer": "Her hair is red.",
+              "imageFloatingInCell": true,
+              "imagePath": "book01/unit02/7B/task-2-item-5.jpg"
+            },
+            {
+              "label": "HAIR (verb to have)",
+              "prompt": "He has long hair.",
+              "expectedAnswer": "His hair is long.",
+              "imageFloatingInCell": true,
+              "imagePath": "book01/unit02/7B/task-2-item-6.jpg"
+            },
+            {
+              "label": "HAIR (verb to have)",
+              "prompt": "She has blond hair.",
+              "expectedAnswer": "Her hair is blond.",
+              "imagePath": "book01/unit02/7B/task-2-item-7.jpg"
+            },
+            {
+              "label": "EYES (verb to have)",
+              "prompt": "She has black eyes.",
+              "expectedAnswer": "Her eyes are black.",
+              "imageFloatingInCell": true,
+              "imagePath": "book01/unit02/7B/task-2-item-8.jpg"
+            },
+            {
+              "label": "EYES (verb to have)",
+              "prompt": "She has brown eyes.",
+              "expectedAnswer": "Her eyes are brown.",
+              "imageFloatingInCell": true,
+              "imagePath": "book01/unit02/7B/task-2-item-9.jpg"
+            },
+            {
+              "label": "EYES (verb to have)",
+              "prompt": "She has blue eyes.",
+              "expectedAnswer": "Her eyes are blue.",
+              "imageFloatingInCell": true,
+              "imagePath": "book01/unit02/7B/task-2-item-10.jpg"
+            },
+            {
+              "label": "EYES (verb to have)",
+              "prompt": "He has green eyes.",
+              "expectedAnswer": "His eyes are green.",
+              "imageFloatingInCell": true,
+              "imagePath": "book01/unit02/7B/task-2-item-11.jpg"
+            }
+          ]
+        }
+      ],
+      "referenceContent": {
+        "dialogues": [],
+        "vocabulary": [
+          "I – my",
+          "You – your",
+          "He – his",
+          "She – her",
+          "It – its",
+          "We – our",
+          "They – their"
+        ],
+        "grammarNotes": [
+          "TUTOR         STUDENT",
+          "I have long hair. = My hair is long.",
+          "You have short hair. = Your hair is short.",
+          "He has long hair. = His hair is long.",
+          "She has long hair. = Her hair is long.",
+          "We have short hair. = Our hair is short.",
+          "They have short hair. = Their hair is short.",
+          "This lesson is about another possessive form. In Lesson 6, we learned the genitive case. In Lesson 7, we’ll learn the POSSESSIVE ADJECTIVES.",
+          "Look at the sentence:",
+          "I HAVE BROWN HAIR. = My hair is brown.",
+          "Em português, o adjetivo possessivo depende de quem e do que se possui. Por exemplo, meu cabelo, minha casa. Depende também do número, singular e plural, minha casa, minhas casas. Sendo assim, em português temos quatro pronomes para cada pessoa: meu, minha, meus, minhas. Usando os termos técnicos, os possessivos em português variam em gênero, número e grau. Inglês é tão mais fácil!! In English, possessive adjectives depend ONLY on the subject, em quem possui.",
+          "Look at the examples.",
+          "I have long hair. = My hair is long.",
+          "You have short hair. = Your hair is short.",
+          "He has long hair. = His hair is long.",
+          "She has long hair. = Her hair is long.",
+          "We have short hair. = Our hair is short.",
+          "They have short hair. = Their hair is short.",
+          "Let´s use the pictures from Lesson 7A with the verb to have and transform them into sentences with possessive adjectives.",
+          "HAIR (verb to have)",
+          "EYES (verb to have)"
+        ],
+        "tables": [
+          {
+            "rows": [
+              [
+                "",
+                "",
+                "",
+                "",
+                ""
+              ],
+              [
+                "He has brown hair. = His hair is brown.",
+                "She has grey hair. = Her hair is grey.",
+                "She has red hair. = Her hair is red.",
+                "He has long hair. = His hair is long.",
+                "She has blond hair. = Her hair is blond."
+              ]
+            ],
+            "caption": "HAIR (verb to have)"
+          },
+          {
+            "rows": [
+              [
+                "",
+                "",
+                "",
+                ""
+              ],
+              [
+                "She has black eyes. = Her eyes are black.",
+                "She has brown eyes. = Her eyes are brown.",
+                "She has blue eyes. = Her eyes are blue.",
+                "He has green eyes. = His eyes are green."
+              ]
+            ],
+            "caption": "EYES (verb to have)"
+          }
+        ],
+        "practicePhrases": []
+      },
+      "requiresImages": true,
+      "imageNote": "A IA mostra as imagens que foram usadas na Lesson 7 A e pede para os alunos transformarem as frases, tanto do HAVE or HAS quanto com os possessive adjectives."
+    },
+    {
+      "code": "7C and 7D",
+      "title": "Speaking and Bible Search – Describing people",
+      "skill": "Speaking and Bible Search",
+      "order": 11,
+      "tasks": [
+        {
+          "order": 1,
+          "instruction": "The AI Tutor shows pictures and asks the student to describe the people with as many details as possible – height, body, age, beauty, hair, and eyes, correcting them as necessary. Here are some pictures used in the previous lessons.",
+          "type": "student_answers",
+          "imageDependency": "visual",
+          "items": [
+            {
+              "prompt": "",
+              "expectedAnswer": "Possible answers: He’s young. He’s thin. He’s good-looking. He’s about 2 years old. He has short, blond hair. His eyes are blue.",
+              "imageFloatingInCell": true,
+              "imagePath": "book01/unit02/7C-and-7D/task-1-item-1.jpg"
+            },
+            {
+              "prompt": "",
+              "expectedAnswer": "Possible answers: She’s young. She’s thin. She’s good-looking. She’s about 20 years old. He has long, brown hair. Her eyes are brown.",
+              "imageFloatingInCell": true,
+              "imagePath": "book01/unit02/7C-and-7D/task-1-item-2.jpg",
+              "schoolCheck": "\"She’s about 20 years old. He has long, brown hair\" — \"He\" seria \"She\"? (pergunta 39)"
+            },
+            {
+              "prompt": "",
+              "expectedAnswer": "Possible answers: She’s young. She’s thin. She’s beautiful. She’s about 25 years old. He has long black hair. Her eyes are light brown.",
+              "imageFloatingInCell": true,
+              "imagePath": "book01/unit02/7C-and-7D/task-1-item-3.jpg",
+              "schoolCheck": "\"She’s about 25 years old. He has long black hair\" — \"He\" seria \"She\"? (pergunta 39)"
+            },
+            {
+              "prompt": "",
+              "expectedAnswer": "Possible answers: He’s old. He’s thin. He’s about 75 years old. He has short, gray hair. His eyes are brown.",
+              "imageFloatingInCell": true,
+              "imagePath": "book01/unit02/7C-and-7D/task-1-item-4.jpg"
+            },
+            {
+              "label": "BIBLE CHARACTERS",
+              "prompt": "",
+              "expectedAnswer": "This is David. He is short. He has red hair. He is strong. He has beautiful eyes / His eyes are beautiful. He’s good-looking / handsome.",
+              "imageFloatingInCell": true,
+              "imagePath": "book01/unit02/7C-and-7D/task-1-item-5.jpg"
+            },
+            {
+              "label": "BIBLE CHARACTERS",
+              "prompt": "",
+              "expectedAnswer": "This is Esther. She is young. She has red hair. She is beautiful / good-looking.",
+              "imageFloatingInCell": true,
+              "imagePath": "book01/unit02/7C-and-7D/task-1-item-6.jpg"
+            },
+            {
+              "label": "BIBLE CHARACTERS",
+              "prompt": "",
+              "expectedAnswer": "This is Samson. He has long hair. He is strong. He’s good-looking.",
+              "imageFloatingInCell": true,
+              "imagePath": "book01/unit02/7C-and-7D/task-1-item-7.png"
+            },
+            {
+              "label": "BIBLE CHARACTERS",
+              "prompt": "",
+              "expectedAnswer": "This is Saul. He is tall. He is handsome / good-looking.",
+              "imageFloatingInCell": true,
+              "imagePath": "book01/unit02/7C-and-7D/task-1-item-8.jpg"
+            }
+          ]
+        }
+      ],
+      "referenceContent": {
+        "dialogues": [
+          [
+            "A: What does David look like?",
+            "B: He’s young. His eyes are beautiful and he is handsome. He has red hair.”"
+          ],
+          [
+            "For example,",
+            "A: What does he look like?",
+            "B: He´s about 25 years old. He is think and he has short, brown hair. I think he has brown eyes. He´s good-looking."
+          ]
+        ],
+        "vocabulary": [],
+        "grammarNotes": [
+          "This is a speaking video. It’s a dialogue about describing people.",
+          "A Bíblia não descreve muitos dos personagens, mas existe uma pequena descrição de Davi.",
+          "In the Good News Bible (GNB), in 1 Samuel 17.42, the Bible says, “He was just a nice, good-looking boy.”",
+          "In the English Standard Version (ESV), in 1 Samuel 17.42, it says, “Now he was ruddy and had beautiful eyes and was handsome”. Note: “Ruddy” = he has red hair",
+          "There are three more short descriptions of people in the Bible: Esther, Saul and Samson.",
+          "Work in pairs. Ask each other what the people in Lesson 7A look like.",
+          "For example,"
+        ],
+        "tables": [
+          {
+            "rows": [
+              [
+                "Esther (Esther 2.7)\nEsther is young and beautiful.",
+                "Samson (Judges 13-15)\nSamson is strong and he has long hair.",
+                "Saul (1 Samuel 9.2)\nSaul is tall and good-looking / handsome."
+              ]
+            ]
+          }
+        ],
+        "practicePhrases": [],
+        "schoolChecks": [
+          "O título diz \"Lessons 7C and 7D\": uma lição para os dois códigos. Gravamos como uma lição só (o link ?licao=7C ou 7D abre ela). Confirmam? (pergunta 38)"
+        ]
+      },
+      "requiresImages": true,
+      "imageNote": "The AI Tutor shows pictures and asks the student to describe the people with as many details as possible – height, body, age, beauty, hair, and eyes, correcting them as necessary. Here are some pictures used in the previous lessons."
+    },
+    {
+      "code": "7E",
+      "title": "Listening and Song",
+      "skill": null,
+      "order": 12,
+      "tasks": [],
+      "referenceContent": {
+        "dialogues": [],
+        "vocabulary": [
+          "Answers: my – your – his – her – their – our"
+        ],
+        "grammarNotes": [
+          "In The Way to English, we have music too! Special music especially made for our English course through the Bible.",
+          "Listen to the song. Fill in the blanks with possessive adjectives. Here is the link to our website.",
+          "https://thewaytoenglish.com.br/courses/the-way-to-english-ingles-pela-biblia/aulas/book-1-lesson-7-e-listening-and-song-my-god-and-possessive-adjectives/",
+          "1.      ___ God, ___ Rock, ___ Shepherd, ___ light, The God of ___ salvation.",
+          "2.      ___ God, ___ Rock, ___ Shepherd, ___ light, The God of ___ salvation.",
+          "3.      ___ God, ___ Rock, ___ Shepherd, ___ light, The God of ___ salvation.",
+          "4.      ___ God, ___ Rock, ___ Shepherd, ___ light, The God of ___ salvation.",
+          "5.      ___ God, ___ Rock, ___ Shepherd, ___ light, The God of ___ salvation.",
+          "6.      ___ God, ___ Rock, ___ Shepherd, ___ light, The God of ___ salvation.",
+          "Now, sing the song again!"
+        ],
+        "tables": [],
+        "practicePhrases": []
+      },
+      "requiresImages": false
+    },
+    {
+      "code": "8A",
+      "title": "Reading and Vocabulary – Is there an ark in the Holy Place?",
+      "skill": "Reading and Vocabulary",
+      "order": 13,
+      "tasks": [],
+      "referenceContent": {
+        "dialogues": [],
+        "vocabulary": [],
+        "grammarNotes": [
+          "Describing Places",
+          "The name of this lesson is – Is there an ark in the Holy Place?",
+          "In Lesson 7 we learned how to describe people. In this lesson, we’ll learn how to describe places.",
+          "A very special place in the Old Testament is the Tabernacle, the temple of the Jewish people. It has a sanctuary in the desert. There is a very detailed description of the Tabernacle in Exodus Chapter 26-38.",
+          "The Tabernacle has three parts – The Most Holy Place, the Holy Place, and the Courtyard.",
+          "There are some objects in the Tabernacle – an ark – a basin – an altar of incense – a table – a lampstand – an altar of burnt offerings",
+          "Read the text, look at the pictures and locate the objects in the three parts of the Tabernacle.",
+          "The Tabernacle",
+          "The tabernacle is a sanctuary in the desert - a place of adoration. It is divided  into three parts: The Most Holy Place, The Holy Place and The Courtyard. In the Most Holy Place there is an ark. There are two cherubim on the ark, and it represents the presence  and the glory of God.",
+          "There is a curtain that divides the Most Holy Place and the Holy Place. In the Holy Place there are three objects: an altar of incense, a table, and a lampstand.  In the courtyard, there are two objects: a basin and an altar of burnt offerings.",
+          "And the answers are:",
+          "Now let’s practice that more on the platform. We’ll use this information in the next lesson. See you!"
+        ],
+        "tables": [
+          {
+            "rows": [
+              [
+                "The Most Holy Place",
+                "The Holy Place",
+                "The Courtyard"
+              ],
+              [
+                "ark",
+                "altar of incense\ntable\nlampstand",
+                "Basin\naltar of burnt offerings"
+              ]
+            ],
+            "caption": "And the answers are:"
+          }
+        ],
+        "practicePhrases": []
+      },
+      "requiresImages": false
+    },
+    {
+      "code": "8B",
+      "title": "Grammar – The Verb THERE TO BE",
+      "skill": "Grammar",
+      "order": 14,
+      "tasks": [
+        {
+          "order": 1,
+          "instruction": "The information about the Tabernacle for this exercise is in Lesson 8A. The AI Tutor asks the student about the Tabernacle using “Is there a/an...?” or “Are there any ...” the three parts of the Tabernacle (The Most Holy Place, The Holy Place, and the Courtyard) in a random sequence. The student answers “Yes, there is”, “No, there isn’t”, “Yes, there are” or “No, there aren’t” and corrects if necessary.\nObjects | Places in the Tabernacle\nArk | The Courtyard\nAltar of incense | The Holy Place\nTable | The Most Holy Place\nLampstand\nBasin\nCurtain\nCherubim\nAltar of burnt offerings\nFor example,",
+          "type": "other",
+          "imageDependency": "oral",
+          "items": [
+            {
+              "prompt": "Is there an ark in the Courtyard?",
+              "expectedAnswer": "No, there isn’t. There’s an ark in the Most Holy Place."
+            },
+            {
+              "prompt": "Are there any cherubim in the Most Holy Place?",
+              "expectedAnswer": "Yes, there are. There are two."
+            }
+          ],
+          "itemsAreExamples": true
+        },
+        {
+          "order": 2,
+          "instruction": "The AI Tutor asks the student to start the dialogue, for example,",
+          "type": "student_leads",
+          "imageDependency": "oral",
+          "items": [
+            {
+              "prompt": "",
+              "expectedAnswer": "Is there an ark in the Courtyard?",
+              "reply": "No, there isn’t. There’s an ark in the Most Holy Place."
+            },
+            {
+              "prompt": "",
+              "expectedAnswer": "Are there any cherubim in the Most Holy Place?",
+              "reply": "Yes, there are."
+            }
+          ],
+          "itemsAreExamples": true
+        },
+        {
+          "order": 3,
+          "instruction": "The AI tutor says these sentences in the negative. They are incorrect. The AI asks the student to correct them.",
+          "type": "student_answers",
+          "imageDependency": "oral",
+          "items": [
+            {
+              "label": "C1",
+              "prompt": "There is not a basin in the Holy place.",
+              "expectedAnswer": "There is a basin the Holy Place.",
+              "schoolCheck": "A correção esperada \"There is a basin the Holy Place\" está sem o \"in\" e o texto da 8A põe o basin no Courtyard, não no Holy Place. Qual a resposta certa? (pergunta 40)"
+            },
+            {
+              "label": "C2",
+              "prompt": "There’s no lamp in the Tabernacle.",
+              "expectedAnswer": "There is a lamp in the Tabernacle."
+            },
+            {
+              "label": "C3",
+              "prompt": "There are not three cherubim on the ark.",
+              "expectedAnswer": "There are two cherubim on the ark."
+            },
+            {
+              "label": "C4",
+              "prompt": "There are no curtains at the Tabernacle.",
+              "expectedAnswer": "There is a curtain in the Tabernacle."
+            },
+            {
+              "label": "C5",
+              "prompt": "There aren’t any tables at the Tabernacle.",
+              "expectedAnswer": "There is a / one table in the Tabernacle."
+            },
+            {
+              "label": "C6",
+              "prompt": "There is not an ark in the Most Holy Place.",
+              "expectedAnswer": "There is an ark in the Most Holy Place."
+            }
+          ]
+        }
+      ],
+      "referenceContent": {
+        "dialogues": [],
+        "vocabulary": [
+          "CONTRACTION – There is – There’s"
+        ],
+        "grammarNotes": [
+          "Do you remember the vocabulary about the objects in the Tabernacle? Now, find these sentences about the objects in the Tabernacle in the text. These sentences start with THERE IS or THERE ARE.",
+          "And the answers are:",
+          "In the Most Holy Place there is an ark.",
+          "There are two cherubim on the ark.",
+          "There is a curtain.",
+          "In the Holy Place there are three objects.",
+          "In the courtyard, there are two objects.",
+          "This is the verb THERE TO BE. The verb THERE TO BE has only two forms in English. The singular form - \"There is\" - and the plural form - \"There are\". Esse verbo equivale ao verbo \"haver, existir ou ter\" em português. Quer dizer que existe, há ou tem alguma coisa em algum determinado lugar. For example,",
+          "There are two cherubim on the ark. ˭ Tem / Há dois querubins na arca.",
+          "In the AFFIRMATIVE form, use \"there is\" for singular. Normally, there is a/an.",
+          "There is an ark In the Most Holy Place.",
+          "There is a curtain.",
+          "Use “there are” for plural.",
+          "There are two cherubim on the ark.",
+          "In the Holy Place there are three objects.",
+          "In the courtyard there are two objects.",
+          "There is not a contraction for “there are”.",
+          "In the NEGATIVE form, add NOT after the verb to be or NO before a noun, for example,",
+          "There is not a basin in the Holy place.",
+          "There’s NO lamp.",
+          "Contractions",
+          "There’s not or There isn’t",
+          "There are not or There aren´t or There are no.",
+          "There are not three cherubim on the ark. There are only two.",
+          "There are no doors.",
+          "In the INTERROGATIVE, you invert the verb to be and the word THERE.",
+          "Is there an ark in the Most Holy Place?",
+          "Are there two cherubim on the ark?",
+          "Are there any altars in the Tabernacle?",
+          "Are there two / three / any...?",
+          "The short answers are:",
+          "Yes, there is. / No, there isn’t.",
+          "Yes, there are. / No, there aren’t.",
+          "THERE IS / THERE ARE"
+        ],
+        "tables": [
+          {
+            "rows": [
+              [
+                "",
+                "THERE IS",
+                "THERE ARE"
+              ],
+              [
+                "AFFIRMATIVE",
+                "There is / There´s a/an…",
+                "There are two, three, etc"
+              ],
+              [
+                "NEGATIVE",
+                "There is not / There´s no / There isn´t",
+                "There are not / There aren´t / There are no..."
+              ],
+              [
+                "INTERROGATIVE",
+                "Is there a/an …?",
+                "Are there two, three, etc…?"
+              ],
+              [
+                "SHORT\nANSWERS",
+                "Yes, there is. / No, there isn´t.",
+                "Yes, there are. / No, there aren´t."
+              ]
+            ],
+            "caption": "THERE IS / THERE ARE"
+          }
+        ],
+        "practicePhrases": []
+      },
+      "requiresImages": false
+    },
+    {
+      "code": "8C",
+      "title": "Vocabulary and Writing – Describing a Classroom",
+      "skill": "Vocabulary and Writing",
+      "order": 15,
+      "tasks": [
+        {
+          "order": 1,
+          "instruction": "The AI Tutor show the pictures to the student and asks them to say what they are.",
+          "type": "other",
+          "imageDependency": "visual",
+          "items": []
+        },
+        {
+          "order": 2,
+          "instruction": "The AI Tutor shows these pictures of some classrooms below and asks the student to form questions and answers in the affirmative form using the cues. Remind the student: Is there a / an / There is a / an (singular) and Are there any ___? There are __.\nNow look at these pictures of some classrooms. Form questions and answers in the affirmative form. Don’t forget: Is there a / an There is a / an for singular and there are __",
+          "type": "student_answers",
+          "imageDependency": "visual",
+          "items": [
+            {
+              "label": "PICTURE CLASSROOM 1",
+              "prompt": "Students",
+              "expectedAnswer": "Are there any students? Yes, there are two students."
+            },
+            {
+              "label": "PICTURE CLASSROOM 1",
+              "prompt": "Clock",
+              "expectedAnswer": "Is there a clock? Yes, there is. There´s one clock."
+            },
+            {
+              "label": "CLASSROOM 2 c.",
+              "prompt": "Teacher",
+              "expectedAnswer": "Is there a teacher? Yes, there is."
+            },
+            {
+              "label": "CLASSROOM 2 d.",
+              "prompt": "Desks",
+              "expectedAnswer": "Are there any desks? Yes, there is one (desk).",
+              "schoolCheck": "\"Are there any desks? Yes, there is one (desk).\" — pergunta no plural, resposta no singular. Confirmam? (pergunta 41)"
+            },
+            {
+              "label": "CLASSROOM 2 e.",
+              "prompt": "Lamp",
+              "expectedAnswer": "Is there a lamp? No, there isn’t."
+            },
+            {
+              "label": "CLASSRROM 3 f.",
+              "prompt": "Door",
+              "expectedAnswer": "Is there a door? No, there isn’t."
+            },
+            {
+              "label": "CLASSRROM 3 g.",
+              "prompt": "Map",
+              "expectedAnswer": "Is there a map? Yes, there is."
+            },
+            {
+              "label": "CLASSRROM 3 h.",
+              "prompt": "desks",
+              "expectedAnswer": "Are there any desks? Yes, there are three (desks)."
+            },
+            {
+              "label": "CLASSROOM 4 i.",
+              "prompt": "Chairs",
+              "expectedAnswer": "Are there any chairs? Yes, there are two (chairs)."
+            },
+            {
+              "label": "CLASSROOM 4 j.",
+              "prompt": "Books",
+              "expectedAnswer": "Are there any books? Yes, there are two."
+            },
+            {
+              "label": "CLASSROOM 4 k.",
+              "prompt": "Window",
+              "expectedAnswer": "Is there a window? No, there isn’t."
+            }
+          ]
+        }
+      ],
+      "referenceContent": {
+        "dialogues": [],
+        "vocabulary": [],
+        "grammarNotes": [
+          "In this lesson, you’ll learn to describe a classroom. Look at the pictures of classroom objects.",
+          "a. _1_ desk",
+          "b. _2_ board",
+          "c. _14_table",
+          "d. _13_ notebook",
+          "e. _ 5_ door",
+          "f. __8   window",
+          "g. _ 12_ book",
+          "h. _ 10_ pen",
+          "i. __3 _ chair",
+          "j. _ 6_ lamp",
+          "k. _ 9_ pencil",
+          "l. __7_ clock",
+          "m. _4_ student"
+        ],
+        "tables": [],
+        "practicePhrases": []
+      },
+      "requiresImages": true,
+      "imageNote": "The AI Tutor shows these pictures of some classrooms below and asks the student to form questions and answers in the affirmative form using the cues. Remind the student: Is there a / an / There is a / an (singular) and Are there any ___? There are __."
+    },
+    {
+      "code": "8D",
+      "title": "Grammar 2 – SOME, ANY and NO",
+      "skill": "Grammar 2",
+      "order": 16,
+      "tasks": [
+        {
+          "order": 1,
+          "instruction": "The AI Tutor asks the student to describe these classrooms below with as many details as possible. The student should use there is or there are + some, any, no and the vocabulary about classroom objects they learned in this lesson. The AI corrects the mistakes.",
+          "type": "student_answers",
+          "imageDependency": "visual",
+          "items": [
+            {
+              "prompt": "Examples of sentences",
+              "expectedAnswer": null
+            },
+            {
+              "prompt": "There are five / some students\nThere are some desks.\nThere are no teachers.\nThere aren’t any teachers.\nThere aren’t any doors.\nThere aren’t any windows.\nThere’s a board. There are some books and notebooks.",
+              "expectedAnswer": null,
+              "imageFloatingInCell": true,
+              "imagePath": "book01/unit02/8D/task-1-item-2.jpg"
+            },
+            {
+              "prompt": "There is a teacher.\nThere is a board.\nThere are six / some students.\nThere are some desks.\nThere are some books.\nThere is a map.\nThere aren’t any doors.\nThere aren’t any windows.",
+              "expectedAnswer": null,
+              "imageFloatingInCell": true,
+              "imagePath": "book01/unit02/8D/task-1-item-3.jpg"
+            }
+          ]
+        }
+      ],
+      "referenceContent": {
+        "dialogues": [],
+        "vocabulary": [],
+        "grammarNotes": [
+          "One more thing about the verb THERE TO BE and quantity. Vamos aprender a usar o There to be com outras expressões que dão ideia de quantity: some - any - no",
+          "Aprendemos a usar o There to be para quantidades específicas",
+          "There is a lamp in the classroom.",
+          "There is an ark in the Most Holy Place",
+          "There are two cherubim on the ark.",
+          "Mas e se the quantity não for exata? Nesse caso, na forma afirmativa usamos SOME para pequenas quantidades.",
+          "There are some desks in the classroom.",
+          "Maybe four, five, ten?",
+          "In the question, you always use A or AN (for the singular) or ANY (for the plural):",
+          "Is there A window in the classroom? (singular)",
+          "Are there any men in the class? (plural)",
+          "To give an idea of ZERO quantity, use NO (singular or plural) or NOT ANY (plural)",
+          "There’s NO phone service here. (singular)",
+          "There’s NO problem. (singular)",
+          "There are NO windows in the classroom. = There aren’t any windows. (plural)",
+          "Are there ANY questions? I hope there’s NO problem with this topic, so, let’s do SOME exercises in the platform!"
+        ],
+        "tables": [],
+        "practicePhrases": []
+      },
+      "requiresImages": true
+    },
+    {
+      "code": "9A",
+      "title": "Grammar and Speaking – How many books are there in the Bible?",
+      "skill": "Grammar and Speaking",
+      "order": 17,
+      "tasks": [
+        {
+          "order": 1,
+          "instruction": "The AI Tutor asks the student to form questions with these cues.\nFor example:",
+          "type": "student_answers",
+          "imageDependency": "oral",
+          "items": [
+            {
+              "prompt": "window / in your room –",
+              "expectedAnswer": "How many windows are there in your room?"
+            },
+            {
+              "prompt": "person / in your family",
+              "expectedAnswer": "How many persons / people are there in your family?"
+            },
+            {
+              "prompt": "man / in your family",
+              "expectedAnswer": "How many men are there in your family?"
+            },
+            {
+              "prompt": "woman / in your family",
+              "expectedAnswer": "How many women are there in your family?"
+            },
+            {
+              "prompt": "country / North America",
+              "expectedAnswer": "How many countries are there in North America?"
+            },
+            {
+              "prompt": "continent / world",
+              "expectedAnswer": "How many continents are there in the world?"
+            },
+            {
+              "prompt": "brother and sister / do you have",
+              "expectedAnswer": "How many brothers and sisters do you have?"
+            }
+          ],
+          "itemsAreExamples": true
+        },
+        {
+          "order": 2,
+          "instruction": "After the first part of the exercise (a), the AI Tutor asks the student the questions. The student answers it and the AI Tutor corrects the pronunciation and the grammar.",
+          "type": "student_answers",
+          "imageDependency": "oral",
+          "items": []
+        }
+      ],
+      "referenceContent": {
+        "dialogues": [],
+        "vocabulary": [
+          "book – books / window – windows / day – days",
+          "family – families / country – countries",
+          "child – children / man – men / woman – women / cherub – cherubim / person – people"
+        ],
+        "grammarNotes": [
+          "The name of this lesson is “How many books are there in the Bible?”",
+          "In this lesson, we’ll learn about the PLURAL and to ask questions about QUANTITY. For example, in the Bible, there are two parts, right? The Old Testament and the New Testament. How many books are there in the Old Testament? And how many books are there in the New Testament?",
+          "I’ll give you some time to think.",
+          "The answers are:",
+          "There are 39 books in the Old Testament.",
+          "There are 27 books in the New Testament.",
+          "When you ask a question with HOW MANY, the noun after the expression HOW MANY is always in the plural. HOW MANY BOOKS? The answer is in the singular or in the plural, so we need to learn the PLURAL FORM of the nouns in English.",
+          "English and Portuguese are similar in that you add the suffix -S, but there are some variations and exceptions.",
+          "1. The plural of a noun is usually made by adding s to the singular form.",
+          "2. When the word ends in a CONSONANT + Y, drop the Y  and add -ies",
+          "3. After o, ch, sh, s, ss or x add es",
+          "waitress – waitresses / tax – taxes / actress – actresses / tomato – tomatoes / watch – watches",
+          "4. Some nouns have irregular forms.",
+          "Now let’s do an exercise. Form questions and answer them.",
+          "For example: 1. window / in your room – How many windows are there in your room?",
+          "2. person / in your family",
+          "3. man / in your family",
+          "4. woman / in your family",
+          "5. country / North America",
+          "6. continent / world",
+          "7. brother and sister / do you have",
+          "ANSWERS",
+          "The numbers in your answers vary, but the sentences are:",
+          "2. How many people (or persons) are there in your family? There are ___ people in my family.",
+          "3. How many men are there in your family? There are ___ men.",
+          "4. How many women are there in your family? There are ___ women in my family",
+          "5. How many countries are there in North America? There are 3 countries.",
+          "6 How many continents are there in the world? There are 5 continents.",
+          "7 How many brothers and sisters do you have? I have ___ brother(s) and ____ sister(s)."
+        ],
+        "tables": [],
+        "practicePhrases": []
+      },
+      "requiresImages": false
+    },
+    {
+      "code": "9B",
+      "title": "Reading – The Lost Sheep",
+      "skill": "Reading",
+      "order": 18,
+      "tasks": [
+        {
+          "order": 1,
+          "instruction": "The AI Tutor reads the parable. The student listens. Then, the student reads and the AI Tutor corrects the student.",
+          "type": "other",
+          "imageDependency": "oral",
+          "items": []
+        },
+        {
+          "order": 2,
+          "instruction": "The AI Tutor asks the student the 3 following questions.",
+          "type": "student_answers",
+          "imageDependency": "oral",
+          "items": [
+            {
+              "prompt": "Is the plural of the word SHEEP regular or irregular?",
+              "expectedAnswer": "It is IRREGULAR"
+            },
+            {
+              "prompt": "How many sheep does the man have?",
+              "expectedAnswer": "100"
+            },
+            {
+              "prompt": "How many sheep are lost?",
+              "expectedAnswer": "ONE"
+            }
+          ]
+        }
+      ],
+      "referenceContent": {
+        "dialogues": [],
+        "vocabulary": [
+          "The answers are 5 – 2 – 1 – 4 – 3. Now read the parable in the right order."
+        ],
+        "grammarNotes": [
+          "Look at these pictures. They are from the parable The Lost Sheep.",
+          "Let’s do a reading exercise. Look at the pictures and the sentences. The pictures are in the correct order, but the sentences are not. Match the sentences and the pictures.",
+          "______ Then he calls his friends1 and says, ‘Let’s celebrate with me; I have found my lost sheep.’",
+          "______ One day2, one sheep3 is not there. It’s lost.",
+          "______ A man4 has one hundred sheep5.",
+          "______ When he finds it, he puts it on his shoulders6 and goes home.",
+          "______ Then he leaves the ninety-nine sheep in the open country7 and goes after the lost sheep.",
+          "Adapted from Luke 15. 1-6",
+          "A man has one hundred sheep. One day, one sheep is not there. It’s lost. Then, he leaves the ninety-nine sheep in the open country and goes after the lost sheep. When he finds it, he puts it on his shoulders and goes home. Then he calls his friends and says, ‘Let’s celebrate with me; I have found my lost sheep.’",
+          "Adapted from Luke 15. 1-6",
+          "Look at the nouns in italics in the parable of “The Lost Sheep”. Are they in the singular or in the plural? Put these words under the correct column below.",
+          "1. friends\t2. Day\t    3. Sheep\t4. Man\t\t5. Sheep\t6. Shoulders\t7. Country",
+          "Then complete the table with the singular or the plural form of the nouns.",
+          "Now I have only three more questions for you about the parable of the Lost Sheep.",
+          "1. Is the plural of the word SHEEP regular or irregular? It is IRREGULAR",
+          "2. How many sheep does the man have? 100",
+          "3. How many sheep are lost? ONE"
+        ],
+        "tables": [
+          {
+            "rows": [
+              [
+                "",
+                "SINGULAR",
+                "PLURAL"
+              ],
+              [
+                "1",
+                "",
+                "friends"
+              ],
+              [
+                "2",
+                "Day",
+                ""
+              ],
+              [
+                "3",
+                "Sheep",
+                ""
+              ],
+              [
+                "4",
+                "Man",
+                ""
+              ],
+              [
+                "5",
+                "",
+                "sheep"
+              ],
+              [
+                "6",
+                "",
+                "shoulders"
+              ],
+              [
+                "7",
+                "Country",
+                ""
+              ]
+            ],
+            "caption": "1. friends\t2. Day\t    3. Sheep\t4. Man\t\t5. Sheep\t6. Shoulders\t7. Country"
+          },
+          {
+            "rows": [
+              [
+                "",
+                "SINGULAR",
+                "PLURAL"
+              ],
+              [
+                "1",
+                "FRIEND",
+                "friends"
+              ],
+              [
+                "2",
+                "Day",
+                "DAYS"
+              ],
+              [
+                "3",
+                "Sheep",
+                "SHEEP"
+              ],
+              [
+                "4",
+                "Man",
+                "MEN"
+              ],
+              [
+                "5",
+                "SHEEP",
+                "sheep"
+              ],
+              [
+                "6",
+                "SHOULDER",
+                "shoulders"
+              ],
+              [
+                "7",
+                "Country",
+                "COUNTRIES"
+              ]
+            ]
+          }
+        ],
+        "practicePhrases": []
+      },
+      "requiresImages": false
+    },
+    {
+      "code": "9C",
+      "title": "Pronunciation of -es and -ies",
+      "skill": "Pronunciation of",
+      "order": 19,
+      "tasks": [
+        {
+          "order": 1,
+          "instruction": "The AI Tutor explains the task to the student. She will say a words in the singular form and the student says it in the plural form, focusing on the correct pronunciation. This task should be done twice or as many times as it takes for the student to pronounce it correctly. For example,",
+          "type": "explain",
+          "imageDependency": "oral",
+          "items": [
+            {
+              "label": "singular | Plural",
+              "prompt": "Actress",
+              "expectedAnswer": "Actresses"
+            },
+            {
+              "label": "singular | Plural",
+              "prompt": "Waitress",
+              "expectedAnswer": "waitresses"
+            },
+            {
+              "label": "singular | Plural",
+              "prompt": "tax",
+              "expectedAnswer": "taxes"
+            },
+            {
+              "label": "singular | Plural",
+              "prompt": "nurse",
+              "expectedAnswer": "nurses"
+            },
+            {
+              "label": "Name | Name with ‘s",
+              "prompt": "Jesus",
+              "expectedAnswer": "Jesus’s"
+            },
+            {
+              "label": "Name | Name with ‘s",
+              "prompt": "Carlos",
+              "expectedAnswer": "Carlos’s"
+            },
+            {
+              "label": "Name | Name with ‘s",
+              "prompt": "Ines",
+              "expectedAnswer": "Ines’s"
+            },
+            {
+              "label": "Name | Name with ‘s",
+              "prompt": "Judas",
+              "expectedAnswer": "Judas’s"
+            },
+            {
+              "label": "Name | Name with ‘s",
+              "prompt": "James",
+              "expectedAnswer": "James’s"
+            }
+          ],
+          "itemsAreExamples": true
+        }
+      ],
+      "referenceContent": {
+        "dialogues": [],
+        "vocabulary": [
+          "Actress – actresses",
+          "Waitress – waitresses",
+          "Tax – taxes",
+          "Nurse – nurses",
+          "Jesus – Jesus’s /dZi:zEsIz/ (termina com /s/)",
+          "Judas – Judas’s /dZu:dEsIz/ (termina com /s/)",
+          "James – James’s /dZeImsIz/ (termina com /s/)",
+          "actress – actresses",
+          "waitress – waitresses",
+          "nurse – nurses",
+          "tax – taxes"
+        ],
+        "grammarNotes": [
+          "In Lesson 6, we talked about the pronunciation of the letter S, remember? I told you that S can sound like /s/ or /z/, but it is irregular, so you need to learn the words one by one.",
+          "Well, in the plural form, S or ES or IES can sound like /s/ or /z/, but this video focuses on the pronunciation of the plural after four sounds:",
+          "Esses sons (ou usando o termo técnico “fonemas”) são chamados de fonemas sibilantes, pois produzem um ruído semelhante ao som de um assobio. O ar passa por uma pequena brechinha entre os dentes e a língua.",
+          "Então, quando um substantivo termina com um desses sons, no plural, você pronuncia ES como /Iz/, for example:",
+          "Mas atenção! Não é a letra, mas sim o som, for example,",
+          "Note: TAX termina com a letra x, mas o último som é /s/",
+          "Essa mesma regra de fonética vale para o genitivo, for example:",
+          "E para verbos, o que aprenderemos na próxima unidade. Então voltaremos a esse assunto, ok?",
+          "Por enquanto, vamos ficar com o plural de palavras que terminam com /s/ dessa lição, ok?",
+          "Let´s practice. Repeat:"
+        ],
+        "tables": [
+          {
+            "rows": [
+              [
+                "/S/",
+                "/z/",
+                "/s/",
+                "/Z/"
+              ],
+              [
+                "sheep",
+                "Zero",
+                "Six",
+                "vision"
+              ],
+              [
+                "English",
+                "Is",
+                "Esau",
+                "visual"
+              ]
+            ]
+          }
+        ],
+        "practicePhrases": []
+      },
+      "requiresImages": false
+    },
+    {
+      "code": "9E",
+      "title": "Listening – Books of the Bible",
+      "skill": "Listening",
+      "order": 20,
+      "tasks": [
+        {
+          "order": 1,
+          "instruction": "The AI tutor should ask the student about how many books there are in each part of the Bible, based on the information given in the listening exercise.\nThe questions and answers are",
+          "type": "other",
+          "imageDependency": "oral",
+          "items": [
+            {
+              "prompt": "How many books are there in the Old Testament?",
+              "expectedAnswer": "There are"
+            },
+            {
+              "prompt": "How many books are there in The Law?",
+              "expectedAnswer": "There are 5 books."
+            },
+            {
+              "prompt": "PAREI AQUI",
+              "expectedAnswer": null,
+              "schoolCheck": "Anotação \"PAREI AQUI\" em vermelho — não é fala para o aluno; gravada como está. (pergunta 42)"
+            }
+          ],
+          "disabled": true,
+          "disabledReason": "Texto incompleto da escola (\"PAREI AQUI\"; a primeira resposta é só \"There are\"): a Debbie corrigia a resposta certa para \"There are\". Desativada até a escola completar (pergunta 42).",
+          "schoolCheck": "A task termina com \"PAREI AQUI\" e a primeira resposta é só \"There are\" (sem o número). O texto está incompleto? (pergunta 42)"
+        }
+      ],
+      "referenceContent": {
+        "dialogues": [],
+        "vocabulary": [],
+        "grammarNotes": [
+          "Still about “Books in the Bible”, let’s expand this information.",
+          "The Bible is divided into two parts, right? The Old and the New Testament.",
+          "The Old Testament is divided into 3 parts:",
+          "The Law, the Prophets and the Writings.",
+          "The New Testament is divided into 4 parts:",
+          "The Gospels, the Acts of the Apostles, the Epistles, and Prophecy",
+          "Listen to the passage and complete with the number of books in each part.",
+          "The word Bible is a Greek word that means “book”, but the Bible is not one book. It is a collection of many books. The Christian Bible is divided into two major sections – the Old Testament and the New Testament. The OT has 39 books and is divided into 4 parts: The Law, the Prophets, History Books, and the Writings. The Law is composed of 5 books that were written by Moses, also called the Torah, the Pentateuch or the books of Moses. The prophets are a group of 17 books of men who spoke to the nation on behalf of God. The historical books are books that describe the history of the Jewish people. The Writings are 5 books that include history, songs, poems, stories and wisdom.",
+          "The NT is composed of 4 different kinds of books: the 4 gospels, one book called the Acts of the apostles, telling the history of the early church, 21 epistles or letters and one prophetic book called Revelation.",
+          "And the answers are:"
+        ],
+        "tables": [
+          {
+            "rows": [
+              [
+                "NUMBER OF BOOKS",
+                "NUMBER OF BOOKS",
+                "NUMBER OF BOOKS",
+                "NUMBER OF BOOKS",
+                "NUMBER OF BOOKS",
+                "NUMBER OF BOOKS",
+                "NUMBER OF BOOKS",
+                "NUMBER OF BOOKS"
+              ],
+              [
+                "OLD TESTAMENT",
+                "OLD TESTAMENT",
+                "OLD TESTAMENT",
+                "OLD TESTAMENT",
+                "NEW TESTAMENT",
+                "NEW TESTAMENT",
+                "NEW TESTAMENT",
+                "NEW TESTAMENT"
+              ],
+              [
+                "THE LAW",
+                "THE PROPHETS",
+                "HISTORICAL BOOKS",
+                "THE WRITINGS",
+                "GOSPELS",
+                "ACTS OF THE APOSTLES",
+                "EPISTLES",
+                "REVELATION"
+              ],
+              [
+                "5",
+                "17",
+                "12",
+                "5",
+                "4",
+                "1",
+                "21",
+                "1"
+              ]
+            ],
+            "caption": "And the answers are:"
+          }
+        ],
+        "practicePhrases": []
+      },
+      "requiresImages": false
+    },
+    {
+      "code": "10",
+      "title": "REVIEW LESSONS 5 TO 9",
+      "skill": null,
+      "order": 21,
+      "tasks": [
+        {
+          "order": 1,
+          "instruction": "A IA repete aleatoriamente todas as tarefas feitas nessa unidade, revisando o conteúdo, mas repetindo menos vezes. Se o aluno tiver dificuldades, sugerir retornar para as respectivas lições.",
+          "type": "review",
+          "imageDependency": "oral",
+          "items": []
+        }
+      ],
+      "referenceContent": {
+        "dialogues": [],
+        "vocabulary": [],
+        "grammarNotes": [
+          "Que bom que você chegou até aqui! E você percebeu que falamos bem menos em português? Em breve, não falaremos mais em português em nossos vídeos. Nessa unidade avançamos muito! A começar pelas instruções dos exercícios (Classroom Language) , que já estão sendo dadas em inglês. Espero que você esteja sentindo o seu progresso.",
+          "The basic idea in Book 1 Unit 2 is descriptions.",
+          "In Lesson 6, you learned to describe families.",
+          "In Lesson 7 you learned to describe people.",
+          "In Lesson 8, you learned to describe places",
+          "In Lesson 9, you learned to describe quantity.",
+          "Vocabulary",
+          "about members of the family",
+          "people’s physical descriptions",
+          "objects in the Tabernacle",
+          "objects in a classroom",
+          "Books of the Bible.",
+          "Grammar,",
+          "the genitive case,",
+          "the verb to have,",
+          "possessive pronouns,",
+          "the verb there to be,",
+          "the plural form of nouns.",
+          "Pronunciation",
+          "you learned to pronounce the letter /s/ in the middle and in the end of words",
+          "the plural form of nouns after /s/",
+          "Ao todo, você aprendeu cerca de pelo menos mais cem palavras.",
+          "Now do the exercises in the platform to consolidate these topics!",
+          "See you later!"
+        ],
+        "tables": [],
+        "practicePhrases": [],
+        "schoolChecks": [
+          "O título diz \"REVIEW LESSONS 5 TO 9\", mas a Unit 2 vai da 6 à 10. A revisão inclui a Lesson 5? (pergunta 43)"
+        ]
+      },
+      "requiresImages": false
+    }
+  ]
+}

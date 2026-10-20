@@ -38,15 +38,24 @@ assert.equal(findLessonByRef(lessons, 'book02-unit01-1a').book, 'Book 2');
 assert.equal(findLessonByRef(lessons, 'BOOK02-UNIT01-1A ').unit, 'Unit 1');
 assert.equal(findLessonByRef(lessons, '1a').id, 'book01-unit01-1a', 'a bare code is Book 1\'s');
 assert.equal(findLessonByRef(lessons, '11A').id, 'book01-unit03-11a', 'a code only one unit has resolves to it');
-assert.equal(nextLessonAfter(lessons, 'book01-unit01-5').id, 'book01-unit03-11a', 'next crosses into the next unit');
+assert.equal(nextLessonAfter(lessons, 'book01-unit01-5').id, 'book01-unit02-6a', 'next crosses into the next unit');
+assert.equal(nextLessonAfter(lessons, 'book01-unit02-10').id, 'book01-unit03-11a', 'Unit 2 sits between Units 1 and 3');
 assert.equal(nextLessonAfter(lessons, 'book02-unit01-1a').id, 'book02-unit01-1b', 'next stays in Book 2');
 
 // The school's deep link.
 assert.equal(findLessonFromLink(lessons, { book: '2', unit: '1', licao: '1A' }).id, 'book02-unit01-1a');
 assert.equal(findLessonFromLink(lessons, { book: '2', unit: '2', licao: '6a' }).id, 'book02-unit02-6a');
 assert.equal(findLessonFromLink(lessons, { licao: '1A' }).id, 'book01-unit01-1a', '?licao=1A alone = Book 1 / Unit 1');
-assert.equal(findLessonFromLink(lessons, { licao: '6A' }).id, 'book02-unit02-6a', 'a code Unit 1 lacks still resolves');
-assert.equal(findLessonFromLink(lessons, { book: '1', unit: '2', licao: '6A' }), undefined, 'Book 1 / Unit 2 has not arrived');
+assert.equal(findLessonFromLink(lessons, { licao: '6A' }).id, 'book01-unit02-6a', 'a code Unit 1 lacks resolves in course order (Book 1 first)');
+assert.equal(findLessonFromLink(lessons, { book: '1', unit: '2', licao: '6A' }).id, 'book01-unit02-6a');
+assert.equal(findLessonFromLink(lessons, { book: '1', unit: '6', licao: '6A' }), undefined, 'a unit that does not exist');
+
+// Book 1 / Unit 2 writes one lesson for two codes ("Lessons 7C and 7D").
+const sevenCD = findLessonByRef(lessons, 'book01-unit02-7c-and-7d');
+assert.equal(sevenCD.code, '7C and 7D');
+assert.equal(findLessonFromLink(lessons, { book: '1', unit: '2', licao: '7C' }), sevenCD, 'either code opens it');
+assert.equal(findLessonFromLink(lessons, { book: '1', unit: '2', licao: '7d' }), sevenCD);
+assert.equal(findLessonFromLink(lessons, { book: '2', unit: '2', licao: '7C' }).id, 'book02-unit02-7c', 'Book 2 keeps its own 7C');
 
 // Every lesson carries its unit's principles (inherited ones flagged).
 const b2 = findLessonByRef(lessons, 'book02-unit02-6a');

@@ -135,9 +135,10 @@ export async function listSteps(lessonId: string): Promise<AdminStep[]> {
   return data ?? [];
 }
 
-/** Storage folder for a lesson's images: book01/unit01/1B */
+/** Storage folder for a lesson's images: book01/unit01/1B ("7C and 7D" ->
+ * 7C-and-7D, as processar-unit.py names it). */
 export function lessonImageFolder(lesson: AdminLesson): string {
-  return `${lesson.unit.book.code}/${lesson.unit.code}/${lesson.code}`;
+  return `${lesson.unit.book.code}/${lesson.unit.code}/${lesson.code.trim().replace(/\s+/g, "-")}`;
 }
 
 /** Every image file in the lesson's folder (and its pendentes/ subfolder,

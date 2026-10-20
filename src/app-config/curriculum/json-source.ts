@@ -1,5 +1,6 @@
 import { findLessonByRef, nextLessonAfter } from "./lookup";
 import book01unit01 from "./book01-unit01.json";
+import book01unit02 from "./book01-unit02.json";
 import book01unit03 from "./book01-unit03.json";
 import book01unit04 from "./book01-unit04.json";
 import book01unit05 from "./book01-unit05.json";
@@ -291,8 +292,9 @@ export interface LessonUnitInfo {
   principlesInheritedFrom?: string;
 }
 
+/** "book02-unit01-1a"; a combined lesson ("7C and 7D") -> "...-7c-and-7d". */
 export function lessonId(bookCode: string, unitCode: string, code: string): string {
-  return `${bookCode}-${unitCode}-${code.trim().toLowerCase()}`;
+  return `${bookCode}-${unitCode}-${code.trim().toLowerCase().replace(/\s+/g, "-")}`;
 }
 
 /** Exported so supabase-source.ts builds the exact same CurriculumLesson
@@ -347,7 +349,7 @@ export function buildCurriculumLesson(plan: RawLessonPlan, unitInfo: LessonUnitI
   };
 }
 
-const UNITS = [book01unit01, book01unit03, book01unit04, book01unit05, book02unit01, book02unit02] as unknown as CurriculumUnitData[];
+const UNITS = [book01unit01, book01unit02, book01unit03, book01unit04, book01unit05, book02unit01, book02unit02] as unknown as CurriculumUnitData[];
 
 /** While only Book 1 / Unit 1 has principles, the other units inherit them
  * (marked as such) — the same rule scripts/carregar-material.cjs stores in

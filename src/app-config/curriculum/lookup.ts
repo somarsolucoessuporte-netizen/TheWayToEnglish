@@ -13,10 +13,17 @@ function normalize(ref: string): string {
   return ref.trim().toLowerCase();
 }
 
+/** The lesson's code is `code`, or one of a combined lesson's codes (Book 1
+ * / Unit 2 has "7C and 7D": ?licao=7C opens it). */
+function hasCode(lesson: CurriculumLesson, code: string): boolean {
+  const own = lesson.code.toLowerCase();
+  return own === code || own.split(/\s+and\s+/).includes(code);
+}
+
 /** By id, or by bare code (first match in list order). */
 export function findLessonByRef(lessons: CurriculumLesson[], ref: string): CurriculumLesson | undefined {
   const normalized = normalize(ref);
-  return lessons.find((l) => l.id === normalized) ?? lessons.find((l) => l.code.toLowerCase() === normalized);
+  return lessons.find((l) => l.id === normalized) ?? lessons.find((l) => hasCode(l, normalized));
 }
 
 /** Old name of findLessonByRef. */
@@ -39,7 +46,7 @@ export function findLessonFromLink(
   const inScope = lessons.filter(
     (l) => (!book || l.bookCode === `book${book}`) && (!unit || l.unitCode === `unit${unit}`)
   );
-  if (book || unit) return inScope.find((l) => l.code.toLowerCase() === code);
+  if (book || unit) return inScope.find((l) => hasCode(l, code));
   return lessons.find((l) => l.id === `book01-unit01-${code}`) ?? findLessonByRef(lessons, code);
 }
 

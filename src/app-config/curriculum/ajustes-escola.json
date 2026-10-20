@@ -1,5 +1,25 @@
 {
   "_leia": "Marcações aplicadas por cima do que processar-unit.py lê do .docx (carga e upload no /admin). Nada aqui corrige o texto da escola: 'schoolCheck' só marca no /admin 'verificar com a escola' (pergunta N = relatorios/perguntas-para-escola.md); 'disabled' desliga a task até a decisão. Item: 'match' é um trecho do prompt (ou da resposta) do item.",
+  "book01/unit02": {
+    "6C": {
+      "schoolChecks": ["O .docx tem dois títulos \"Lesson 6C\" (Vocabulary – Families e Grammar – Possessive – the Genitive Case). Gravamos como uma lição 6C só, com as tasks na ordem do arquivo. São duas lições? Qual o código da segunda? (pergunta 36)"],
+      "tasks": [
+        { "order": 2, "schoolCheck": "\"A IA perguntar ao aluno…\" — gravado como está. (pergunta 36)" },
+        { "order": 3, "items": [{ "match": "Abrham", "schoolCheck": "\"Abrham’s\" no exemplo — erro de digitação de \"Abraham’s\"? (pergunta 37)" }] }
+      ]
+    },
+    "7C and 7D": {
+      "schoolChecks": ["O título diz \"Lessons 7C and 7D\": uma lição para os dois códigos. Gravamos como uma lição só (o link ?licao=7C ou 7D abre ela). Confirmam? (pergunta 38)"],
+      "tasks": [{ "order": 1, "items": [
+        { "match": "about 20 years old", "schoolCheck": "\"She’s about 20 years old. He has long, brown hair\" — \"He\" seria \"She\"? (pergunta 39)" },
+        { "match": "about 25 years old", "schoolCheck": "\"She’s about 25 years old. He has long black hair\" — \"He\" seria \"She\"? (pergunta 39)" }
+      ] }]
+    },
+    "8B": { "tasks": [{ "order": 3, "items": [{ "match": "basin in the Holy place", "schoolCheck": "A correção esperada \"There is a basin the Holy Place\" está sem o \"in\" e o texto da 8A põe o basin no Courtyard, não no Holy Place. Qual a resposta certa? (pergunta 40)" }] }] },
+    "8C": { "tasks": [{ "order": 2, "items": [{ "match": "there is one (desk)", "schoolCheck": "\"Are there any desks? Yes, there is one (desk).\" — pergunta no plural, resposta no singular. Confirmam? (pergunta 41)" }] }] },
+    "9E": { "tasks": [{ "order": 1, "disabled": "Texto incompleto da escola (\"PAREI AQUI\"; a primeira resposta é só \"There are\"): a Debbie corrigia a resposta certa para \"There are\". Desativada até a escola completar (pergunta 42).", "schoolCheck": "A task termina com \"PAREI AQUI\" e a primeira resposta é só \"There are\" (sem o número). O texto está incompleto? (pergunta 42)", "items": [{ "match": "PAREI AQUI", "schoolCheck": "Anotação \"PAREI AQUI\" em vermelho — não é fala para o aluno; gravada como está. (pergunta 42)" }] }] },
+    "10": { "schoolChecks": ["O título diz \"REVIEW LESSONS 5 TO 9\", mas a Unit 2 vai da 6 à 10. A revisão inclui a Lesson 5? (pergunta 43)"] }
+  },
   "book01/unit03": {
     "13A": { "tasks": [{ "order": 1, "items": [{ "match": "How often does he play", "schoolCheck": "Item sem resposta e talvez com erro de digitação (play → pray?). Resposta seria \"He prays three times a day\"? (pergunta 15)" }] }] },
     "14B": { "tasks": [{ "order": 2, "schoolCheck": "A instrução termina no meio da frase: \"A IA pede para o aluno iniciar o mesmo diálogo. A IA\". O que vinha depois? (pergunta 16)" }] }

@@ -67,12 +67,32 @@ def classify_paragraph(p):
 #      "Summary - Book 1 - Unit 1 - Lesson 3E", "Unit 3 – Lesson 11 A",
 #      "Unit 3 – Lesson 13 A Presentation and Grammar", "Book 1 Lesson 16 C",
 #      "The Way for AI – Book 2 – Unit 2 – Lesson 6A", "UNIT 4 – LESSON 19 C"
-TITLE_RE = re.compile(
+#      "Unit 2 – Lessons 7C and 7D –" (uma licao para os dois codigos: o codigo
+#      fica "7C and 7D", como a escola escreve)
+_TITLE_TAIL = r'(?:\s*[–—-]\s*(?P<subtitle>.+?)|\s+(?P<subtitle2>[A-Z][^.?!]*?))?\s*(?:[–—-]\s*)?$'
+_TITLE_RE = re.compile(
     r'^(?:.{0,40}?[–—-]\s*|(?i:book)\s+\d+\s+)?'
-    r'(?i:lessons?)\s+(?P<code>\d+(?:\s?[A-Z]{1,3})?(?![A-Za-z])|[A-Za-z](?![A-Za-z]))'
-    r'(?:\s*[–—-]\s*(?P<subtitle>.+?)|\s+(?P<subtitle2>[A-Z][^.?!]*?))?\s*$',
+    r'(?i:lessons?)\s+(?P<code>\d+\s?[A-Z]{1,3}\s+and\s+\d+\s?[A-Z]{1,3}(?![A-Za-z])'
+    r'|\d+(?:\s?[A-Z]{1,3})?(?![A-Za-z])|[A-Za-z](?![A-Za-z]))' + _TITLE_TAIL,
     re.DOTALL,
 )
+# "Unit 2 – 6H" (sem a palavra Lesson): so com o prefixo Unit N e nada depois
+_UNIT_CODE_TITLE_RE = re.compile(
+    r'^(?i:unit)\s+\d+\s*[–—-]\s*(?P<code>\d+\s?[A-Z]{1,3})(?P<subtitle>)(?P<subtitle2>)\s*$'
+)
+
+
+class _TitleRe:
+    def fullmatch(self, text):
+        return _TITLE_RE.fullmatch(text) or _UNIT_CODE_TITLE_RE.fullmatch(text)
+
+
+TITLE_RE = _TitleRe()
+
+
+def normalize_code(raw):
+    """'11 A' -> '11A'; '7C and 7D' fica com os espacos em volta do 'and'."""
+    return ' and '.join(re.sub(r'\s+', '', part) for part in re.split(r'\s+and\s+', raw.strip()))
 
 SKILL_WHITELIST = [
     "Speaking", "Vocabulary", "Grammar", "Pronunciation",
@@ -217,10 +237,11 @@ IMPERATIVE_START_RE = re.compile(
 )
 NOTE_START_RE = re.compile(
     r'^\s*(?:\*|note\b|nota\b|obs\b|aten[çc][ãa]o\b|if\b|caso\b|se\b|it\s+is\b|for\s+the\s+answer|'
-    r'the\s+answers?\b|the\s+words\s+are|then\b|after\b|o\s+aluno\b|os\s+alunos\b|for\s+example|'
+    r'the\s+answers?\b|the\s+words\s+are|the\s+(?:sentences|questions\s+and\s+answers)\s+are\s*:?\s*$|then\b|after\b|o\s+aluno\b|os\s+alunos\b|for\s+example|'
     r'por\s+exemplo|etc\.?\s*$|other\s+possible|you\s+can\b|(?:debbie|the\s+ai|the\s+tutor)\s+\w+\s+\d)',
     re.IGNORECASE,
 )
+RED_NOTE_RE = re.compile(r'^\s*(?:nota|note|obs|aten[çc][ãa]o)\b\s*[:.]', re.IGNORECASE)
 _PORTUGUESE_RE = re.compile(
     r'\b(?:alunos?|pede|pedir|pedindo|mostra|mostrar|mostrando|apresenta|apresentar|'
     r'pratica|praticar|caso|usar|usando|responde|corrigindo|corrigir|repetir|'
@@ -246,6 +267,8 @@ GROUP_RE = re.compile(
     r'^\s*(?:rising[- ]falling\s+intonation|rising\s+intonation|falling\s+intonation|singular|plural|note\s+about\s+\w+)\s*:?\s*$',
     re.IGNORECASE,
 )
+CUE_QUESTION_ANSWER_RE = re.compile(r'(?P<cue>[^–—?]{1,30}?)\s[–—-]\s(?P<q>[^?]{3,}\?)\s+(?P<a>\S.*)', re.DOTALL)
+QUESTION_THEN_ANSWER_RE = re.compile(r'(?P<q>[A-Z][^?]{8,}\?)\s+(?P<a>[A-Z][^?]{0,80})')
 _LABEL_WORDS = {"tutor", "student", "debbie", "ai tutor", "aluno", "ia"}
 EXAMPLES_RE = re.compile(r'\bfor\s+example\b|\bpor\s+exemplo\b|\be\.g\.|\betc\b', re.IGNORECASE)
 
@@ -558,6 +581,23 @@ class TaskItems:
             last[field] = ((last[field] or "") + "\n" + rest).strip()
             return last
 
+        # lista de palavras em colunas por TAB ("Objects<TAB>Places in the
+        # Tabernacle", "Ark<TAB>The Courtyard", depois "Lampstand", "Basin"...,
+        # B1U2 8B): vocabulario da task, vai na instrucao, nao vira item. So
+        # com nomes de varias palavras numa coluna — palavras soltas por TAB
+        # ("this<TAB>these", B1U4 19C) sao os itens de repetir/pronunciar
+        cells = [c.strip() for c in rest.strip().split("\t") if c.strip()]
+        if (not label and len(cells) >= 2 and any(len(re.findall(r"[A-Za-z][A-Za-z’']+", c)) >= 2 for c in cells)
+                and not split_speaker(rest)[0] and not rest.rstrip().endswith('?')):
+            self.task["instruction"] = (self.task["instruction"] + "\n" + re.sub(r'\t+', ' | ', rest.strip())).strip()
+            self.word_list = True
+            return None
+        if (getattr(self, "word_list", False) and not label and len(rest.split()) <= 4
+                and not re.search(r'[.?!:]', rest)):
+            self.task["instruction"] = (self.task["instruction"] + "\n" + rest.strip()).strip()
+            return None
+        self.word_list = False
+
         # linha sem fala
         if last and last.get("_await") == "prompt" and not label:
             last["prompt"] = (last["prompt"] + "\n" + rest).strip()
@@ -582,6 +622,57 @@ class TaskItems:
             return item
         if last and last.get("_tpl") and not label and last["expectedAnswer"] is None:
             return self._new(None, f"{last['_template'].rstrip()} {rest}", None, _tpl=True, _template=last["_template"])
+        # "PICTURE CLASSROOM 1", "CLASSROOM 2" (B1U2 8C): titulo do grupo de itens seguinte
+        if not label and re.fullmatch(r'[A-Z][A-Z ]{2,30}\s\d+', rest.strip()):
+            self.group = rest.strip()
+            return None
+        # "Students – Are there any students? Yes, there are two students." (8C):
+        # dica, pergunta e resposta. Se a task pede para o aluno formar as
+        # perguntas ("form questions and answers using the cues"), a Debbie da
+        # so a dica e pergunta + resposta e o que o aluno diz
+        m = CUE_QUESTION_ANSWER_RE.fullmatch(rest.strip())
+        if m:
+            cue, question, answer = m.group('cue').strip(), m.group('q').strip(), m.group('a').strip()
+            # "c. Teacher": a letra e o rotulo do item, a dica e "Teacher"
+            letter = re.match(r'^([a-z])\.\s+', cue)
+            if letter and not label:
+                label, cue = f"{letter.group(1)}.", cue[letter.end():]
+            if re.search(r'\bform\s+questions\b', self.task["instruction"], re.IGNORECASE):
+                item = {"prompt": cue, "expectedAnswer": f"{question} {answer}"}
+                tag = " ".join(x for x in (self.group, label) if x)
+            else:
+                item = {"prompt": question, "expectedAnswer": answer}
+                tag = " ".join(x for x in (self.group, label, cue) if x)
+            if tag:
+                item = {"label": tag, **item}
+            self.items.append(item)
+            return item
+        # "window / in your room –" e, na linha seguinte, a pergunta que o aluno
+        # forma (9A, "form questions with these cues"): a pergunta e a resposta
+        if (last and last.get("_plain") and last["expectedAnswer"] is None and not last.get("image")
+                and not label and rest.rstrip().endswith('?') and not last["prompt"].rstrip().endswith('?')
+                and re.search(r'\bform\s+questions\b', self.task["instruction"], re.IGNORECASE)):
+            last["expectedAnswer"] = rest
+            last.pop("_plain")
+            return last
+        # "D2. Who's Esau's brother? Jacob." (6E): pergunta e resposta na mesma linha
+        m = QUESTION_THEN_ANSWER_RE.fullmatch(rest.strip())
+        if m and self.task["type"] == "student_answers":
+            return self._new(label, m.group('q').strip(), m.group('a').strip())
+        # "Jesus has ________ _________. (four brothers)" (6E): a lacuna e a
+        # resposta entre parenteses, depois do ponto final da frase (sem o ponto,
+        # o parentese e exemplo: "I can't ____ (drive a car, for example)", B2U1 4A)
+        m = re.fullmatch(r'(?P<q>.*_{3,}[^()]*\.)\s*\((?P<a>[^()]+)\)', rest.strip())
+        if m and self.task["type"] == "student_answers":
+            return self._new(label, m.group('q').strip(), m.group('a').strip())
+        # "Use the information 1-8 below" (6D): as frases numeradas seguintes
+        # sao as respostas; a Debbie faz a pergunta ("Who's Mary?")
+        if re.match(r'^\s*use\s+the\s+information\b', rest, re.IGNORECASE) and not label:
+            self.task["instruction"] = (self.task["instruction"] + "\n" + text).strip()
+            self.answers_only = True
+            return None
+        if getattr(self, "answers_only", False) and label:
+            return self._new(label, "", rest)
         return self._new(label, rest, _plain=True)
 
     def add_image_item(self, img):
@@ -668,6 +759,31 @@ def parse_table_items(rows, add_item, add_note):
                 i += 1
         return
 
+    # linha de fotos e, embaixo, a linha das frases, coluna por coluna (B1U2
+    # 7B: [foto] | [foto] / "He has brown hair. = His hair is brown." | ...):
+    # um item por coluna; "X = Y" e a frase da Debbie e a transformacao do aluno
+    def photo_only(row):
+        filled = [c for c in row if c["lines"] or c["images"]]
+        return len(filled) >= 2 and all(c["images"] and not c["lines"] for c in filled)
+
+    def text_only(row):
+        filled = [c for c in row if c["lines"] or c["images"]]
+        return bool(filled) and all(c["lines"] and not c["images"] for c in filled)
+
+    if (len(rows) % 2 == 0 and all(photo_only(rows[i]) and text_only(rows[i + 1])
+                                    and len(rows[i]) == len(rows[i + 1]) for i in range(0, len(rows), 2))):
+        for i in range(0, len(rows), 2):
+            for pc, tc in zip(rows[i], rows[i + 1]):
+                if not pc["images"] and not tc["lines"]:
+                    continue
+                text = cell_text(tc).strip()
+                left, sep, right = text.partition(" = ")
+                if sep:
+                    emit(None, left.strip(), right.strip(), pc["images"])
+                else:
+                    emit(None, "", text, pc["images"])
+        return
+
     roles = None
     template_prompt = None
     default_expected = None
@@ -689,6 +805,7 @@ def parse_table_items(rows, add_item, add_note):
                     emit(head, cell_text(r[col]), None, [])
         return
 
+    header_label = None
     for ri in range(start, len(rows)):
         row = rows[ri]
         imgs = row_images(row)
@@ -700,6 +817,24 @@ def parse_table_items(rows, add_item, add_note):
         if lines:
             label, first = split_label(lines[0])
             lines[0] = first
+
+        # cabecalho de colunas "singular | Plural", "Name | Name with 's" (B1U2
+        # 9C): rotulo das linhas seguintes, nao item
+        filled_texts = [t.strip() for t in texts if t.strip()]
+        if (not imgs and len(filled_texts) >= 2
+                and all(re.fullmatch(r"(?i)singular|plural|name(?: with .{1,4})?", t) for t in filled_texts)):
+            header_label = " | ".join(filled_texts)
+            continue
+        # linha so com um titulo em maiusculas ("BIBLE CHARACTERS", 7C/7D):
+        # rotulo das linhas seguintes. Na ultima linha nao ha o que rotular
+        # (o "PAREI AQUI" vermelho da 9E): segue como item, nada se perde
+        later = any(cell_text(c).strip() or c["images"] for r in rows[ri + 1:] for c in r)
+        if (not imgs and len(filled_texts) == 1 and re.fullmatch(r"[A-Z][A-Z ]{5,40}", filled_texts[0])
+                and ri > start and later):
+            header_label = filled_texts[0]
+            continue
+        if label is None and header_label:
+            label = header_label
 
         # linha-modelo: "Debbie | Yes, I can. OR No, I can't." (B2U1 2A)
         if roles and not imgs and row and is_label_cell(row[0]) and any(texts[1:]):
@@ -733,6 +868,15 @@ def parse_table_items(rows, add_item, add_note):
             deb = "\n".join(texts[i] for i, r in enumerate(roles) if r == "debbie" and i < len(texts) and texts[i])
             stu = "\n".join(texts[i] for i, r in enumerate(roles) if r == "student" and i < len(texts) and texts[i])
             emit(label, (split_label(deb)[1] if deb else template_prompt or ""), stu or default_expected, imgs)
+            continue
+
+        # grade de fotos, cada celula com a SUA foto e a sua frase (B1U2 7A:
+        # "He's thin. [foto] | He's fat. [foto]"): um item por celula, a
+        # frase e o que o aluno diz da foto
+        own = [c for c in row if c["lines"] and c["images"]]
+        if len(own) >= 2 and all(c in own for c in row if c["lines"] or c["images"]):
+            for c in own:
+                emit(header_label, template_prompt or "", "\n".join(t for t, _ in c["lines"] if t.strip()), c["images"])
             continue
 
         filled = [t for t in texts if t]
@@ -800,7 +944,7 @@ def reference_row_items(rows):
 def extract_lesson(blocks, title_idx, end_idx, order, consumed, document):
     title_block = blocks[title_idx]
     m = TITLE_RE.fullmatch(title_block['text'])
-    code = re.sub(r'\s+', '', m.group('code'))
+    code = normalize_code(m.group('code'))
     inline_subtitle = (m.group('subtitle') or m.group('subtitle2') or '').strip() or None
     consumed.add(title_idx)
 
@@ -928,10 +1072,24 @@ def extract_lesson(blocks, title_idx, end_idx, order, consumed, document):
             if table_is_red(rows):
                 if cur is None:
                     new_task("")
+                # titulo vermelho logo antes da tabela ("HAIR (verb to have)",
+                # B1U2 7B) nao e fala da Debbie: vira o rotulo dos itens dela
+                heading = None
+                last = cur["items"][-1] if cur["items"] else None
+                if (last is not None and last is last_item and not last.get("expectedAnswer")
+                        and not last.get("image") and not last.get("label")
+                        and re.fullmatch(r'[A-Z]{3,}[A-Z ]*(?:\([^)]*\))?', last.get("prompt", "").strip())):
+                    heading = cur["items"].pop()["prompt"].strip()
                 before = len(cur["items"])
                 def table_note(note, task=cur):
                     task["instruction"] = (task["instruction"] + "\n" + note).strip()
                 parse_table_items(rows, cur["items"].append, table_note)
+                if heading:
+                    if len(cur["items"]) == before:
+                        cur["items"].append({"prompt": heading, "expectedAnswer": None})
+                    else:
+                        cur["items"][before:] = [it if it.get("label") else {"label": heading, **it}
+                                                 for it in cur["items"][before:]]
                 for it in cur["items"][before:]:
                     for x in [it.get("image")] + it.get("extraImages", []):
                         if x and next((i for i in b['images'] if _same_image(i, x)), {}).get("floating"):
@@ -1045,6 +1203,13 @@ def extract_lesson(blocks, title_idx, end_idx, order, consumed, document):
                         last_item = builder.add_image_item(img)
                 continue
 
+            # "Nota: ..." vermelha depois do texto preto da task (B1U2 6C:
+            # "A atividade devera ser feita quantas vezes forem necessarias"):
+            # e instrucao para a Debbie, completa a task atual
+            if cur is not None and RED_NOTE_RE.match(stripped) and not images:
+                cur["instruction"] = (cur["instruction"] + "\n" + stripped).strip()
+                continue
+
             # vermelho depois de texto preto, sem ser task nova: material de
             # pratica (frases de exemplo, dialogos) colorido por convencao da
             # escola. Vai para referenceContent.
@@ -1145,6 +1310,43 @@ def extract_lesson(blocks, title_idx, end_idx, order, consumed, document):
     return lesson
 
 
+def merge_repeated_codes(lessons):
+    """Mesmo codigo duas vezes na unit (B1U2: dois titulos "Lesson 6C",
+    Families e Genitive Case). O banco tem um codigo por unit e o codigo
+    fica como a escola escreveu: as partes viram UMA licao, com as tasks na
+    ordem do .docx, nada descartado, e a licao fica marcada para a escola."""
+    merged = []
+    by_code = {}
+    for l in lessons:
+        first = by_code.get(l["code"])
+        if first is None:
+            by_code[l["code"]] = l
+            merged.append(l)
+            continue
+        shift = len(first["tasks"])
+        for t in l["tasks"]:
+            t["order"] += shift
+            first["tasks"].append(t)
+        for p in l["pendingImages"]:
+            if p.get("suggestedTask"):
+                p["suggestedTask"] += shift
+            first["pendingImages"].append(p)
+        for key, values in l["referenceContent"].items():
+            first["referenceContent"][key] += values
+        first["requiresImages"] = first["requiresImages"] or l["requiresImages"]
+        for key in ("practiceNote", "noTasksNote", "imageNote"):
+            if l.get(key):
+                first[key] = f"{first[key]}\n{l[key]}" if first.get(key) else l[key]
+        titles = [x for x in (first["title"], l["title"]) if x]
+        first["title"] = " / ".join(titles) or None
+        first["sourceExcerpt"] = f"{first['sourceExcerpt']}\n\n{l['sourceExcerpt']}"
+        first.setdefault("_repeatedTitles", [first["_titleLine"]]).append(l["_titleLine"])
+        first["_usedTabela"] = first["_usedTabela"] or l["_usedTabela"]
+    for order, l in enumerate(merged, 1):
+        l["order"] = order
+    return merged
+
+
 def source_excerpt(blocks, start, end):
     """Trecho original da licao em texto: o vermelho vai marcado com
     [VERMELHO], tabelas viram linhas "a | b", imagens viram [IMAGEM]."""
@@ -1183,6 +1385,9 @@ def lesson_alerts(result, l):
         m = re.search(word + r'\s+(\d+)', tl, re.IGNORECASE)
         if m and n and m.group(1) != n.group(0):
             alerts.append(f"título “{tl.strip()}” diz {word} {m.group(1)}, mas o arquivo é {word} {n.group(0)}.")
+    if l.get("_repeatedTitles"):
+        alerts.append(f"o código {l['code']} aparece {len(l['_repeatedTitles'])} vezes no .docx — as partes "
+                      f"viraram uma lição só, tasks na ordem do arquivo (verificar com a escola).")
     if l.get("_usedTabela"):
         alerts.append("marcador “TABELA” onde normalmente vem “TAREFA” — tratado como TAREFA.")
     if not l["tasks"]:
@@ -1341,6 +1546,32 @@ def write_report(result, orphan_red, path):
 
 # --- pagina de conferencia (html) ----------------------------------------
 
+def open_image(blob):
+    """Image.open, aceitando TIFF com canal extra "nao especificado"
+    (ExtraSamples = 0, ex.: cinza + canal extra, B1U2 7A), que o Pillow
+    recusa: o arquivo e lido com o canal como alfa e o canal e descartado
+    (nao e transparencia — na 7A ele e todo zero). So muda a copia lida aqui."""
+    from PIL import Image, UnidentifiedImageError
+    try:
+        return Image.open(io.BytesIO(blob))
+    except UnidentifiedImageError:
+        order = {b'II*\x00': '<', b'MM\x00*': '>'}.get(bytes(blob[:4]))
+        if not order:
+            raise
+        import struct
+        data = bytearray(blob)
+        ifd = struct.unpack(order + 'I', data[4:8])[0]
+        count = struct.unpack(order + 'H', data[ifd:ifd + 2])[0]
+        for i in range(count):
+            at = ifd + 2 + 12 * i
+            tag, typ, n = struct.unpack(order + 'HHI', data[at:at + 8])
+            if tag == 338 and typ == 3 and n == 1 and struct.unpack(order + 'H', data[at + 8:at + 10])[0] == 0:
+                data[at + 8:at + 10] = struct.pack(order + 'H', 2)
+                img = Image.open(io.BytesIO(bytes(data)))
+                img.load()
+                return {'LA': lambda: img.getchannel('L'), 'RGBA': lambda: img.convert('RGB')}.get(img.mode, lambda: img)()
+        raise
+
 def image_bytes(document, ref, max_side=None):
     """Bytes da imagem do .docx com o recorte aplicado. Com max_side, devolve
     uma miniatura PNG/JPEG (o que o navegador exibe, inclusive de TIFF)."""
@@ -1349,8 +1580,7 @@ def image_bytes(document, ref, max_side=None):
     crop = ref.get("crop")
     if not crop and not max_side:
         return blob, ref["media"].rsplit('.', 1)[-1].lower()
-    from PIL import Image
-    img = Image.open(io.BytesIO(blob))
+    img = open_image(blob)
     if crop:
         w, h = img.size
         box = (max(0, crop.get('l', 0)) * w, max(0, crop.get('t', 0)) * h,
@@ -1540,6 +1770,7 @@ def process(docx_path: Path, out_path: Path):
         lesson = extract_lesson(blocks, ti, end, idx + 1, consumed, document)
         lesson["sourceExcerpt"] = source_excerpt(blocks, ti, end)
         lessons.append(lesson)
+    lessons = merge_repeated_codes(lessons)
 
     # pendencia que e a mesma foto de um item de outra licao ("USAR AS
     # MESMAS IMAGENS DO 4ABC"): diz de onde ela e
@@ -1605,8 +1836,7 @@ def export_image(document, ref):
     crop = ref.get("crop")
     if ext in BROWSER_EXTS and (not crop or ext == 'svg'):
         return part.blob, BROWSER_EXTS[ext]
-    from PIL import Image
-    img = Image.open(io.BytesIO(part.blob))
+    img = open_image(part.blob)
     if crop:
         w, h = img.size
         box = (max(0, crop.get('l', 0)) * w, max(0, crop.get('t', 0)) * h,
@@ -1642,7 +1872,8 @@ def export_images(result, document, images_dir):
 
     count = 0
     for l in result["lessons"]:
-        folder = f"{book}/{unit}/{l['code']}"
+        # "7C and 7D" -> pasta "7C-and-7D" (sem espaco no caminho do bucket)
+        folder = f"{book}/{unit}/{re.sub(r'\s+', '-', l['code'])}"
         for t in l["tasks"]:
             for m, item in enumerate(t["items"], 1):
                 stem = f"{folder}/task-{t['order']}-item-{m}"

@@ -127,7 +127,17 @@ async function main() {
       console.log(`bucket ${SOURCE_DOCS_BUCKET} criado (privado)`);
     }
 
+    // Carga de uma unit só (ex.: só o .docx da Unit 2): os princípios herdados
+    // vêm do JSON do Book 1 / Unit 1, que a carga completa já gravou.
     let principlesSource;
+    let principlesFallback;
+    const unitOneJson = path.join(root, 'src/app-config/curriculum/book01-unit01.json');
+    if (fs.existsSync(unitOneJson)) {
+      const unitOne = JSON.parse(fs.readFileSync(unitOneJson, 'utf8'));
+      if ((unitOne.globalPrinciples ?? []).length > 0) {
+        principlesFallback = { from: `${unitOne.book} / ${unitOne.unit}`, principles: unitOne.globalPrinciples };
+      }
+    }
     for (const { docxPath, dir, unit, bookCode, unitCode } of units) {
       const key = `${bookCode}/${unitCode}`;
       const warnings = applySchoolAdjustments(unit.lessons, adjustments[key]);
@@ -149,15 +159,16 @@ async function main() {
 
       // Princípios: os do .docx; sem eles, os herdados — a não ser que
       // alguém já os tenha editado no /admin (lista simples, não vazia).
+      const inherited = principlesSource ?? principlesFallback;
       const current = unitRow.global_principles;
       const editedByHand = Array.isArray(current) && current.length > 0;
       let principles;
       if (own.length > 0) principles = own;
-      else if (!editedByHand && principlesSource) principles = { inheritedFrom: principlesSource.from, principles: principlesSource.principles };
+      else if (!editedByHand && inherited) principles = { inheritedFrom: inherited.from, principles: inherited.principles };
       if (principles !== undefined) {
         must(await supabase.from('units').update({ global_principles: principles }).eq('id', unitRow.id), 'princípios');
       }
-      console.log(`  princípios: ${own.length ? 'do próprio .docx' : editedByHand ? 'mantidos (editados no /admin)' : `herdados de ${principlesSource?.from}`}`);
+      console.log(`  princípios: ${own.length ? 'do próprio .docx' : editedByHand ? 'mantidos (editados no /admin)' : `herdados de ${inherited?.from}`}`);
 
       const existing = must(await supabase.from('lessons').select('id, code, edited_fields, legacy_tasks').eq('unit_id', unitRow.id), 'lições');
       const plan = planLessonMerge(existing, unit.lessons);
