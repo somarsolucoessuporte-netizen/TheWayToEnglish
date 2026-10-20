@@ -1,7 +1,7 @@
 import "server-only";
 import * as json from "./json-source";
 import type { CurriculumLesson } from "./json-source";
-import { findLessonByCode, nextLessonAfter } from "./lookup";
+import { findLessonByRef, nextLessonAfter } from "./lookup";
 import { loadSnapshot } from "./supabase-source";
 
 // The app's curriculum: read from Supabase (edited in /admin), with the
@@ -17,7 +17,7 @@ import { loadSnapshot } from "./supabase-source";
 // Supabase timeout once, not once per lookup.
 
 export * from "./json-source";
-export { findLessonByCode, nextLessonAfter } from "./lookup";
+export { findLessonByCode, findLessonByRef, findLessonFromLink, nextLessonAfter } from "./lookup";
 
 const SNAPSHOT_TTL_MS = 30_000;
 const FALLBACK_TTL_MS = 15_000;
@@ -74,8 +74,9 @@ export async function getGlobalPrinciples(): Promise<string[]> {
   return (await snapshot()).principles;
 }
 
-export async function getLessonByCode(code: string): Promise<CurriculumLesson | undefined> {
-  return findLessonByCode((await snapshot()).lessons, code);
+/** By id ("book02-unit01-1a") or bare code (first match — Book 1's). */
+export async function getLessonByCode(ref: string): Promise<CurriculumLesson | undefined> {
+  return findLessonByRef((await snapshot()).lessons, ref);
 }
 
 /** Safety-net default for an unresolvable lesson code (see
@@ -84,14 +85,14 @@ export async function getFirstLesson(): Promise<CurriculumLesson> {
   return (await snapshot()).lessons[0];
 }
 
-export async function getCourseOverview(): Promise<{ lessonCode: string; title: string }[]> {
-  return (await snapshot()).lessons.map((l) => ({ lessonCode: l.lessonCode, title: l.title }));
+export async function getCourseOverview(): Promise<{ id: string; lessonCode: string; title: string }[]> {
+  return (await snapshot()).lessons.map((l) => ({ id: l.id, lessonCode: l.lessonCode, title: l.title }));
 }
 
 export async function getAllLessons(): Promise<CurriculumLesson[]> {
   return (await snapshot()).lessons;
 }
 
-export async function getNextLesson(code: string): Promise<CurriculumLesson | undefined> {
-  return nextLessonAfter((await snapshot()).lessons, code);
+export async function getNextLesson(ref: string): Promise<CurriculumLesson | undefined> {
+  return nextLessonAfter((await snapshot()).lessons, ref);
 }

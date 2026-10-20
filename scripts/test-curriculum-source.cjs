@@ -38,13 +38,16 @@ async function sameAsJson(app, label) {
   assert.deepEqual(withoutImages(await app.getFirstLesson()), json.getFirstLesson(), `${label}: first lesson`);
   const lessons = (await app.getAllLessons()).map(withoutImages);
   assert.deepEqual(lessons, json.getAllLessons(), `${label}: all lessons`);
-  for (const { code } of lessons) {
-    assert.deepEqual(withoutImages(await app.getLessonByCode(code)), json.getLessonByCode(code), `${label}: ${code}`);
-    assert.deepEqual(withoutImages(await app.getNextLesson(code)), json.getNextLesson(code), `${label}: next after ${code}`);
+  for (const { id } of lessons) {
+    assert.deepEqual(withoutImages(await app.getLessonByCode(id)), json.getLessonByCode(id), `${label}: ${id}`);
+    assert.deepEqual(withoutImages(await app.getNextLesson(id)), json.getNextLesson(id), `${label}: next after ${id}`);
   }
-  assert.equal(await app.getLessonByCode(' 1b '), lessons.find((l) => l.code === '1B') && (await app.getLessonByCode('1B')), `${label}: code matching ignores case/spaces`);
+  // Codes repeat across units: a bare code is Book 1's, the id picks the unit.
+  assert.equal((await app.getLessonByCode(' 1b ')).id, 'book01-unit01-1b', `${label}: code matching ignores case/spaces`);
+  assert.equal((await app.getLessonByCode('1A')).id, 'book01-unit01-1a', `${label}: a bare code is Book 1's`);
+  assert.equal((await app.getLessonByCode('book02-unit01-1a')).book, 'Book 2', `${label}: the id picks Book 2's 1A`);
   assert.equal(await app.getLessonByCode('nope'), undefined);
-  assert.equal(await app.getNextLesson('5'), undefined, `${label}: nothing after the last lesson`);
+  assert.equal(await app.getNextLesson(lessons[lessons.length - 1].id), undefined, `${label}: nothing after the last lesson`);
   return lessons.length;
 }
 

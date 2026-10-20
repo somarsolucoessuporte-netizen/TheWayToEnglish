@@ -11,6 +11,7 @@ import { LessonCompleteCard } from "./LessonCompleteCard";
 import { LessonTimer } from "./LessonTimer";
 import { TipsPanel, type TipsAttention } from "./TipsPanel";
 import { CurrentLessonLabel } from "./CurrentLessonLabel";
+import { LessonImage } from "./LessonImage";
 
 /** Imperative handle so page.tsx's single page-level Falar button (see
  * .force-send-btn-dock in globals.css) can still close this screen's
@@ -125,6 +126,8 @@ export const MobileVoiceScreen = forwardRef<
     onSubmit: (e: React.FormEvent) => void;
     lessonComplete: boolean;
     onEndLesson: () => void;
+    /** The picture of the item being asked (see components/LessonImage). */
+    lessonImages: string[] | null;
   }
 >(function MobileVoiceScreen(
   {
@@ -148,6 +151,7 @@ export const MobileVoiceScreen = forwardRef<
     onSubmit,
     lessonComplete,
     onEndLesson,
+    lessonImages,
   },
   ref
 ) {
@@ -358,6 +362,8 @@ export const MobileVoiceScreen = forwardRef<
       {started && showTimeUpNotice && !lessonComplete && (
         <div className="mobile-time-notice-float">{branding.copy.sessionTimeUpNotice}</div>
       )}
+
+      {!drawerOpen && <LessonImage urls={lessonImages} variant="mobile" />}
 
       {started && (
         <>

@@ -63,6 +63,14 @@ export const TutorResponseSchema = z
      * would help with (pure praise, a correction already carrying its own
      * audio model, etc.). */
     hints: z.array(z.string()).max(3).optional(),
+    /** The lesson-plan item this turn asks ("task-2-item-3" — see the
+     * curriculum's itemId), echoed by the model. /api/chat drops ids that
+     * aren't in the lesson. */
+    item: z.string().optional(),
+    /** Set by /api/chat (never by the model) whenever `item` is a real item:
+     * signed URLs of its pictures, shown on the student's screen while it
+     * is asked — null when that item has no picture (the screen clears). */
+    itemImages: z.array(z.string()).nullable().optional(),
   })
   .refine((data) => data.speech.english.trim() || data.speech.portuguese.trim(), {
     message: "speech.english and speech.portuguese can't both be empty",

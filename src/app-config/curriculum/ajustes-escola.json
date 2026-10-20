@@ -1,0 +1,33 @@
+{
+  "_leia": "Marcações aplicadas por cima do que processar-unit.py lê do .docx (carga e upload no /admin). Nada aqui corrige o texto da escola: 'schoolCheck' só marca no /admin 'verificar com a escola' (pergunta N = relatorios/perguntas-para-escola.md); 'disabled' desliga a task até a decisão. Item: 'match' é um trecho do prompt (ou da resposta) do item.",
+  "book01/unit03": {
+    "13A": { "tasks": [{ "order": 1, "items": [{ "match": "How often does he play", "schoolCheck": "Item sem resposta e talvez com erro de digitação (play → pray?). Resposta seria \"He prays three times a day\"? (pergunta 15)" }] }] },
+    "14B": { "tasks": [{ "order": 2, "schoolCheck": "A instrução termina no meio da frase: \"A IA pede para o aluno iniciar o mesmo diálogo. A IA\". O que vinha depois? (pergunta 16)" }] }
+  },
+  "book01/unit04": {
+    "18C": { "tasks": [{ "order": 3, "items": [{ "match": "How many apples", "schoolCheck": "Dica \"Bread\" com resposta \"How many apples do you have?\" — deveria ser \"apples\"? (pergunta 20)" }] }] }
+  },
+  "book01/unit05": {
+    "22A": { "tasks": [{ "order": 2, "items": [{ "match": "keyboard", "schoolCheck": "Dica \"keyboard\" com resposta \"Where's the book?\" — parece cópia do item anterior. Seria \"Where's the keyboard?\" (e qual a resposta)? (pergunta 23)" }] }] }
+  },
+  "book02/unit01": {
+    "2B": { "tasks": [{ "order": 1, "items": [{ "match": "swim fast", "schoolCheck": "Resposta \"Michael Phelps swim fast\" sem o \"s\" (o texto preto diz \"swims\"). (pergunta 27)" }] }] },
+    "5": { "tasks": [{ "order": 2, "schoolCheck": "Diz \"random sentences from unit 5\", mas esta é a Unit 1 do Book 2. Qual unit? (pergunta 28)" }] }
+  },
+  "book02/unit02": {
+    "6A": { "tasks": [{ "order": 3, "disabled": "Pede uma foto do celular do aluno — o chat não recebe fotos. Desativada até a decisão (pergunta 30)." }] },
+    "7A": { "tasks": [{ "order": 1, "schoolCheck": "A lista numerada das roupas tem buracos e repete \"hat\" (\"tie, hat, socks\" e depois \"18 hat\"); o texto preto traz \"16 belt\". (pergunta 32)" }] },
+    "7B": { "schoolChecks": ["O título no .docx diz \"Unit 1\", mas a lição está no arquivo da Unit 2. (pergunta 29)"] },
+    "7C": { "schoolChecks": ["O título no .docx diz \"Unit 1\", mas a lição está no arquivo da Unit 2. (pergunta 29)"] },
+    "8A": {
+      "schoolChecks": ["O título no .docx diz \"Unit 1\", mas a lição está no arquivo da Unit 2. (pergunta 29)"],
+      "tasks": [{ "order": 1, "items": [{ "match": "Number 15", "schoolCheck": "Exemplo \"Number 15 → tie\" copiado da 7A (roupas), mas a lição é sobre partes do corpo. Qual é o exemplo certo e a lista? (pergunta 33)" }] }]
+    },
+    "8B": {
+      "schoolChecks": ["O título no .docx diz \"Unit 1\", mas a lição está no arquivo da Unit 2. (pergunta 29)"],
+      "tasks": [{ "order": 2, "items": [{ "match": "long time", "schoolCheck": "\"Are the people having a long time?\" — deveria ser \"a good time\"? (pergunta 34)" }] }]
+    },
+    "9A": { "schoolChecks": ["O título no .docx diz \"Unit 1\", mas a lição está no arquivo da Unit 2. (pergunta 29)"] },
+    "10": { "tasks": [{ "order": 2, "schoolCheck": "Diz \"random sentences from Book 1 unit 2\" — não seria Book 2 Unit 2? (pergunta 35)" }] }
+  }
+}

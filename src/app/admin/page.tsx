@@ -3,7 +3,8 @@ import { connection } from "next/server";
 import { requireAdmin } from "@/lib/admin/auth";
 import { listCurriculum } from "@/lib/admin/data";
 import { DataError } from "./DataError";
-import { DocxUploadForm } from "./forms";
+import { DocxUploadForm, UnitPrinciplesForm } from "./forms";
+import { principlesOf } from "@/app-config/curriculum/json-source";
 
 export default async function AdminHome() {
   await connection();
@@ -32,6 +33,7 @@ export default async function AdminHome() {
               </div>
 
               <DocxUploadForm unitId={unit.id} unitLabel={`${book.title} / ${unit.title ?? unit.code}`} />
+              <UnitPrinciplesForm unitId={unit.id} {...principlesOf(unit.global_principles)} />
 
               <div className="admin-table-wrap">
                 <table className="admin-table">
@@ -53,6 +55,14 @@ export default async function AdminHome() {
                           {lesson.edited_fields.length > 0 && (
                             <span className="admin-tag" title={lesson.edited_fields.join(", ")}>
                               editada à mão
+                            </span>
+                          )}
+                          {lesson.school_checks > 0 && (
+                            <span className="admin-tag is-check">verificar com a escola ({lesson.school_checks})</span>
+                          )}
+                          {lesson.disabled_tasks > 0 && (
+                            <span className="admin-tag is-off">
+                              {lesson.disabled_tasks} task{lesson.disabled_tasks > 1 ? "s" : ""} desativada{lesson.disabled_tasks > 1 ? "s" : ""}
                             </span>
                           )}
                         </td>

@@ -3,7 +3,22 @@ import { GroqAIProvider } from "@/core/ai/GroqAIProvider";
 import { OpenAIProvider } from "@/core/ai/OpenAIProvider";
 import { TutorResponseSchema, type TutorResponse } from "@/core/ai/TutorResponse";
 import { TUTOR_SYSTEM_PROMPT } from "@/app-config/persona";
-import { getCourseOverview, getCurriculumSource, getFirstLesson, getGlobalPrinciples, getLessonByCode, taskId, type CurriculumLesson } from "@/app-config/curriculum";
+import {
+  getAllLessons,
+  getCurriculumSource,
+  getFirstLesson,
+  getLessonByCode,
+  itemId,
+  itemImagePaths,
+  playableTasks,
+  taskId,
+  taskShowsImages,
+  type CurriculumItem,
+  type CurriculumLesson,
+  type CurriculumTask,
+} from "@/app-config/curriculum";
+import { signLessonImages } from "@/lib/lessonImages";
+import { itemAskedInSpeech, stripLeakedAnswer } from "@/core/ai/itemGuard";
 import type { AIOptions, Message } from "@/core/ai/AIProvider";
 import { introductionReply } from "@/core/conversation/introductionReply";
 import { splitOutPortuguese } from "@/core/speech/portugueseGuard";
@@ -36,6 +51,12 @@ interface ChatRequestBody {
    * integration (see the ?aluno=&licao= URL contract in page.tsx) may not
    * know our internal field name; either spelling resolves the same lesson. */
   lessonCode?: string;
+  /** The lesson's id ("book02-unit01-1a") — codes repeat across units, so
+   * this is what tells Book 2's 1A from Book 1's. Used when it agrees with
+   * currentLessonCode (see HttpAIProvider.setLesson). */
+  lessonId?: string;
+  /** The item the tutor's previous message asked (its TutorResponse.item). */
+  currentItemId?: string;
   timeWarning?: boolean;
   attemptCount?: number;
   nudge?: "gentle" | "help" | "offer" | "answer" | "unclear" | "advance" | "resume";
@@ -105,37 +126,78 @@ const MAX_NAME_LEN = 80;
  * receives in full every turn, the same way completedGoals matching
  * already works.
  */
-function buildLessonPlanBlock(lesson: CurriculumLesson, principles: string[]): string {
-  const lines: string[] = ["CURRENT LESSON PLAN", "", `Book: ${lesson.book} | Lesson: ${lesson.code} — ${lesson.title}`, ""];
+/** One task item as a plan line: its id (echoed back in TutorResponse.item),
+ * the cue/question, the school's expected answer and whether its picture is
+ * on the student's screen. */
+function itemLine(task: CurriculumTask, item: CurriculumItem, index: number): string {
+  const parts: string[] = [`   - [${itemId(task.order, index)}]`];
+  if (item.label) parts.push(`(${item.label})`);
+  const quote = (text: string) => `"${text.replace(/\s*\n\s*/g, " / ")}"`;
+  if (item.prompt.trim()) {
+    parts.push(`Debbie: ${quote(item.prompt)}`);
+    if (item.expectedAnswer) parts.push(`| expected answer: ${quote(item.expectedAnswer)}`);
+  } else if (item.expectedAnswer) {
+    parts.push(`the student starts — expected: ${quote(item.expectedAnswer)}`);
+  }
+  if (item.reply) parts.push(`| then Debbie: ${quote(item.reply)}`);
+  if (itemImagePaths(task, item).length > 0) parts.push("| PICTURE ON SCREEN");
+  return parts.join(" ");
+}
 
+function buildLessonPlanBlock(lesson: CurriculumLesson): string {
+  const lines: string[] = [
+    "CURRENT LESSON PLAN",
+    "",
+    `Book: ${lesson.book} | Unit: ${lesson.unit} | Lesson: ${lesson.code} — ${lesson.title}`,
+    "",
+  ];
+
+  const principles = lesson.globalPrinciples;
   if (principles.length > 0) {
     lines.push("GLOBAL PRINCIPLES (always apply):");
     for (const p of principles) lines.push(`- ${p}`);
     lines.push("");
   }
 
-  // Per-task image handling (see CurriculumTask.imageDependency): this
-  // app has NO lesson images. image-only tasks are left out of the plan
-  // entirely (the model never runs or reports them); visual ones run
-  // without the part that needs sight.
+  // Per-task image handling (see CurriculumTask.imageDependency and
+  // playableTasks): tasks that can't run — disabled until the school
+  // decides, or image-only with no picture to show — are left out of the
+  // plan entirely (the model never runs or reports them); visual ones with
+  // no picture run without the part that needs sight.
+  const playable = new Set(playableTasks(lesson.tasks));
   const tasks = lesson.tasks.filter((t) => {
-    if (t.imageDependency !== "image-only") return true;
-    console.log(`[curriculum] tarefa pulada (image-only): ${lesson.code}/${taskId(t.order)}`);
+    if (playable.has(t)) return true;
+    console.log(`[curriculum] tarefa pulada (${t.disabled ? "desativada" : "image-only sem imagem"}): ${lesson.id}/${taskId(t.order)}`);
     return false;
   });
+  let anyPicture = false;
+  let anyWithoutPicture = false;
   if (tasks.length > 0) {
     lines.push("YOUR TASK SEQUENCE FOR THIS SESSION:");
     for (const t of tasks) {
+      const pictures = taskShowsImages(t);
+      anyPicture ||= pictures;
+      const needsSight = t.imageDependency === "visual" || t.imageDependency === "image-only";
+      anyWithoutPicture ||= needsSight && !pictures;
       const visual =
-        t.imageDependency === "visual"
+        needsSight && !pictures
           ? " [NO IMAGE AVAILABLE — do only the spoken practice: name or describe the people/things in " +
             "words instead of showing them, and never ask anything that requires seeing a picture]"
           : "";
       lines.push(`${t.order}. [${taskId(t.order)}] ${t.instruction} (type: ${t.type})${visual}`);
+      const items = t.items ?? [];
+      if (items.length > 0) {
+        lines.push(
+          t.itemsAreExamples
+            ? "   Items (the school lists them after \"for example\"):"
+            : "   Items, in this order:"
+        );
+        items.forEach((item, index) => lines.push(itemLine(t, item, index)));
+      }
     }
     lines.push("");
   } else if (lesson.tasks.length > 0) {
-    console.error(`[curriculum] lição ${lesson.code} sem nenhuma tarefa jogável sem imagem`);
+    console.error(`[curriculum] lição ${lesson.id} sem nenhuma tarefa jogável`);
   }
 
   if (lesson.practiceNote) {
@@ -184,13 +246,35 @@ function buildLessonPlanBlock(lesson: CurriculumLesson, principles: string[]): s
     lines.push("");
   }
 
-  // The source material's "Image note" tells the tutor to SHOW images —
-  // there are none, so it's replaced by the opposite instruction.
-  if (lesson.tasks.some((t) => t.imageDependency && t.imageDependency !== "oral")) {
+  if (anyPicture) {
     lines.push(
-      "NO IMAGES: this app has no images for this lesson. Wherever the plan mentions showing images, " +
-        "use words instead. Never ask the student to identify, describe or answer about something they " +
-        "would have to SEE — they have nothing on screen to look at.",
+      "PICTURES ON SCREEN: an item marked PICTURE ON SCREEN shows its picture to the student while you ask " +
+        "it — the app does it from the \"item\" field of your reply, so set \"item\" to that item's bracketed " +
+        "id in EVERY message that asks or re-asks it (corrections and repeats included). NEVER describe the " +
+        "picture or say what it shows — that is the student's answer; just ask (e.g. \"Look at the picture. " +
+        "What are they doing?\"). Judge the answer by the item's expected answer.",
+      ""
+    );
+  }
+  if (anyWithoutPicture) {
+    // The source material tells the tutor to SHOW images these tasks don't
+    // have — replaced by the opposite instruction.
+    lines.push(
+      "NO IMAGE for the tasks marked NO IMAGE AVAILABLE: wherever they mention showing images, use words " +
+        "instead. Never ask the student to identify, describe or answer about something they would have to " +
+        "SEE when no picture is on screen.",
+      ""
+    );
+  }
+
+  if (tasks.some((t) => (t.items ?? []).length > 0)) {
+    lines.push(
+      "ITEMS: whenever your message asks one of the listed items, set \"item\" to its bracketed id (e.g. " +
+        "\"task-2-item-3\") — the item your message ENDS by asking, i.e. the new one when you move on. Item ids " +
+        "never go in completedGoals (that takes task ids only, like \"task-2\"). When an item has an expected " +
+        "answer, correct the student toward THAT answer — but NEVER say it while asking (not even after the " +
+        "question, e.g. \"What is Joel doing? He is hugging Mirna.\" is FORBIDDEN): ask, give the cue if the item " +
+        "has one, and stop; the student must produce the answer.",
       ""
     );
   }
@@ -266,6 +350,58 @@ function findLeakedAnswer(response: TutorResponse): string | null {
     if (normalizedValue && spoken.includes(normalizedValue)) return value;
   }
   return null;
+}
+
+/** The playable task item with this id ("task-2-item-3"), if any. */
+function findItem(
+  lesson: CurriculumLesson,
+  id: string | undefined
+): { id: string; task: CurriculumTask; item: CurriculumItem } | undefined {
+  const match = id?.trim().match(/^task-(\d+)-item-(\d+)$/);
+  if (!match) return undefined;
+  const task = playableTasks(lesson.tasks).find((t) => t.order === Number(match[1]));
+  const item = task?.items?.[Number(match[2]) - 1];
+  return task && item ? { id: match[0], task, item } : undefined;
+}
+
+/** Checks the item the model reported and attaches its pictures (signed
+ * URLs, or null = no picture: the screen clears). An id that isn't in the
+ * lesson is dropped. Never fails the turn over a picture. */
+async function withItemImages(response: TutorResponse, lesson: CurriculumLesson): Promise<TutorResponse> {
+  const { item: claimed, itemImages: _fromModel, ...rest } = response;
+  // Item ids are not goals: completedGoals only ever carries task ids.
+  if (rest.completedGoals) {
+    rest.completedGoals = rest.completedGoals.filter((g) => !/-item-\d+$/.test(g));
+    if (rest.completedGoals.length === 0) delete rest.completedGoals;
+  }
+  // The cue actually spoken wins over the id the model reported (see core/ai/itemGuard.ts).
+  const cues = playableTasks(lesson.tasks).flatMap((t) =>
+    (t.items ?? []).map((item, index) => ({ id: itemId(t.order, index), prompt: item.prompt }))
+  );
+  const reported = itemAskedInSpeech(response.speech.english, claimed?.trim(), cues);
+  if (reported !== claimed) console.warn(`[chat] item corrigido pela fala: ${claimed ?? "(nenhum)"} → ${reported} (${lesson.id})`);
+  const found = findItem(lesson, reported);
+  if (!found) {
+    if (reported) console.warn(`[chat] item desconhecido na resposta: ${JSON.stringify(reported)} (${lesson.id})`);
+    return rest;
+  }
+  // Asked the item and then answered it (see core/ai/itemGuard.ts).
+  const stripped = stripLeakedAnswer(rest.speech.english, found.item, !!rest.correction);
+  if (stripped.leaked) {
+    console.warn(`[chat] resposta do item ${found.id} dita pela própria Debbie — cortada: ${JSON.stringify(stripped.leaked)}`);
+    rest.speech = { ...rest.speech, english: stripped.speech };
+  }
+  const paths = itemImagePaths(found.task, found.item);
+  let itemImages: string[] | null = null;
+  if (paths.length > 0) {
+    try {
+      const urls = await signLessonImages(paths);
+      itemImages = urls.length > 0 ? urls : null;
+    } catch (err) {
+      console.error(`[chat] falha ao assinar a imagem de ${lesson.id}/${found.id}:`, err);
+    }
+  }
+  return { ...rest, item: found.id, itemImages };
 }
 
 export async function POST(req: NextRequest) {
@@ -354,7 +490,13 @@ export async function POST(req: NextRequest) {
   // by a lesson plan). This was the actual production bug: the old fallback
   // told the model to "treat this as an open conversation" whenever
   // getLessonByCode() came back empty.
-  let lesson = requestedLessonCode ? await getLessonByCode(requestedLessonCode) : undefined;
+  let lesson: CurriculumLesson | undefined;
+  if (body.lessonId) {
+    const byId = await getLessonByCode(body.lessonId);
+    // A stale id (a request built for another lesson) never wins over the code.
+    if (byId && (!requestedLessonCode || byId.code.toLowerCase() === requestedLessonCode.trim().toLowerCase())) lesson = byId;
+  }
+  if (!lesson && requestedLessonCode) lesson = await getLessonByCode(requestedLessonCode);
   if (!lesson) {
     lesson = await getFirstLesson();
     console.error(
@@ -364,19 +506,23 @@ export async function POST(req: NextRequest) {
       lesson.code
     );
   }
-  console.log("[5 api] lição encontrada:", lesson.code, "| fonte:", await getCurriculumSource());
+  console.log("[5 api] lição encontrada:", lesson.id, "| fonte:", await getCurriculumSource());
   console.log("[6 api] tasks:", lesson.tasks?.length);
 
   if (studentName) {
     hints.push({ role: "system", content: `Student name: ${studentName}.` });
   }
 
-  const lessonPlanBlock = buildLessonPlanBlock(lesson, await getGlobalPrinciples());
+  const lessonPlanBlock = buildLessonPlanBlock(lesson);
   console.log("[7 api] plano injetado:", lessonPlanBlock.slice(0, 200));
   hints.push({ role: "system", content: lessonPlanBlock });
   const progressNote = buildLessonProgressNote(body.completedGoals, body.currentTaskId);
   if (progressNote) hints.push({ role: "system", content: progressNote });
-  const overview = (await getCourseOverview())
+  // The lesson's own unit only: codes repeat across units, and the other
+  // units' lessons are not what the student has been studying.
+  const current = lesson;
+  const overview = (await getAllLessons())
+    .filter((l) => l.bookCode === current.bookCode && l.unitCode === current.unitCode)
     .map((l) => `${l.lessonCode} — ${l.title}`)
     .join("; ");
   hints.push({
@@ -385,7 +531,9 @@ export async function POST(req: NextRequest) {
   });
 
   try {
-    const introduction = !body.nudge ? introductionReply(lesson.code, conversation) : undefined;
+    // Scripted introduction of Book 1 / Unit 1's 1A (Book 2 has its own 1A).
+    const introduction =
+      !body.nudge && lesson.id === "book01-unit01-1a" ? introductionReply(lesson.code, conversation) : undefined;
     if (introduction) {
       // DIAGNOSTIC LOGGING (temporary — investigating the "trava depois do
       // checkmark verde" report on 1A's introduction exchange): confirms
@@ -415,12 +563,27 @@ export async function POST(req: NextRequest) {
             `correction.corrected = "${expected}" — never the word the student said — and ask for "${expected}" again.`,
         }
       : undefined;
+    // The school's own expected answer for the item the previous message
+    // asked — sent last too, when the drill note above doesn't apply.
+    const asked = body.nudge || expected ? undefined : findItem(lesson, body.currentItemId);
+    const itemNote: Message | undefined = asked?.item.expectedAnswer
+      ? {
+          role: "system",
+          content:
+            `Note: the student is answering [${asked.id}]` +
+            (asked.item.prompt.trim() ? ` — you asked: "${asked.item.prompt}"` : "") +
+            `. The school's expected answer: "${asked.item.expectedAnswer}". Small differences (capitalization, ` +
+            `punctuation, contractions like "he's" / "he is") are still correct. If what they said differs in ` +
+            `meaning or grammar, correct them toward this expected answer.`,
+        }
+      : undefined;
     const messages: Message[] = [
       { role: "system", content: TUTOR_SYSTEM_PROMPT },
       ...hints,
       ...conversation,
       ...(nudgeNote ? [nudgeNote] : []),
       ...(expectedNote ? [expectedNote] : []),
+      ...(itemNote ? [itemNote] : []),
     ];
     const sendOptions: AIOptions = {
       sessionId: body.sessionId,
@@ -558,7 +721,7 @@ export async function POST(req: NextRequest) {
       response = praised.response;
     }
 
-    return NextResponse.json(response);
+    return NextResponse.json(await withItemImages(response, lesson));
   } catch (err) {
     // DIAGNOSTIC LOGGING (temporary — investigating repeated /api/chat
     // failures): err is `unknown` by default in a catch block, so this

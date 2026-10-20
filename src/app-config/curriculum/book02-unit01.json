@@ -1,0 +1,1157 @@
+{
+  "book": "Book 2",
+  "unit": "Unit 1",
+  "unitTheme": "Presentation and Grammar; PRONUNCIATION; Vocabulary and Speaking; Vocabulary and Grammar; Grammar and Writing; PRONUNCIATION OF CAN /kEn/ AND CAN’T /kAnt/; Reading and Vocabulary; Vocabulary; REVIEW LESSONS 1 TO 4",
+  "sourceFile": "THE WAY for AI_Book 2_Unit 1_prompts.docx",
+  "globalPrinciples": [],
+  "tutorIdentity": {
+    "name": "Debbie Ann Pamp",
+    "age": 28,
+    "nationality": "Brazilian",
+    "occupation": "AI Tutor"
+  },
+  "lessons": [
+    {
+      "code": "1A",
+      "title": "Presentation and Grammar – the verb CAN",
+      "skill": "Presentation and Grammar",
+      "order": 1,
+      "tasks": [
+        {
+          "order": 1,
+          "instruction": "Debbie asks the student what David can do according to the pictures. She corrects pronunciation and grammar problems.",
+          "type": "student_answers",
+          "imageDependency": "visual",
+          "items": [
+            {
+              "prompt": "What can David do according to this picture?",
+              "expectedAnswer": "He can climb a wall.",
+              "imagePath": "book02/unit01/1A/task-1-item-1.jpg"
+            },
+            {
+              "prompt": "And according to this picture? What can David do?",
+              "expectedAnswer": "He can play the harp.",
+              "imagePath": "book02/unit01/1A/task-1-item-2.jpg"
+            },
+            {
+              "prompt": "What can David do according to this picture?",
+              "expectedAnswer": "He can kill a lion and a bear.",
+              "imagePath": "book02/unit01/1A/task-1-item-3.jpg"
+            },
+            {
+              "prompt": "What about this picture? What can David do?",
+              "expectedAnswer": "He can kill a giant.",
+              "imagePath": "book02/unit01/1A/task-1-item-4.jpg"
+            }
+          ]
+        }
+      ],
+      "referenceContent": {
+        "dialogues": [],
+        "vocabulary": [
+          "Verbs – climb, kill, do, play",
+          "Nouns – a lion, the harp, a wall, a giant, everything, a bear"
+        ],
+        "grammarNotes": [
+          "In this lesson, we’ll talk about ABILITIES. In the Bible there’s a special man with some special abilities. Look at the pictures. Who’s that?",
+          "Well, this character is David! David has abilities with instruments and he’s very strong! Now read the text.",
+          "I’m David. I can kill a lion and a bear. I can play the harp. I can climb a wall. I can kill a giant. I can do everything through the Lord!",
+          "Now from memory, don’t look at the text again and match the verb phrases.",
+          "And the answers are",
+          "climb a wall",
+          "kill a lion, kill a bear, kill a giant,",
+          "do everything",
+          "play the harp",
+          "Look at the sentences from the text.",
+          "I can kill a bear and a lion.",
+          "I can play the harp.",
+          "I can climb a wall.",
+          "I can kill a giant.",
+          "I can do everything through the Lord.",
+          "Look at the word CAN. This is a verb. It expresses ABILITY. David has these abilities. Equivale ao verbs PODER, ou SABER FAZER ou CONSEGUIR FAZER em português.",
+          "David can play the harp. = David sabe tocar harpa.",
+          "CAN is a special verb in English – a MODAL verb. Modal verbs are different from the other verbs.",
+          "The verb CAN doesn’t change.",
+          "I can play the harp.",
+          "David can play the harp.",
+          "Christine can play the harp.",
+          "You can play the guitar.",
+          "We can play instruments.",
+          "They can play the piano.",
+          "Another characteristic is that after the verb CAN, you always use another verb."
+        ],
+        "tables": [
+          {
+            "rows": [
+              [
+                "SUBJECT",
+                "CAN",
+                "VERB",
+                "COMPLEMENT"
+              ],
+              [
+                "I",
+                "can",
+                "play",
+                "the piano."
+              ],
+              [
+                "David",
+                "can",
+                "climb",
+                "a wall."
+              ],
+              [
+                "We",
+                "can",
+                "do",
+                "everything through the Lord."
+              ]
+            ]
+          }
+        ],
+        "practicePhrases": []
+      },
+      "requiresImages": true,
+      "imageNote": "Debbie asks the student what David can do according to the pictures. She corrects pronunciation and grammar problems."
+    },
+    {
+      "code": "1B",
+      "title": "PRONUNCIATION – CAN /kEn/",
+      "skill": "PRONUNCIATION",
+      "order": 2,
+      "tasks": [
+        {
+          "order": 1,
+          "instruction": "Debbie asks the student to pronounce the sentences, correcting the pronunciation of CAN, if necessary, focusing on both the vowel sound /E/ and the weak stress of the word.",
+          "type": "student_reads",
+          "imageDependency": "oral",
+          "items": [
+            {
+              "prompt": "I can play the guitar.",
+              "expectedAnswer": null
+            },
+            {
+              "prompt": "I can ride a bike.",
+              "expectedAnswer": null
+            },
+            {
+              "prompt": "He can drive a car.",
+              "expectedAnswer": null
+            },
+            {
+              "prompt": "She can swim.",
+              "expectedAnswer": null
+            },
+            {
+              "prompt": "They can sing.",
+              "expectedAnswer": null
+            },
+            {
+              "prompt": "We can do everything.",
+              "expectedAnswer": null
+            }
+          ]
+        }
+      ],
+      "referenceContent": {
+        "dialogues": [],
+        "vocabulary": [],
+        "grammarNotes": [
+          "Note the pronunciation of the verb CAN. The word has no stress in the sentence, so you pronounce it with the schwa /E/.",
+          "/kEn/",
+          "The strong syllable is on the main verb.",
+          "I can play the piano.",
+          "David can kill a giant.",
+          "Listen to the following sentences and repeat. Focus on the pronunciation of CAN and on the stress on the verb after it.",
+          "https://drive.google.com/drive/folders/1BxyFd6aaFQsW-orES3Jff-UzjuTr6tdf",
+          "I can play the guitar.",
+          "I can ride a bike.",
+          "He can drive a car.",
+          "She can swim.",
+          "They can sing.",
+          "We can do everything.",
+          "Listen again and repeat."
+        ],
+        "tables": [],
+        "practicePhrases": []
+      },
+      "requiresImages": false
+    },
+    {
+      "code": "1C",
+      "title": "Vocabulary and Speaking – Abilities",
+      "skill": "Vocabulary and Speaking",
+      "order": 3,
+      "tasks": [
+        {
+          "order": 1,
+          "instruction": "Debbie shows the pictures and asks the student to describe the pictures using the verb CAN.",
+          "type": "student_answers",
+          "imageDependency": "visual",
+          "items": [
+            {
+              "prompt": "",
+              "expectedAnswer": "He can use a computer.",
+              "imagePath": "book02/unit01/1C/task-1-item-1.jpg"
+            },
+            {
+              "prompt": "",
+              "expectedAnswer": "He can cook.",
+              "imagePath": "book02/unit01/1C/task-1-item-2.jpg"
+            },
+            {
+              "prompt": "",
+              "expectedAnswer": "He can dance.",
+              "imagePath": "book02/unit01/1C/task-1-item-3.jpg"
+            },
+            {
+              "prompt": "",
+              "expectedAnswer": "He can drive a car.",
+              "imagePath": "book02/unit01/1C/task-1-item-4.jpg"
+            },
+            {
+              "prompt": "",
+              "expectedAnswer": "He can speak Japanese.",
+              "imagePath": "book02/unit01/1C/task-1-item-5.jpg"
+            },
+            {
+              "prompt": "",
+              "expectedAnswer": "He can swim.",
+              "imagePath": "book02/unit01/1C/task-1-item-6.jpg"
+            },
+            {
+              "prompt": "",
+              "expectedAnswer": "He can paint a picture.",
+              "imagePath": "book02/unit01/1C/task-1-item-7.jpg"
+            }
+          ]
+        },
+        {
+          "order": 2,
+          "instruction": "Debbie asks the student about their abilities, using the following dialogue:",
+          "type": "student_answers",
+          "imageDependency": "oral",
+          "items": [
+            {
+              "prompt": "What sports can you play?",
+              "expectedAnswer": "I can play ____. / I can play no sports."
+            },
+            {
+              "prompt": "What instruments can you play?",
+              "expectedAnswer": "I can play ____. / I can play no instruments."
+            },
+            {
+              "prompt": "What languages can you speak?",
+              "expectedAnswer": "I can speak ____."
+            },
+            {
+              "prompt": "What other abilities do you have? What can you do?",
+              "expectedAnswer": "I can ___________. (Debbie supplies vocabulary, if necessary)"
+            }
+          ]
+        }
+      ],
+      "referenceContent": {
+        "dialogues": [],
+        "vocabulary": [],
+        "grammarNotes": [
+          "Let’s learn some vocabulary about abilities.",
+          "Sports\t\t\tInstruments\t\tLanguages\t\tOthers",
+          "play basketball\tplay the guitar\t\tspeak English\t\tuse a computer",
+          "play soccer\t\tplay the drums\tspeak Spanish\tsing",
+          "play volleyball\t\tplay the flute\t\tspeak Italian\t\tdance",
+          "swim\t\t\tplay the piano\t\tspeak French\t\tcook",
+          "speak German",
+          "Now let’s learn more vocabulary about sports and instruments. Look at the pictures. Listen and repeat the words you hear.",
+          "SPORTS",
+          "tennis",
+          "soccer / football",
+          "exercise",
+          "American football",
+          "basketball",
+          "volleyball",
+          "car race",
+          "yoga",
+          "weightlifting",
+          "karate",
+          "jogging",
+          "swimming",
+          "running",
+          "INSTRUMENTS",
+          "guitar",
+          "electric guitar",
+          "clarinet",
+          "flute",
+          "saxophone",
+          "violin",
+          "harp",
+          "piano",
+          "drums",
+          "trumpet",
+          "Now let’s practice this vocabulary.",
+          "Look at these pictures. Describe what the people can do.",
+          "Let’s do more exercises about that on the platform."
+        ],
+        "tables": [
+          {
+            "rows": [
+              [
+                "",
+                "He can use a computer."
+              ],
+              [
+                "",
+                "He can cook."
+              ],
+              [
+                "",
+                "He can dance."
+              ],
+              [
+                "",
+                "He can drive a car."
+              ],
+              [
+                "",
+                "He can speak Japanese."
+              ],
+              [
+                "",
+                "He can swim."
+              ],
+              [
+                "",
+                "He can paint a picture."
+              ]
+            ]
+          }
+        ],
+        "practicePhrases": []
+      },
+      "requiresImages": true,
+      "imageNote": "Debbie shows the pictures and asks the student to describe the pictures using the verb CAN."
+    },
+    {
+      "code": "2A",
+      "title": "Presentation and Grammar – Questions with the Verb CAN",
+      "skill": "Presentation and Grammar",
+      "order": 4,
+      "tasks": [
+        {
+          "order": 1,
+          "instruction": "Debbie asks the student the questions below with CAN. The student answers with Yes, I can or No, I can’t.",
+          "type": "student_answers",
+          "imageDependency": "oral",
+          "items": [
+            {
+              "prompt": "Can you sing?",
+              "expectedAnswer": "Yes, I can. OR No, I can’t."
+            },
+            {
+              "prompt": "Can you teach?",
+              "expectedAnswer": "Yes, I can. OR No, I can’t."
+            },
+            {
+              "prompt": "Can you speak in public?",
+              "expectedAnswer": "Yes, I can. OR No, I can’t."
+            },
+            {
+              "prompt": "Can you dance?",
+              "expectedAnswer": "Yes, I can. OR No, I can’t."
+            },
+            {
+              "prompt": "Can you play instruments?",
+              "expectedAnswer": "Yes, I can. OR No, I can’t."
+            },
+            {
+              "prompt": "Can you draw?",
+              "expectedAnswer": "Yes, I can. OR No, I can’t."
+            }
+          ]
+        },
+        {
+          "order": 2,
+          "instruction": "Debbie asks the student,\nThe answers will vary. Debbie corrects the student if necessary, supplying vocabulary when or if needed.",
+          "type": "student_answers",
+          "imageDependency": "oral",
+          "items": [
+            {
+              "prompt": "What can you do in God’s kingdom with your abilities?",
+              "expectedAnswer": null
+            },
+            {
+              "prompt": "What sports can you play?",
+              "expectedAnswer": null
+            },
+            {
+              "prompt": "What instruments can David play?",
+              "expectedAnswer": null
+            }
+          ]
+        }
+      ],
+      "referenceContent": {
+        "dialogues": [],
+        "vocabulary": [],
+        "grammarNotes": [
+          "What can you do in God’s kingdom?",
+          "In this lesson, you’ll learn how to ask questions with the verb CAN.",
+          "A local church wants to invite people to serve in church. They ask them to fill out a form and answer some questions. The name of the form is “What can you do in God’s kingdom?”",
+          "Suppose you want to serve in that church with your talents, skills and abilities.",
+          "Read.",
+          "What can you do in God’s kingdom?",
+          "Answer these questions and find out how you can help in church.",
+          "Can you...",
+          "...sing?\t...teach? ...speak in public? ...dance? ...play instruments? ...draw?",
+          "Do you like to...?",
+          "...pray? ...help people? ...talk about the gospel? ...study the Bible?",
+          "...lead people? ...organize parties?",
+          "You can…",
+          "...be a teacher. ...be a preacher. ...be a member of the worship group....be a counsellor....be a member of a prayer group ...lead a Bible study group....be an evangelist ...help organize events....do social work ...make signs or posters for events.",
+          "After you answer the questions, give it to one of the leaders and tell them how you can serve in church.",
+          "Well, let’s look at the church form one more time and this time study the verb CAN again. Now it’s in a question. Read again and think: “What is the difference between the verb CAN in the affirmative form (Lesson 1) and now in the interrogative form?” For example:",
+          "Can you sing?",
+          "Can you dance?",
+          "Can you play instruments?",
+          "Well, here’s the difference.",
+          "I can sing. (affirmative form)",
+          "Can you sing? (interrogative form)",
+          "So, the difference is like the verb to be. Invert the subject and the verb. Simple, huh?",
+          "Remember you use CAN with every person:",
+          "Can I sing? Yes, you can.",
+          "Can you dance? No, I can’t.",
+          "Can he speak English? No, he can’t.",
+          "Can she draw? Yes, she can.",
+          "Can they play instruments? No, they can’t.",
+          "And the short answers are with CAN.",
+          "Can you sing? Yes, I can. / No, I can’t.",
+          "Let’s practice that. Listen to the questions. Answer about you with",
+          "Yes, I can or No, I can’t.",
+          "With Wh-questions, the wh-word comes first.",
+          "For example,",
+          "What can you do in God’s kingdom?",
+          "What can David do?",
+          "What sports can Americans play?",
+          "What songs can John play on the piano?",
+          "Speaking of that (e por falar nisso), let’s answer the questions from the church form.",
+          "Se você disse Sim para aquelas perguntinhas do formulário da igreja, here is what you can do in God’s kingdom.",
+          "Can you sing? You can be a member of the worship group.",
+          "Can you teach? You can be a teacher in church. You can lead a Bible study group.",
+          "Can you speak in public? You can be a preacher.",
+          "Can you dance? You can be a member of the worship group.",
+          "Can you play instruments? You can be a member of the worship group.",
+          "Can you draw? You can make signs or posters for the church events.",
+          "Now that you know you can help in church with your abilities, talk to a leader and tell them you want to serve!",
+          "Now that you know the verb CAN in the interrogative form, you can do more exercises on the platform! See you!"
+        ],
+        "tables": [
+          {
+            "rows": [
+              [
+                "",
+                "Yes, I can.",
+                "No, I can’t."
+              ],
+              [
+                "Can you sing?",
+                "",
+                ""
+              ],
+              [
+                "Can you teach?",
+                "",
+                ""
+              ],
+              [
+                "Can you speak in public?",
+                "",
+                ""
+              ],
+              [
+                "Can you dance?",
+                "",
+                ""
+              ],
+              [
+                "Can you play instruments?",
+                "",
+                ""
+              ],
+              [
+                "Can you draw?",
+                "",
+                ""
+              ]
+            ]
+          }
+        ],
+        "practicePhrases": []
+      },
+      "requiresImages": false
+    },
+    {
+      "code": "2B",
+      "title": "Vocabulary and Grammar – Adverbs of Manner",
+      "skill": "Vocabulary and Grammar",
+      "order": 5,
+      "tasks": [
+        {
+          "order": 1,
+          "instruction": "Debbie asks the student to describe the pictures using the cues.",
+          "type": "student_answers",
+          "imageDependency": "visual",
+          "items": [
+            {
+              "prompt": "cook – badly",
+              "expectedAnswer": "The girl cooks badly.",
+              "imagePath": "book02/unit01/2B/task-1-item-1.png"
+            },
+            {
+              "prompt": "work – hard",
+              "expectedAnswer": "That man works hard.",
+              "imagePath": "book02/unit01/2B/task-1-item-2.png"
+            },
+            {
+              "prompt": "fly – a little",
+              "expectedAnswer": "Chickens fly a little.",
+              "imagePath": "book02/unit01/2B/task-1-item-3.png"
+            },
+            {
+              "prompt": "play the harp – well",
+              "expectedAnswer": "David plays the harp well.",
+              "imagePath": "book02/unit01/2B/task-1-item-4.png"
+            },
+            {
+              "prompt": "swim – fast",
+              "expectedAnswer": "Michael Phelps swim fast.",
+              "imagePath": "book02/unit01/2B/task-1-item-5.png",
+              "schoolCheck": "Resposta \"Michael Phelps swim fast\" sem o \"s\" (o texto preto diz \"swims\"). (pergunta 27)"
+            },
+            {
+              "prompt": "fly – not at all",
+              "expectedAnswer": "Men don’t fly at all.",
+              "imagePath": "book02/unit01/2B/task-1-item-6.png"
+            },
+            {
+              "prompt": "move – slowly",
+              "expectedAnswer": "Turtles move slowly.",
+              "imagePath": "book02/unit01/2B/task-1-item-7.png"
+            }
+          ]
+        }
+      ],
+      "referenceContent": {
+        "dialogues": [],
+        "vocabulary": [
+          "well – bem",
+          "badly – mal",
+          "fast – rapidamente",
+          "slowly – devagar, vagarosamente",
+          "carefully – cuidadosamente",
+          "carelessly – descuidadamente",
+          "hard – arduamente",
+          "a little – um pouco",
+          "not at all – de jeito nenhum (verbo na negativa)",
+          "badly – slowly – carefully – carelessly",
+          "well – fast – hard – a little"
+        ],
+        "grammarNotes": [
+          "In this lesson, we’ll learn about a different way to express ABILITIES. It is possible to express abilities with ADVERBS OF MANNER.",
+          "Adverbs, ou seja, advérbios, são palavras que dão mais informações sobre os verbos, expressando como, onde, quando, com que frequência acontecem aquelas ações dos verbos.",
+          "No Book 1 vimos adverbos de tempo e de frequência (every day, once a week, etc, remember?). Nessa lição veremos advérbios de MODO, ou seja, ADVERBS OF MANNER. These adverbs express HOW you do an action.",
+          "For example,",
+          "David plays the harp well.",
+          "There are many Bible passages that describe David’s abilities with music and instruments. He’s the writer of 73 psalms, and the psalms are songs!",
+          "So, the expression WELL, describes how David plays the harp.",
+          "You can express ABILITIES in English with the verb in the simple present – we studied that in Book 1, remember? –  and then the adverbs of manner.",
+          "David plays the harp well.",
+          "Here are some adverbs of manner:",
+          "Examples:",
+          "You use adverbs of manner at the end of a sentence.",
+          "David plays the harp well.",
+          "Adverbs of manner usually end in -ly:",
+          "But there are some exceptions:",
+          "You can also use VERY, SO or REALLY before adverbs as an intensifier.",
+          "Juan sings very well.",
+          "You drive really carefully.",
+          "Turtles move so slowly!",
+          "Here are more sentences with adverbs of manner.",
+          "I sing well, but my father sings badly.",
+          "He swims fast, but she swims slowly.",
+          "She drives carefully, but her husband drives carelessly.",
+          "My brother speaks English a little, but my sister doesn´t speak at all.",
+          "Now it’s time to go to the platform to do some exercises about that! See you!"
+        ],
+        "tables": [
+          {
+            "rows": [
+              [
+                "David plays the harp well.",
+                ""
+              ],
+              [
+                "Michael Phelps swims fast.",
+                ""
+              ],
+              [
+                "Turtles move slowly.",
+                ""
+              ],
+              [
+                "This girl cooks badly.",
+                ""
+              ],
+              [
+                "That man works hard.",
+                ""
+              ],
+              [
+                "Some chickens fly a little.",
+                ""
+              ],
+              [
+                "Birds fly, but men don’t fly at all.",
+                ""
+              ]
+            ],
+            "caption": "Examples:"
+          }
+        ],
+        "practicePhrases": []
+      },
+      "requiresImages": true,
+      "imageNote": "Debbie asks the student to describe the pictures using the cues."
+    },
+    {
+      "code": "3A",
+      "title": "Grammar and Writing – I can’t speak very well.",
+      "skill": "Grammar and Writing",
+      "order": 6,
+      "tasks": [
+        {
+          "order": 1,
+          "instruction": "Debbie asks the student to describe the pictures below, correcting them, if necessary.",
+          "type": "student_answers",
+          "imageDependency": "visual",
+          "items": [
+            {
+              "prompt": "",
+              "expectedAnswer": "That baby can’t walk.",
+              "imagePath": "book02/unit01/3A/task-1-item-1.png"
+            },
+            {
+              "prompt": "",
+              "expectedAnswer": "The girl can’t ride a bike.",
+              "imagePath": "book02/unit01/3A/task-1-item-2.png"
+            },
+            {
+              "prompt": "",
+              "expectedAnswer": "The boy can’t skate.",
+              "imagePath": "book02/unit01/3A/task-1-item-3.png"
+            },
+            {
+              "prompt": "",
+              "expectedAnswer": "The girl can’t swim.",
+              "imagePath": "book02/unit01/3A/task-1-item-4.png"
+            }
+          ]
+        },
+        {
+          "order": 2,
+          "instruction": "Debbie asks the student to  talk about things they can’t do.",
+          "type": "student_answers",
+          "imageDependency": "oral",
+          "items": [
+            {
+              "prompt": "What are some things you can’t do?",
+              "expectedAnswer": "I can’t swim. I can’t ride a bike,"
+            }
+          ]
+        }
+      ],
+      "referenceContent": {
+        "dialogues": [],
+        "vocabulary": [
+          "(?) Can you draw? – Interrogative – yes-no question",
+          "(?) What can you do? – Interrogative – Wh-question"
+        ],
+        "grammarNotes": [
+          "Do you remember Moses? God speaks to him at the burning bush. He gives Moses a task (uma tarefa), a mission (uma missão). What does Moses answer? Read the text and say what Moses’s answer is.",
+          "God: Moses, go to Pharaoh and bring my people, the Israelites, out of Egypt",
+          "Moses: Oh, Lord, but I can’t speak very well.",
+          "What does Moses answer?",
+          "Yes, I can go, Lord.",
+          "Lord, I can’t speak very well.",
+          "No, I can’t go, Lord.",
+          "The answer is b. Moses thinks he has no speaking abilities. He has a speaking problem.",
+          "Look at Moses’s answer.  “Oh, Lord, but I can’t speak very well.”",
+          "What does “CAN’T” mean?",
+          "Well, CAN’T is the negative form of CAN. It is the contraction of CAN + NOT. It’s informal and for speaking. It means “no ability”, ou seja, “não saber”, “não ser capaz de fazer alguma coisa”:",
+          "I can’t speak very well. = Não sei / não consigo falar muito bem.",
+          "The formal verb is CANNOT:",
+          "I cannot speak very well. – for formal writing",
+          "Let’s summarize.",
+          "(+) David can play the harp.  – affirmative form",
+          "(SA) Yes, I can. / No, I can’t.  – short answers",
+          "(-) Moses can’t speak (very well).  – negative form",
+          "Let’s practice. Look at these pictures. They can’t do these actions. Describe them.",
+          "Now please do more exercises about this on the platform, ok?"
+        ],
+        "tables": [
+          {
+            "rows": [
+              [
+                "",
+                "That baby can’t walk."
+              ],
+              [
+                "",
+                "The girl can’t ride a bike."
+              ],
+              [
+                "",
+                "The boy can’t skate."
+              ],
+              [
+                "",
+                "The girl can’t swim."
+              ]
+            ]
+          }
+        ],
+        "practicePhrases": []
+      },
+      "requiresImages": true,
+      "imageNote": "Debbie asks the student to describe the pictures below, correcting them, if necessary."
+    },
+    {
+      "code": "3B",
+      "title": "PRONUNCIATION OF CAN /kEn/ AND CAN’T /kAnt/",
+      "skill": null,
+      "order": 7,
+      "tasks": [
+        {
+          "order": 1,
+          "instruction": "Debbie asks the student to read the sentences below, correcting the pronunciation of CAN and CAN’T, as well as the sentence stress.",
+          "type": "student_reads",
+          "imageDependency": "oral",
+          "items": [
+            {
+              "prompt": "I can /kEn/swim, but I can’t /kAnt/ play soccer.",
+              "expectedAnswer": null
+            },
+            {
+              "prompt": "Can /kEn/ you play the guitar? Yes, I can /kAnt/.",
+              "expectedAnswer": null
+            },
+            {
+              "prompt": "Can /kEn/ you fly? No, I can’t /kAn/.",
+              "expectedAnswer": null
+            },
+            {
+              "prompt": "I can swim.",
+              "expectedAnswer": null
+            },
+            {
+              "prompt": "I can’t swim.",
+              "expectedAnswer": null
+            }
+          ]
+        }
+      ],
+      "referenceContent": {
+        "dialogues": [],
+        "vocabulary": [
+          "CAN /kAn/ - CAN’T /kAnt/",
+          "CAN /kEn/ - CAN’T /kAnt/"
+        ],
+        "grammarNotes": [
+          "Let’s compare the pronunciation of CAN (affirmative) with CAN’T (negative).",
+          "There are two differences in the pronunciation of sentences with CAN and CAN’T.",
+          "1. Pronunciation – Quando pronunciamos essas palavras separadamente (American Pronunciation):",
+          "Quando pronunciamos dentro da oração:",
+          "Listen to more examples.",
+          "I can /kEn/swim, but I can’t /kAnt/ play soccer.",
+          "Can /kEn/ you play the guitar? Yes, I can /kAnt/.",
+          "Can /kEn/ you fly? No, I can’t /kAn/.",
+          "https://drive.google.com/drive/folders/1BxyFd6aaFQsW-orES3Jff-UzjuTr6tdf",
+          "e.com/drivaaFQsW-orES3Jff-UzjuTr6tdf",
+          "2. Stress – That is about the strong syllable. You don’t stress CAN, but you stress CAN’T.",
+          "I can swim. (1 stressed syllable)",
+          "I can’t swim. (2 stressed syllables)",
+          "Note: In short answers, you stress CAN /kAn/.",
+          "Yes, I can. /kAn/",
+          "Listen again to the sentences. This time, focus on the STRESS. The stressed syllables are underlined.",
+          "I can swim, but I can’t play soccer.",
+          "Can you play the guitar? Yes, I can.",
+          "Can you fly? No, I can’t.",
+          "Pronounce the sentences above focusing on the correct stress and the pronunciation of CAN/CAN’T.",
+          "Now it’s time to go to the platform to do some exercises about that! See you!"
+        ],
+        "tables": [],
+        "practicePhrases": []
+      },
+      "requiresImages": false
+    },
+    {
+      "code": "4A",
+      "title": "Reading and Vocabulary – Jews can’t work on Saturdays",
+      "skill": "Reading and Vocabulary",
+      "order": 8,
+      "tasks": [
+        {
+          "order": 1,
+          "instruction": "Debbie reads the sentences below and asks the student what the sentence expresses.",
+          "type": "student_answers",
+          "imageDependency": "oral",
+          "items": [
+            {
+              "prompt": "Does the sentence “Moses can’t speak” express a prohibition or no ability?",
+              "expectedAnswer": "No ability."
+            },
+            {
+              "prompt": "And does the sentence “Jews can’t eat pork” express a prohibition or no ability?",
+              "expectedAnswer": "Prohibition"
+            },
+            {
+              "prompt": "Does the question “Can you open the window, please” express a request or a permission?",
+              "expectedAnswer": "A request."
+            },
+            {
+              "prompt": "Does the question “Can I play video games now?” express a request or a permission?",
+              "expectedAnswer": "A permission."
+            },
+            {
+              "prompt": "Does the sentence “David can play the harp” express an ability or a permission?",
+              "expectedAnswer": "An ability."
+            },
+            {
+              "prompt": "Does the sentence “Jews have to wear a kipah in the synagogue” express an obligation or a permission?",
+              "expectedAnswer": "An obligation."
+            }
+          ]
+        },
+        {
+          "order": 2,
+          "instruction": "Debbie asks the student to describe the things below. Debbie provides vocabulary and corrects grammar and pronunciation",
+          "type": "student_answers",
+          "imageDependency": "oral",
+          "items": [
+            {
+              "label": "b.1",
+              "prompt": "your abilities – I can ___",
+              "expectedAnswer": null
+            },
+            {
+              "label": "b.2",
+              "prompt": "things you can’t do (no ability) – I can’t ____ (drive a car, for example)",
+              "expectedAnswer": null
+            },
+            {
+              "label": "b.3",
+              "prompt": "your obligations - I have to ___ (study English, go to the gym)",
+              "expectedAnswer": null
+            },
+            {
+              "label": "b.4",
+              "prompt": "things you have permission to do – I can ___",
+              "expectedAnswer": null
+            },
+            {
+              "label": "b.5",
+              "prompt": "your prohibitions - I can’t ___ (e.g. eat gluten, wake up late, …",
+              "expectedAnswer": null
+            }
+          ]
+        }
+      ],
+      "referenceContent": {
+        "dialogues": [
+          [
+            "A: Can you play any instruments?",
+            "B: Yes, I can play the harp."
+          ]
+        ],
+        "vocabulary": [],
+        "grammarNotes": [
+          "Let’s learn more about the verb CAN.",
+          "The name of this lesson is “Jews can’t work on Saturdays”. The Old Testament is about the history of the Jewish people. Today they have some specific rules. Read the text about that from Compton´s Interactive Encyclopaedia.",
+          "JEWISH TRADITIONS",
+          "The Jewish people are the descendants of Abraham. In their culture and religion, they have a lot of rules – things they cannot do and things they have to do.",
+          "The synagogue – It is the place where Jews can study the Scriptures and worship the Lord. The services take place on Friday evenings (the beginning of the Sabbath – the seventh day), on Saturday mornings and on Sunday afternoons. The rabbi (teacher) cannot be single – they have to have a family – wife and children. In the temple, men have to wear a “kipah” and women have to wear a veil. Men and women cannot sit together.",
+          "Rituals – The life of an individual and the family is marked by a series of rituals. Boys have to be circumcised when they are eight days old. When boys are thirteen, they have to participate in a ceremony called “Bar Mitzvah”, when they have to read from the Torah in front of the synagogue. Girls can do it, too, but they do not have to. Jews cannot work on Saturdays, because they observe the law of Moses, which says that the seventh day is a day of rest and worship.",
+          "Food – Food is very important for Jews. They cannot eat pork and they cannot cook food with blood. At Passover, they cannot eat regular bread, but they eat some bread called “matza”. Every Friday they say prayers and give thanks to God for their food in a special ceremony.",
+          "Now read the text again. Find 6 sentences in the text.",
+          "Six things Jews can’t do",
+          "Five things they have to do",
+          "And the answers are:",
+          "Six things Jews can’t (or cannot) do",
+          "1. The rabbi (teacher) cannot be single.",
+          "2. In the synagogue men and women cannot sit together.",
+          "3. Jews cannot work on Saturdays.",
+          "4. They cannot eat pork.",
+          "5. They cannot cook food with blood.",
+          "6. At Passover, they cannot eat regular bread.",
+          "Five things they have to do:",
+          "1. The rabbi has to have a family.",
+          "2. In the temple men have to wear a “kipah”",
+          "3. Women have to wear a veil in the temple.",
+          "4. Boys have to be circumcised.",
+          "5. Boys have to participate in a ceremony called “Bar Mitzvah”.",
+          "Look at the answers from the reading exercise. What verbs express prohibition? And obligation? CANNOT or HAVE TO?",
+          "CANNOT (or CAN’T) in this case expresses PROHIBITION.",
+          "They can’t work on Saturdays.",
+          "HAVE TO expresses OBLIGATION.",
+          "Men have to wear a “kipah”.",
+          "The rabbi (he) HAS to have a family.",
+          "Note: Kipah is this typical Jewish hat you see in this Picture.",
+          "Attention:",
+          "In the text, there’s a sentence with CAN:",
+          "They can study the Scriptures in the synagogue.",
+          "In this case, CAN doesn’t express ABILITY, as in Lessons 2 and 3. It expresses PERMISSION.",
+          "Modal verbs can have 2 or 3 meanings, or more!",
+          "How do you know the difference? By the context! For example,",
+          "Dialogue 1.",
+          "Dialogue 2.",
+          "Son: Mom, can I play my guitar now?",
+          "Mom: Finished your homework?",
+          "Son: Yes!",
+          "Mom: Yes, you can, dear.",
+          "In the first dialogue, CAN means ABILITY and in the second one, it means PERMISSION.",
+          "Remember the questions, “Can you repeat?” or “Can you spell your last name, please?”, the word CAN means REQUEST, ou seja, um pedido.",
+          "Summary",
+          "Now, please, can you go to the platform to do more exercises?"
+        ],
+        "tables": [
+          {
+            "rows": [
+              [
+                "VERB",
+                "EXAMPLE",
+                "MEANING"
+              ],
+              [
+                "CAN",
+                "David can play the harp.",
+                "Ability"
+              ],
+              [
+                "CAN",
+                "Mom, can I play my guitar?",
+                "Permission"
+              ],
+              [
+                "CAN",
+                "Can you repeat, please?",
+                "Request"
+              ],
+              [
+                "CAN’T",
+                "Jews can’t eat pork.",
+                "Prohibition"
+              ],
+              [
+                "CAN’T",
+                "Moses can’t speak.",
+                "No ability"
+              ],
+              [
+                "HAVE TO",
+                "Men have to wear a kipah in the synagogue.",
+                "Obligation"
+              ]
+            ],
+            "caption": "Summary"
+          }
+        ],
+        "practicePhrases": []
+      },
+      "requiresImages": false
+    },
+    {
+      "code": "4B",
+      "title": "Vocabulary – everything, nothing, anything, something",
+      "skill": "Vocabulary",
+      "order": 9,
+      "tasks": [
+        {
+          "order": 1,
+          "instruction": "Translate the following sentences from Portuguese to English.",
+          "type": "translate",
+          "imageDependency": "oral",
+          "items": [
+            {
+              "label": "a.1",
+              "prompt": "Não há nada nessa caixa.",
+              "expectedAnswer": null
+            },
+            {
+              "label": "a.2",
+              "prompt": "Você sabe alguma coisa sobre isso?",
+              "expectedAnswer": null
+            },
+            {
+              "label": "a.3",
+              "prompt": "Estou com fome. Por favor, me dê alguma coisa para eu comer.",
+              "expectedAnswer": null
+            },
+            {
+              "label": "a.4",
+              "prompt": "Conte-me tudo, por favor.",
+              "expectedAnswer": null
+            }
+          ]
+        },
+        {
+          "order": 2,
+          "instruction": "Translate the following sentences from English to Portuguese.",
+          "type": "translate",
+          "imageDependency": "oral",
+          "items": [
+            {
+              "label": "b1",
+              "prompt": "In everything give thanks.",
+              "expectedAnswer": null
+            },
+            {
+              "label": "b2",
+              "prompt": "Nothing is impossible with God.",
+              "expectedAnswer": null
+            },
+            {
+              "label": "b3",
+              "prompt": "Apart from me you can do nothing.",
+              "expectedAnswer": null
+            },
+            {
+              "label": "b4",
+              "prompt": "If we ask anything according to God’s will, he hears us.",
+              "expectedAnswer": null
+            }
+          ]
+        }
+      ],
+      "referenceContent": {
+        "dialogues": [],
+        "vocabulary": [
+          "SOME + THING – SOMETHING – alguma coisa",
+          "NO + THING – NOTHING - nada (with the verb in the affirmative form)"
+        ],
+        "grammarNotes": [
+          "Look at the Bible verses. What do they have in common?",
+          "Apart from me you can do nothing.",
+          "John 15.5",
+          "I can do everything through the Lord!",
+          "Phillipians 4.13",
+          "Nothing is impossible with God.",
+          "Luke 1.37",
+          "Can anything good come from Nazareth?",
+          "John 1.46",
+          "In everything give thanks.",
+          "1 Thessalonians 5.18",
+          "If we ask anything according to God’s will, he hears us.”",
+          "1 John 5.14",
+          "The people are hungry. Give them something to eat.",
+          "Luke 8.16",
+          "What they have in common is the words EVERYTHING, SOMETHING, ANYTHING, AND NOTHING. These words are indefinite pronouns.",
+          "Remember the name of Lesson 1? “We can do everything through the Lord.” This is a Bible verse from the book of Phillipians Chapter 4, verse 13. Some versions say, “I can do ALL THINGS through Christ, who gives me strength.”",
+          "ALL THINGS = EVERYTHING (TODAS AS COISAS, TUDO)",
+          "Em português, esse versículo é: “Posso tudo naquele que me fortalece.”",
+          "Fala da nossa força em Cristo.",
+          "Attention that EVERYTHING and the other words are compound words.",
+          "EVERY + THING = toda coisa",
+          "Remember the words, SOME, ANY and NO from Book 1?",
+          "ANY + THING – ANYTHING –",
+          "alguma coisa (questions)",
+          "qualquer coisa (affirmative sentences) –",
+          "nada (negativa)",
+          "Translate the verses. Then check in your Portuguese Bible.",
+          "Note: Não se preocupe com a tradução perfeita. Foque nas palavras que estão sendo estudadas e tente lembrar a que passagem é equivalente em português.",
+          "Here is the translation of the verses. (Nova Versão Internacional)",
+          "Tudo posso naquele que me fortalece.  Filipenses 4.13",
+          "Sem mim vocês não podem fazer coisa alguma.",
+          "João 15.5",
+          "Pois nada é impossível para Deus. Lucas 1.37",
+          "Pode vir alguma coisa boa de Nazaré?",
+          "João 1.46",
+          "Deem graças em todas as circunstâncias.",
+          "1 Tessalonicenses 5.18",
+          "Deem-lhes algo para comer.",
+          "Lucas 9.13",
+          "Se pedirmos alguma coisa de acordo com a Sua vontade, ele nos ouve.",
+          "1 João 5.14",
+          "Listen to the song and fill in the blanks with the words SOMETHING, ANYTHING, NOTHING and EVERYTHING.",
+          "With the Lord I can do _____________ (1)",
+          "__________ (2) is impossible with God (2x)",
+          "Apart from Him I can do __________ (3)",
+          "But if I ask __________ (4)",
+          "according to His will he hears me",
+          "What can man do to me?",
+          "With the Lord I can do __________ (5)",
+          "__________ (6) is impossible with God (2x)",
+          "And the answers are",
+          "1. Anything\t2. Nothing\t3. Nothing\t4. Anything\t5. Everything\t\t6. nothing",
+          "Let’s practice everything on the platform!"
+        ],
+        "tables": [],
+        "practicePhrases": []
+      },
+      "requiresImages": false
+    },
+    {
+      "code": "5",
+      "title": "REVIEW LESSONS 1 TO 4",
+      "skill": null,
+      "order": 10,
+      "tasks": [
+        {
+          "order": 1,
+          "instruction": "Debbie repeats all the tasks from the unit randomly, revising the content, but repeating fewer times. If the student has difficulties, Debbie suggests going back to the respective lessons.",
+          "type": "review",
+          "imageDependency": "oral",
+          "items": []
+        },
+        {
+          "order": 2,
+          "instruction": "Debbie asks the student to translate random sentences from unit 5, correcting them and suggesting them to go back to the lessons that they have more trouble with.",
+          "type": "translate",
+          "imageDependency": "oral",
+          "items": [],
+          "schoolCheck": "Diz \"random sentences from unit 5\", mas esta é a Unit 1 do Book 2. Qual unit? (pergunta 28)"
+        }
+      ],
+      "referenceContent": {
+        "dialogues": [],
+        "vocabulary": [],
+        "grammarNotes": [
+          "In this first unit of Book 2, we talked about ABILITIES and RULES.",
+          "The main Bible characters in this lesson are Moses and David.",
+          "In GRAMMAR you learned:",
+          "the verb CAN in the affirmative, interrogative and negative forms (It is the first modal verb in The Way to English)",
+          "the verb CAN for abilities and permission, CAN’T for prohibition and HAVE TO for obligation.",
+          "In VOCABULARY, you learned to express",
+          "abilities with instruments,",
+          "abilities with sports,",
+          "other abilities",
+          "verbs that match them",
+          "adverbs of manner",
+          "indefinite compounds EVERYTHING, SOMETHING, ANYTHING and NOTHING",
+          "Jewish traditions",
+          "In SPEAKING, you learned",
+          "to talk and to ask about abilities, permission, prohibition, and obligations",
+          "to talk about rules",
+          "In PRONUNCIATION, you learned",
+          "the pronunciation of CAN in affirmative and negative statements (CAN. CAN’T) and in questions",
+          "In READING, you practiced",
+          "reading for specific information",
+          "guessing the meaning of new words. The topic of the reading exercise was Jewish traditions.",
+          "Now let’s do more review exercises on the platform to consolidate these topics even more. You can do everything through the Lord!"
+        ],
+        "tables": [],
+        "practicePhrases": []
+      },
+      "requiresImages": false
+    }
+  ]
+}

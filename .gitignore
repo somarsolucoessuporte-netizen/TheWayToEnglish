@@ -18,6 +18,9 @@ material_do_curso/imagens/**/*
 !material_do_curso/**/
 !material_do_curso/**/.gitkeep
 !material_do_curso/LEIAME.md
+material-escola/
+# Análises geradas (processar-unit.py --report) copiam o texto da escola
+relatorios/
 
 .vercel
 .env*

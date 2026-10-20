@@ -1,0 +1,1304 @@
+{
+  "book": "Book 2",
+  "unit": "Unit 2",
+  "unitTheme": "Grammar and Speaking; Pronunciation and Listening; Vocabulary; Vocabulary and Grammar; Grammar and Reading; REVIEW LESSONS 6 TO 9",
+  "sourceFile": "THE WAY for AI_Book 2_Unit 2_prompts.docx",
+  "globalPrinciples": [],
+  "tutorIdentity": {
+    "name": "Debbie Ann Pamp",
+    "age": 28,
+    "nationality": "Brazilian",
+    "occupation": "AI Tutor"
+  },
+  "lessons": [
+    {
+      "code": "6A",
+      "title": "Grammar and Speaking – Present Continuous",
+      "skill": "Grammar and Speaking",
+      "order": 1,
+      "tasks": [
+        {
+          "order": 1,
+          "instruction": "Debbie asks the student these questions, correcting them, if necessary.",
+          "type": "student_answers",
+          "imageDependency": "oral",
+          "items": [
+            {
+              "label": "a.1",
+              "prompt": "Do you like to take pictures?",
+              "expectedAnswer": null
+            },
+            {
+              "label": "a.2",
+              "prompt": "Where do you save and put your pictures? In your computer, cell phone or in photo albums?",
+              "expectedAnswer": null
+            }
+          ]
+        },
+        {
+          "order": 2,
+          "instruction": "Debbie asks the student to describe these pictures using the cues.",
+          "type": "student_answers",
+          "imageDependency": "visual",
+          "items": [
+            {
+              "prompt": "The celebration group – dance",
+              "expectedAnswer": "The celebration group is dancing.",
+              "imagePath": "book02/unit02/6A/task-2-item-1.png"
+            },
+            {
+              "prompt": "The drama group – act out a play",
+              "expectedAnswer": "The drama group is acting out a play.",
+              "imagePath": "book02/unit02/6A/task-2-item-2.png"
+            },
+            {
+              "prompt": "Joel – hug Mirna",
+              "expectedAnswer": "Joel is hugging Mirna.",
+              "imagePath": "book02/unit02/6A/task-2-item-3.png"
+            },
+            {
+              "prompt": "The children – sing and dance",
+              "expectedAnswer": "The children are singing and dancing.",
+              "imagePath": "book02/unit02/6A/task-2-item-4.png"
+            },
+            {
+              "prompt": "David – pray",
+              "expectedAnswer": "David is praying.",
+              "imagePath": "book02/unit02/6A/task-2-item-5.png"
+            },
+            {
+              "prompt": "Luca – cry",
+              "expectedAnswer": "Luca is crying.",
+              "imagePath": "book02/unit02/6A/task-2-item-6.png"
+            }
+          ]
+        },
+        {
+          "order": 3,
+          "instruction": "Debbie asks the student to show a picture of him or her doing something, for example,",
+          "type": "student_answers",
+          "imageDependency": "visual",
+          "items": [
+            {
+              "prompt": "Show me a picture of you doing something.",
+              "expectedAnswer": "From their cell phone, for example, “In this picture I’m riding a bike.”"
+            }
+          ],
+          "itemsAreExamples": true,
+          "disabled": true,
+          "disabledReason": "Pede uma foto do celular do aluno — o chat não recebe fotos. Desativada até a decisão (pergunta 30)."
+        }
+      ],
+      "referenceContent": {
+        "dialogues": [],
+        "vocabulary": [
+          "Pray – praying / sing – singing / do – doing",
+          "Dance – dancing",
+          "HUG – hugging / RUN – running"
+        ],
+        "grammarNotes": [
+          "What are they doing?",
+          "In this unit, we’ll learn to describe pictures. Speaking of pictures, do you like to take pictures? Where do you save and put your pictures? In your computer, cell phone or in photo albums?",
+          "Look at the photo album of a church. The name of this church is Full Gospel Church. These pictures are from the church 9th anniversary party.",
+          "Look at the pictures again. Match the pictures and the sentences. What are these people doing?",
+          "a. Joel is hugging Mirna. (__3___)",
+          "b. Our celebration group, “Elohim”, is dancing. (__1__)",
+          "c. Luca is crying. (__6__)",
+          "d. The drama group is acting out a play. (__2__)",
+          "e. In the play, David is praying. (__5__)",
+          "f. The children are singing and dancing. (__4__)",
+          "Now look at these two sentences:",
+          "a. David prays every day.",
+          "b. David is praying now.",
+          "Which sentence expresses a habit? A or b?",
+          "Which sentence expresses a present action at the moment of speaking? A or b?",
+          "Sentence A expresses a habit, with the verb “prays” and the expression EVERY DAY.",
+          "Sentence B expresses an action that is present at the moment you are speaking.",
+          "DAVID IS PRAYING is the new verb tense of this lesson. This verb tense is the PRESENT CONTINUOUS.",
+          "The present continuous expresses an action at this moment, at the time of speaking, now (agora). It’s a temporary action.",
+          "You form this verb tense with",
+          "SUBJECT + BE + MAIN VERB (in the -ing form)",
+          "David          is     praying.",
+          "I am praying.",
+          "You are praying.",
+          "He is praying",
+          "She is praying",
+          "We are praying.",
+          "They are praying.",
+          "The main verb is in the -ing form. É equivalente em português ao GERÚNDIO: fazendo, falando, orando, etc.",
+          "In English, add -ing to the infinitive form of the verb.",
+          "When the verb ends in -e, drop the E and add -ing:",
+          "When the verb has one syllable and it ends in C+V+C, double the final consonant:",
+          "Here are some time expressions you use the present continuous:",
+          "now \tright now\ttoday\t\ttonight\tat the moment",
+          "Look at the other pictures of the church party again. Memorize the actions. Say what they are doing. The verbs are DANCE – ACT OUT – HUG – SING – PRAY – CRY",
+          "What are they doing?",
+          "Now what are you doing that you’re not exercising on the platform?"
+        ],
+        "tables": [
+          {
+            "rows": [
+              [
+                "The celebration group is dancing.",
+                ""
+              ],
+              [
+                "The drama group is acting out a play.",
+                ""
+              ],
+              [
+                "Joel is hugging Mirna.",
+                ""
+              ],
+              [
+                "The children are singing and dancing.",
+                ""
+              ],
+              [
+                "David is praying.",
+                ""
+              ],
+              [
+                "Luca is crying.",
+                ""
+              ]
+            ]
+          }
+        ],
+        "practicePhrases": []
+      },
+      "requiresImages": true,
+      "imageNote": "Debbie asks the student to describe these pictures using the cues."
+    },
+    {
+      "code": "6B",
+      "title": "Pronunciation and Listening – Pronunciation of the -ing form of verbs",
+      "skill": "Pronunciation and Listening",
+      "order": 2,
+      "tasks": [
+        {
+          "order": 1,
+          "instruction": "Debbie asks the student to pronounce the verbs below, correcting the pronunciation, if necessary",
+          "type": "student_reads",
+          "imageDependency": "oral",
+          "items": []
+        },
+        {
+          "order": 2,
+          "instruction": "Debbie asks the student to pronounce the sentences below, correcting the pronunciation, if necessary",
+          "type": "student_reads",
+          "imageDependency": "oral",
+          "items": [
+            {
+              "prompt": "Michael is swimming.",
+              "expectedAnswer": null
+            },
+            {
+              "prompt": "The children are dancing.",
+              "expectedAnswer": null
+            },
+            {
+              "prompt": "The teacher is speaking.",
+              "expectedAnswer": null
+            },
+            {
+              "prompt": "John is playing the guitar.",
+              "expectedAnswer": null
+            },
+            {
+              "prompt": "My father is driving the car.",
+              "expectedAnswer": null
+            },
+            {
+              "prompt": "Vincent is painting a picture.",
+              "expectedAnswer": null
+            },
+            {
+              "prompt": "My sister is using my computer.",
+              "expectedAnswer": null
+            },
+            {
+              "prompt": "I’m cooking lunch.",
+              "expectedAnswer": null
+            },
+            {
+              "prompt": "What are you doing?",
+              "expectedAnswer": null
+            },
+            {
+              "prompt": "Jesus is healing the sick.",
+              "expectedAnswer": null
+            },
+            {
+              "prompt": "Your brothers are standing outside.",
+              "expectedAnswer": null
+            },
+            {
+              "prompt": "I’m teaching English.",
+              "expectedAnswer": null
+            }
+          ]
+        }
+      ],
+      "referenceContent": {
+        "dialogues": [],
+        "vocabulary": [
+          "Do – fazer",
+          "Heal – curar",
+          "Preach – pregar",
+          "Say – dizer",
+          "Stand – estar de pé",
+          "Teach – ensinar"
+        ],
+        "grammarNotes": [
+          "swimming • dancing • speaking • playing • driving • painting • using • cooking • doing • healing  • saying  • standing  • teaching",
+          "Let’s focus on the pronunciation of the -ing form.",
+          "Já falamos em outros vídeos sobre pronúncia que a relação entre as letras e os sons, fonemas, em inglês é um pouco irregular. Muitas vezes as letras de determinadas palavras não são pronunciadas, ou as letras são pronunciadas com outros sons.",
+          "Com a sílaba formada por -ing no final de verbos, não é diferente. Temos 3 letras, mas somente dois sons. A letra I tem som de /I/, como vimos num vídeo anterior e as letras -ng tem um som só: o som /N/. Esse é um som nasal e a posição do seu aparelho fonológico (boca, língua e céu da boca) é a mesma que a posição para os fonemas /g/ e /k/, só que o som vai sair pelo nariz.",
+          "Prepare a sua boca para pronunciar um /g/ ou /k/. Aí deixe o ar sair pelo nariz. O som /N/ nós temos em português. Tente pronunciar as palavras unha, ninho, minha. O som /N/ está na combinação das letras nh em português.",
+          "Repeat /N/. A sílaba toda é /Ing/. Sendo assim, a letra g não é pronunciada.",
+          "Listen and repeat the verbs.",
+          "swimming • dancing • speaking • playing • driving • painting • using • cooking",
+          "https://drive.google.com/drive/folders/1BxyFd6aaFQsW-orES3Jff-UzjuTr6tdf",
+          "Let’s practice that. What do these verbs mean? Look up in a dictionary.",
+          "Write the -ing form of these verbs.",
+          "doing",
+          "healing",
+          "saying",
+          "standing",
+          "teaching",
+          "Now listen to this fictitious dialogue based on the Bible passage In John 7.1-5. The Bible says that Jesus’s brothers don’t believe him. In the fictitious dialogue below, a man is speaking to one of Jesus’ brothers about what Jesus is doing. Listen to the dialogue and complete it with sentences in the present continuous. Use the verbs do – heal – stand – say – teach.",
+          "Man: People are saying your brother, Jesus, is the Christ.",
+          "Jesus’ brother: Why?",
+          "Man: Because ______________________ (1). He _______________________ (2) and he ____________________ (3).",
+          "Jesus’ brother: I don’t believe that.",
+          "Man: But it’s true. Right now he______________________ (4). Go and see.",
+          "Now Jesus’ mother and brothers came to see him. Someone said,",
+          "“Your mother and brothers ____________________ (5) outside.”",
+          "Jesus: My mother and brothers are those who hear God’s word and put it into practice.\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\tBased on John 7.1-5 and Luke 8.19",
+          "https://drive.google.com/drive/folders/1BxyFd6aaFQsW-orES3Jff-UzjuTr6tdf",
+          "And the answers are",
+          "1. He is doing miracles.",
+          "2. He is healing the sick.",
+          "3. He is preaching the gospel.",
+          "4. He is teaching the crowds.",
+          "5. Your mother and brothers are standing",
+          "Let’s do more exercises on the platform to consolidate this topic."
+        ],
+        "tables": [],
+        "practicePhrases": []
+      },
+      "requiresImages": false
+    },
+    {
+      "code": "7A",
+      "title": "Vocabulary – Clothes",
+      "skill": "Vocabulary",
+      "order": 3,
+      "tasks": [
+        {
+          "order": 1,
+          "instruction": "Debbie shows the pictures and asks the student to say the name of the pieces of clothing, for example,",
+          "type": "student_answers",
+          "imageDependency": "visual",
+          "items": [
+            {
+              "prompt": "Number 15",
+              "expectedAnswer": "tie"
+            },
+            {
+              "prompt": "1 T-shirt",
+              "expectedAnswer": null
+            },
+            {
+              "prompt": "2 dress",
+              "expectedAnswer": null
+            },
+            {
+              "prompt": "3 sweater",
+              "expectedAnswer": null
+            },
+            {
+              "prompt": "4 sneakers",
+              "expectedAnswer": null
+            },
+            {
+              "prompt": "5 slippers (flip-flops)",
+              "expectedAnswer": null
+            },
+            {
+              "prompt": "6 shorts",
+              "expectedAnswer": null
+            },
+            {
+              "prompt": "7 blouse",
+              "expectedAnswer": null
+            },
+            {
+              "prompt": "boots",
+              "expectedAnswer": null
+            },
+            {
+              "prompt": "high heels",
+              "expectedAnswer": null
+            },
+            {
+              "prompt": "shoes",
+              "expectedAnswer": null
+            },
+            {
+              "prompt": "shirt",
+              "expectedAnswer": null
+            },
+            {
+              "prompt": "tank top",
+              "expectedAnswer": null
+            },
+            {
+              "prompt": "suit",
+              "expectedAnswer": null
+            },
+            {
+              "prompt": "pants (jeans)",
+              "expectedAnswer": null
+            },
+            {
+              "prompt": "tie",
+              "expectedAnswer": null
+            },
+            {
+              "prompt": "hat",
+              "expectedAnswer": null
+            },
+            {
+              "prompt": "socks",
+              "expectedAnswer": null
+            },
+            {
+              "prompt": "18 hat",
+              "expectedAnswer": null
+            },
+            {
+              "prompt": "19 jacket",
+              "expectedAnswer": null
+            },
+            {
+              "prompt": "20 coat",
+              "expectedAnswer": null
+            },
+            {
+              "prompt": "21 gloves",
+              "expectedAnswer": null
+            },
+            {
+              "prompt": "22 vest",
+              "expectedAnswer": null
+            },
+            {
+              "prompt": "23 skirt",
+              "expectedAnswer": null
+            },
+            {
+              "prompt": "boots",
+              "expectedAnswer": null,
+              "fromReference": true,
+              "imagePath": "book02/unit02/7A/task-1-item-25.png"
+            }
+          ],
+          "itemsAreExamples": true,
+          "schoolCheck": "A lista numerada das roupas tem buracos e repete \"hat\" (\"tie, hat, socks\" e depois \"18 hat\"); o texto preto traz \"16 belt\". (pergunta 32)"
+        },
+        {
+          "order": 2,
+          "instruction": "Debbie shows the pictures of people and asks the student to describe what they are wearing, correcting pronunciation and grammar.",
+          "type": "student_answers",
+          "imageDependency": "visual",
+          "items": [
+            {
+              "prompt": "What is she wearing?",
+              "expectedAnswer": "She’s wearing a white shirt, and a black skirt with suspenders.",
+              "imagePath": "book02/unit02/7A/task-2-item-1.png"
+            },
+            {
+              "prompt": "What’s he wearing?",
+              "expectedAnswer": "He’s wearing a suit – a white blazer, a green shirt, brown pants, a brown hat, white and brown shoes, and a cane.",
+              "imagePath": "book02/unit02/7A/task-2-item-2.png"
+            },
+            {
+              "prompt": "What is she wearing?",
+              "expectedAnswer": "She’s wearing a white shirt, black shorts, a red vest, a red tie, and white socks.",
+              "imagePath": "book02/unit02/7A/task-2-item-3.png"
+            },
+            {
+              "prompt": "What’s he wearing?",
+              "expectedAnswer": "He’s wearing a green shirt, green pants, a brown belt, and white and green sneakers.",
+              "imagePath": "book02/unit02/7A/task-2-item-4.png"
+            },
+            {
+              "prompt": "What’s she wearing?",
+              "expectedAnswer": "She’s wearing a light purple blouse, a dark purple skirt, a green purse, and purple sandals.",
+              "imagePath": "book02/unit02/7A/task-2-item-5.png"
+            }
+          ]
+        }
+      ],
+      "referenceContent": {
+        "dialogues": [
+          [
+            "The question for asking about clothes is",
+            "A: What are you wearing?",
+            "B: I’m wearing a blue suit."
+          ],
+          [
+            "Normally you use clothes descriptions with colors. For example,",
+            "A: What is he wearing?",
+            "B: He’s wearing jeans, a red shirt, a brown belt and a white hat."
+          ]
+        ],
+        "vocabulary": [],
+        "grammarNotes": [
+          "What are they wearing?",
+          "The name of this lesson is, “What are they wearing?” “Wear” means “vestir” or “usar” (para roupas). In this lesson, let’s learn about clothes.",
+          "Look at John, the Baptist. He’s Jesus’s cousin. He has a very different style for his time.",
+          "The Bible passage in Matthew 3, verse 4 describe his clothes.",
+          "“John’s CLOTHES were made of camel’s hair, and he had a leather BELT around his waist.”",
+          "Now let’s learn more vocabulary about clothes. Look at the pictures and match the pictures and the pieces of clothing.",
+          "23 skirt",
+          "boots",
+          "high heels",
+          "3 sweater",
+          "shoes",
+          "16 belt",
+          "shirt",
+          "tank top",
+          "19 jacket",
+          "suit",
+          "21 gloves",
+          "22 vest",
+          "20 coat",
+          "7 blouse",
+          "15 tie",
+          "pants (jeans)",
+          "18 hat",
+          "2 dress",
+          "1 T-shirt",
+          "4 sneakers",
+          "5 slippers (flip-flops)",
+          "6 shorts",
+          "17 socks",
+          "The question for asking about clothes is",
+          "Normally you use clothes descriptions with colors. For example,",
+          "Don’t forget to use the singular and the plural. Some pieces of clothing are in the plural (jeans, socks, gloves, etc).",
+          "He’s wearing jeans. (plural)",
+          "In the singular, use A or AN.",
+          "He’s wearing a brown belt. (singular)",
+          "More clothes in the Bible",
+          "Both in the Old and in the New Testaments, people wore robes.",
+          "For example, Joseph in the Old Testament, gets a present from his father, Israel, a richly ornamented robe (Genesis 37.3)",
+          "In John 19.5, Jesus is wearing a purple robe.",
+          "Let’s practice this more. Look at the pictures. Describe them. What are they wearing?",
+          "Let’s practice this more on the platform."
+        ],
+        "tables": [
+          {
+            "rows": [
+              [
+                "What is she wearing?\nShe’s wearing a white shirt, and a black skirt with suspenders.",
+                ""
+              ],
+              [
+                "What’s he wearing?\nHe’s wearing a suit – a white blazer, a green shirt, brown pants, a brown hat, white and brown shoes, and a cane.",
+                ""
+              ],
+              [
+                "What is she wearing?\nShe’s wearing a white shirt, black shorts, a red vest, a red tie, and white socks.",
+                ""
+              ],
+              [
+                "What’s he wearing?\nHe’s wearing a green shirt, green pants, a brown belt, and white and green sneakers.",
+                ""
+              ],
+              [
+                "What’s she wearing?\nShe’s wearing a light purple blouse, a dark purple skirt, a green purse, and purple sandals.",
+                ""
+              ]
+            ]
+          }
+        ],
+        "practicePhrases": []
+      },
+      "requiresImages": true,
+      "imageNote": "Debbie shows the pictures and asks the student to say the name of the pieces of clothing, for example,"
+    },
+    {
+      "code": "7B",
+      "title": "Vocabulary and Grammar – More verbs in the -ing form",
+      "skill": "Vocabulary and Grammar",
+      "order": 4,
+      "tasks": [
+        {
+          "order": 1,
+          "instruction": "Debbie asks the student to pronounce the verbs below, correcting the pronunciation, if necessary",
+          "type": "student_reads",
+          "imageDependency": "oral",
+          "items": []
+        },
+        {
+          "order": 2,
+          "instruction": "Debbie asks the student to form sentences in the present continuous with the pictures below and the cues, correcting grammar and pronunciation, if necessary.",
+          "type": "student_answers",
+          "imageDependency": "visual",
+          "items": [
+            {
+              "prompt": "Flower - dye",
+              "expectedAnswer": "The flower is dying.",
+              "imageFloatingInCell": true,
+              "imagePath": "book02/unit02/7B/task-2-item-1.jpg"
+            },
+            {
+              "prompt": "woman – lye in the sun",
+              "expectedAnswer": "The woman is lying in the sun.",
+              "imageFloatingInCell": true,
+              "imagePath": "book02/unit02/7B/task-2-item-2.jpg"
+            },
+            {
+              "prompt": "She – tie her shoes",
+              "expectedAnswer": "She’s tying her shoes",
+              "imageFloatingInCell": true,
+              "imagePath": "book02/unit02/7B/task-2-item-3.jpg"
+            }
+          ]
+        }
+      ],
+      "referenceContent": {
+        "dialogues": [],
+        "vocabulary": [
+          "Run – running",
+          "Swim – swimming",
+          "travel – travelling",
+          "tie – tying (amarrar)",
+          "die – dying (morrer)",
+          "lie (mentir or deitar) – lying",
+          "understand – love – like – hate – remember – forget"
+        ],
+        "grammarNotes": [
+          "running • swimming • opening • beginning • traveling • tying • lying • dying",
+          "In this lesson, we’ll learn more about verbs in the -ing form.",
+          "Remember the verbs with one syllable that end in CVC (consonant + vowel + consonant)? You double the consonant to form the -ing, right? For example:",
+          "Well, and when the verb has more than one syllable? It depends on the stressed syllable. For example, OPEN. It has two syllables:",
+          "O – PEN",
+          "The stress is on the first syllable. In this case, don’t double the consonant.",
+          "OPENING",
+          "When the verb ends in CVC and that is a stressed syllable, double the consonant:",
+          "For example, BEGIN (COMEÇAR)",
+          "BE – GIN",
+          "The word has two syllables. The stressed syllable is GIN. It’s a CVC. In this case, double the consonant.",
+          "BEGINNING",
+          "In British English, when the verb ends in Vowel + L double the consonant.",
+          "Some verbs end in -ie. In this case, it’s irregular: drop the -e and add-ying",
+          "There are some verbs that you don’t use in the present continuous.",
+          "Normally, you don’t use the verb “need” (precisar) in the present continuous. Other verbs:",
+          "You don’t say “Are you understanding?” You say, “do you understand?”",
+          "Let’s practice this more on the platform."
+        ],
+        "tables": [],
+        "practicePhrases": [],
+        "schoolChecks": [
+          "O título no .docx diz \"Unit 1\", mas a lição está no arquivo da Unit 2. (pergunta 29)"
+        ]
+      },
+      "requiresImages": true,
+      "imageNote": "Debbie asks the student to form sentences in the present continuous with the pictures below and the cues, correcting grammar and pronunciation, if necessary."
+    },
+    {
+      "code": "7C",
+      "title": "Grammar and Reading – The Triumphal Entry",
+      "skill": "Grammar and Reading",
+      "order": 5,
+      "tasks": [
+        {
+          "order": 1,
+          "instruction": "Debbie asks the student to form questions about Jesus’s Triumphal Entry in the present continuous and the cues.",
+          "type": "student_answers",
+          "imageDependency": "oral",
+          "items": [
+            {
+              "prompt": "What – the disciples – do",
+              "expectedAnswer": "What are the disciples doing?"
+            },
+            {
+              "prompt": "Jesus – go – to Jerusalem?",
+              "expectedAnswer": "Is Jesus going to Jerusalem?"
+            },
+            {
+              "prompt": "What – people – throw – on the road",
+              "expectedAnswer": "What are the people throwing on the road?"
+            },
+            {
+              "prompt": "Jesus – walk",
+              "expectedAnswer": "Is Jesus walking?"
+            },
+            {
+              "prompt": "What – people – say – to Jesus",
+              "expectedAnswer": "What are people saying to Jesus?"
+            }
+          ]
+        },
+        {
+          "order": 2,
+          "instruction": "Debbie asks the student the questions below about Jesus’s Triumphal Entry, correcting grammar, vocabulary or pronunciation, if necessary.",
+          "type": "student_answers",
+          "imageDependency": "oral",
+          "items": [
+            {
+              "prompt": "What are the disciples doing?",
+              "expectedAnswer": "They are untying the colt."
+            },
+            {
+              "prompt": "Is Jesus going to Jerusalem?",
+              "expectedAnswer": "Yes, he is."
+            },
+            {
+              "prompt": "What are the people throwing on the road?",
+              "expectedAnswer": "They are throwing their cloaks."
+            },
+            {
+              "prompt": "Is Jesus walking?",
+              "expectedAnswer": "No, he’s not. He’s riding a colt."
+            },
+            {
+              "prompt": "What are the people saying to Jesus?",
+              "expectedAnswer": "They are praising him."
+            }
+          ]
+        }
+      ],
+      "referenceContent": {
+        "dialogues": [
+          [
+            "A: Is Jesus wearing a white robe?",
+            "B: No, he’s not. He’s wearing a purple robe."
+          ]
+        ],
+        "vocabulary": [
+          "to untie – soltar, desamarrar",
+          "colt – jumentinho",
+          "to pass – passar",
+          "to throw – jogar, lançar",
+          "to praise – louvar",
+          "cloak – manta"
+        ],
+        "grammarNotes": [
+          "In this lesson, we’ll talk about the interrogative form of the present continuous. It’s similar to the verb TO BE – invert the subject and the verb to be and then add the main verb in the -ing form. For example.",
+          "The short answer is with the verb to be.",
+          "Let’s do a reading exercise and then practice that.",
+          "Look at the pictures. Answer the questions.",
+          "1. What passage is this?",
+          "The Parable of the Pharisee and the Tax Collector",
+          "The Triumphal Entry",
+          "The Great Commission",
+          "2. This passage takes place in",
+          "Jerusalem",
+          "Bethlehem",
+          "Samaria",
+          "So, this is Jesus’s triumphal entry in Jerusalem or “Palm Sunday”. It’s in Luke 19.28-38. Em português, chamamos de “Domingo de Ramos”. Let’s learn some vocabulary about this passage.",
+          "Look at the first picture.",
+          "Vocabulary",
+          "The disciples are untying the colt.",
+          "Look at the second picture.",
+          "Vocabulary",
+          "Jesus is passing.",
+          "The people are throwing their cloaks on the road.",
+          "The people are praising Jesus.",
+          "Now memorize these sentences.",
+          "Let’s test your memory. First, look at wh- or yes-no questions in the present continuous about this passage. Observe the",
+          "Here are the questions.",
+          "What are the disciples doing?",
+          "Is Jesus going to Jerusalem?",
+          "What are the people throwing on the road?",
+          "Is Jesus walking?",
+          "What are the people saying to Jesus?",
+          "Answer the questions. Do a Bible search, if necessary.",
+          "And the possible answers are:",
+          "1. What are the disciples doing?",
+          "They are untying the colt.",
+          "2. Is Jesus going to Jerusalem?",
+          "Yes, he is.",
+          "3. What are the people throwing on the road?",
+          "They are throwing their cloaks.",
+          "4. Is Jesus walking?",
+          "No, he’s not. He’s riding a colt.",
+          "5. What are the people saying to Jesus?",
+          "They are praising him.",
+          "Now, please, go to the platform and do more exercises about that, ok?"
+        ],
+        "tables": [
+          {
+            "rows": [
+              [
+                "",
+                "Wh",
+                "be",
+                "subject",
+                "V (-ing form)",
+                "Complement"
+              ],
+              [
+                "Wh- questions",
+                "What",
+                "are",
+                "they",
+                "wearing?",
+                "-"
+              ],
+              [
+                "Yes-no questions",
+                "-",
+                "Is",
+                "Jesus",
+                "wearing",
+                "a white robe?"
+              ]
+            ]
+          }
+        ],
+        "practicePhrases": [],
+        "schoolChecks": [
+          "O título no .docx diz \"Unit 1\", mas a lição está no arquivo da Unit 2. (pergunta 29)"
+        ]
+      },
+      "requiresImages": false
+    },
+    {
+      "code": "8A",
+      "title": "Vocabulary – The Armor of God – Parts of the Body",
+      "skill": "Vocabulary",
+      "order": 6,
+      "tasks": [
+        {
+          "order": 1,
+          "instruction": "Debbie shows the pictures and asks the student to say the name of the parts of the body, for example,",
+          "type": "student_answers",
+          "imageDependency": "visual",
+          "items": [
+            {
+              "prompt": "Number 15",
+              "expectedAnswer": "tie",
+              "schoolCheck": "Exemplo \"Number 15 → tie\" copiado da 7A (roupas), mas a lição é sobre partes do corpo. Qual é o exemplo certo e a lista? (pergunta 33)"
+            }
+          ],
+          "itemsAreExamples": true
+        },
+        {
+          "order": 2,
+          "instruction": "Debbie repeats the activity in a, but now with the parts of the face.",
+          "type": "repeat_activity",
+          "imageDependency": "oral",
+          "items": [
+            {
+              "prompt": "Ear",
+              "expectedAnswer": null
+            },
+            {
+              "prompt": "Tooth",
+              "expectedAnswer": null
+            },
+            {
+              "prompt": "Eye",
+              "expectedAnswer": null
+            },
+            {
+              "prompt": "Nose",
+              "expectedAnswer": null
+            },
+            {
+              "prompt": "mouth",
+              "expectedAnswer": null
+            }
+          ]
+        }
+      ],
+      "referenceContent": {
+        "dialogues": [],
+        "vocabulary": [
+          "The sword of the Spirit – the word of God – in your hand"
+        ],
+        "grammarNotes": [
+          "1 chest",
+          "2 hand",
+          "3 head",
+          "4 knee",
+          "5 shoulder",
+          "6 leg",
+          "7 arm",
+          "8 elbow",
+          "9 foot",
+          "10 waist",
+          "The name of this lesson is “The Armor of God”. We’ll learn about parts of the body.",
+          "In Ephesians 6.11, Paul says, “Put on the full armor of God”. “Full” means “complete, pleno”. “Put on” means “Wear”.",
+          "Here is the Full Armor of God:",
+          "The helmet of salvation in your head",
+          "The shield of faith in your arm",
+          "The belt of truth around your waist",
+          "The breastplate of righteousness on your chest",
+          "The preparation of the gospel on your feet",
+          "In Book 1, we learned about metaphors in the Bible. The Armor of God is also a metaphor. It is a comparison with the military clothes of the Roman empire at the time of Christ. It REPRESENTS God’s protection for your mind (sua mente) and your spirit (seu espírito). Nossas armas são a fé, a paz, o evangelho, a justiça...",
+          "The armor of God has six parts. Each part of the armor is in a part of your body (partes do seu corpo).",
+          "For example: the helmet of salvation on your HEAD.",
+          "Find the six parts of the body in the picture.",
+          "1. head \t2. Arm\t\t3. Waist\t4. Chest\t5. Hand\t6. feet",
+          "Let’s learn more parts of the body. Look at the pictures.  Match the names and the pictures.",
+          "1 chest",
+          "2 hand",
+          "3 head",
+          "4 knee",
+          "5 shoulder",
+          "6 leg",
+          "7 arm",
+          "8 elbow",
+          "9 foot",
+          "10 waist",
+          "Now let’s learn some parts of the face. Match the pictures and the numbers.",
+          "ear",
+          "tooth",
+          "eye",
+          "nose",
+          "mouth",
+          "Let’s practice this more on the platform."
+        ],
+        "tables": [],
+        "practicePhrases": [],
+        "schoolChecks": [
+          "O título no .docx diz \"Unit 1\", mas a lição está no arquivo da Unit 2. (pergunta 29)"
+        ]
+      },
+      "requiresImages": true,
+      "imageNote": "Debbie shows the pictures and asks the student to say the name of the parts of the body, for example,"
+    },
+    {
+      "code": "8B",
+      "title": "Grammar and Reading – Clothes around the world",
+      "skill": "Grammar and Reading",
+      "order": 7,
+      "tasks": [
+        {
+          "order": 1,
+          "instruction": "Debbie shows the picture and reads the text to the student to describe the picture.",
+          "type": "demonstrate",
+          "imageDependency": "visual",
+          "items": [
+            {
+              "prompt": "This picture shows a big group of people at a festival. They are sitting together at long tables and having a good time. Many people are smiling and laughing. They are wearing traditional German clothes. The women are wearing dresses (dirndls), and some men are wearing leather pants (lederhosen). They have a big glass of beer in their hands. They are raising their glasses and celebrating together. The people look very happy and friendly. It is a lively and fun atmosphere.",
+              "expectedAnswer": null
+            },
+            {
+              "prompt": "They are at a German beer festival, probably Oktoberfest in Munich. Oktoberfest is a big and lively festival in Germany. At Oktoberfest, people drink beer, eat traditional German food, listen to music, and dance. They often wear traditional clothes. People sit at long tables with their friends and family. They sing, laugh, and have fun together. There are also many rides and attractions.",
+              "expectedAnswer": null
+            }
+          ]
+        },
+        {
+          "order": 2,
+          "instruction": "Debbie asks questions about the text. The answers are in the text in a).",
+          "type": "student_answers",
+          "imageDependency": "oral",
+          "items": [
+            {
+              "label": "B1",
+              "prompt": "What does the picture show?",
+              "expectedAnswer": null
+            },
+            {
+              "label": "B2",
+              "prompt": "Are the people having a long time? How do you know?",
+              "expectedAnswer": null,
+              "schoolCheck": "\"Are the people having a long time?\" — deveria ser \"a good time\"? (pergunta 34)"
+            },
+            {
+              "label": "B3",
+              "prompt": "What are they wearing?",
+              "expectedAnswer": null
+            },
+            {
+              "label": "B4",
+              "prompt": "What are they drinking?",
+              "expectedAnswer": null
+            },
+            {
+              "label": "B5",
+              "prompt": "What is Oktoberfest?",
+              "expectedAnswer": null
+            },
+            {
+              "label": "B6",
+              "prompt": "What do people do at this festival?",
+              "expectedAnswer": null
+            },
+            {
+              "label": "B7",
+              "prompt": "What do they wear at Oktoberfest?",
+              "expectedAnswer": null
+            },
+            {
+              "label": "B8",
+              "prompt": "What else is there at Oktoberfest?",
+              "expectedAnswer": null
+            }
+          ]
+        }
+      ],
+      "referenceContent": {
+        "dialogues": [],
+        "vocabulary": [
+          "Eles vestem – They wear",
+          "Eles estão vestindo – They are wearing"
+        ],
+        "grammarNotes": [
+          "The Scotsmen are wearing skirts",
+          "The name of this lesson is, ““The Scotsmen are wearing skirts.” We’ll talk about clothes around the world.",
+          "Look at these people. Where are they from?",
+          "1. Inuits from Alaska, Canada Greenland and Siberia",
+          "The climate determines the clothes people wear. The fur parka and the boots that Inuit (Eskimo*) people wear is very insulating – they protect them from the cold.",
+          "2. Women from Muslim countries",
+          "Muslim women wear long robes, because they believe it is a religious obligation.",
+          "3. Scotsmen in Scotland",
+          "Customs and traditions determine the clothes people wear, too. Scotsmen wear short skirts, called ‘kilts’, on special occasions.",
+          "Now look at these sentences. Are they True or False? Test your memory.",
+          "1. Inuits wear long robes. (____)",
+          "2. In picture 1, the Inuit woman is wearing a fur parka. (____)",
+          "3. Scotsmen wear skirts every day. (____)",
+          "4. In Morocco, women wear skirts. (____)",
+          "5. In picture 3, the Scotsmen are wearing skirts. (____)",
+          "6. The Moroccan women are wearing long robes in picture 2. (____)",
+          "These sentences about clothes around the world are in the simple present tense or in the present continuous?",
+          "1. Inuits wear long robes. Simple Present",
+          "2. In picture 1, the Inuit woman is wearing a fur parka. Present Continuous",
+          "3. Scotsmen wear skirts every day. Simple Present",
+          "4. In Morocco, women wear skirts. Simple Present",
+          "5. In picture 3, the Scotsmen are wearing skirts. Present Continuous",
+          "6. The Moroccan women are wearing long robes in picture 2. Present Continuous",
+          "Let’s learn the difference between the simple present and the Present continuous tenses.",
+          "For example, the sentence:",
+          "Scotsmen wear skirts on special occasions.",
+          "It describes a habitual action. It is in the simple present.",
+          "The Scotsmen in picture 3 are wearing skirts.",
+          "This sentence describes a present action at the moment of speaking. It is in the present continuous.",
+          "É igual em português:",
+          "Some Time Expressions",
+          "Simple Present\tPresent Continuous",
+          "every day\t\tnow",
+          "once a week\t\tright now",
+          "on Mondays\t\ttoday",
+          "in the morning",
+          "at six o’clock",
+          "Let’s practice this more on the platform?"
+        ],
+        "tables": [],
+        "practicePhrases": [],
+        "schoolChecks": [
+          "O título no .docx diz \"Unit 1\", mas a lição está no arquivo da Unit 2. (pergunta 29)"
+        ]
+      },
+      "requiresImages": true,
+      "imageNote": "Debbie shows the picture and reads the text to the student to describe the picture."
+    },
+    {
+      "code": "9A",
+      "title": "Vocabulary – The Weather",
+      "skill": "Vocabulary",
+      "order": 8,
+      "tasks": [
+        {
+          "order": 1,
+          "instruction": "Debbie shows the pictures about the weather and asks what the weather is like.\nDebbie: What’s the weather like?\nStudent: It’s …",
+          "type": "student_answers",
+          "imageDependency": "visual",
+          "items": [
+            {
+              "prompt": "What’s the weather like?",
+              "expectedAnswer": "It’s cold.",
+              "imagePath": "book02/unit02/9A/task-1-item-1.jpg"
+            },
+            {
+              "prompt": "What’s the weather like?",
+              "expectedAnswer": "It’s raining.",
+              "imagePath": "book02/unit02/9A/task-1-item-2.jpg"
+            },
+            {
+              "prompt": "What’s the weather like?",
+              "expectedAnswer": "It’s cloudy.\nIt’s cool.",
+              "imagePath": "book02/unit02/9A/task-1-item-3.jpg"
+            },
+            {
+              "prompt": "What’s the weather like?",
+              "expectedAnswer": "It’s sunny.\nIt’s warm.",
+              "imagePath": "book02/unit02/9A/task-1-item-4.jpg"
+            },
+            {
+              "prompt": "What’s the weather like?",
+              "expectedAnswer": "It’s windy.",
+              "imagePath": "book02/unit02/9A/task-1-item-5.jpg"
+            },
+            {
+              "prompt": "What’s the weather like?",
+              "expectedAnswer": "It’s snowing.\nIt’s freezing.",
+              "imagePath": "book02/unit02/9A/task-1-item-6.jpg"
+            },
+            {
+              "prompt": "What’s the weather like?",
+              "expectedAnswer": "It’s hot.\nIt’s sunny.",
+              "imagePath": "book02/unit02/9A/task-1-item-7.jpg"
+            }
+          ]
+        },
+        {
+          "order": 2,
+          "instruction": "Debbie shows the pictures and asks the student to start the dialogue",
+          "type": "student_leads",
+          "imageDependency": "visual",
+          "items": [
+            {
+              "prompt": "",
+              "expectedAnswer": "What’s the weather like?",
+              "reply": "It’s snowing."
+            }
+          ]
+        }
+      ],
+      "referenceContent": {
+        "dialogues": [],
+        "vocabulary": [],
+        "grammarNotes": [
+          "What’s the weather like?",
+          "The name of this lesson is “What’s the weather like?”",
+          "“Weather” means “tempo”, ou seja, condições climáticas.",
+          "The question for the weather is:",
+          "What’s the weather like?",
+          "It’s sunny.",
+          "First let’s learn some vocabulary about the weather. Look at the pictures.",
+          "1. It’s windy.\t\t2. It’s sunny.\t3. It’s cloudy.\t       4. It’s raining.\t5. It’s snowing.",
+          "What about the temperature?",
+          "It’s hot.",
+          "It’s warm.",
+          "It’s cool.",
+          "It’s cold.",
+          "It’s freezing.",
+          "It is common to describe the weather and the temperature.",
+          "What’s the weather like?",
+          "It’s sunny and hot.",
+          "With the weather, you use the pronoun IT.",
+          "It’s sunny. = The weather is sunny.",
+          "Look at the pictures and the description of the weather.",
+          "Let’s practice that more on the platform?"
+        ],
+        "tables": [
+          {
+            "rows": [
+              [
+                "",
+                "It’s cloudy and cool."
+              ],
+              [
+                "",
+                "It’s sunny and warm."
+              ],
+              [
+                "",
+                "It’s cloudy and cold."
+              ],
+              [
+                "",
+                "It’s windy and warm."
+              ],
+              [
+                "",
+                "It’s windy and cool."
+              ],
+              [
+                "",
+                "It’s snowing and freezing."
+              ],
+              [
+                "",
+                "It’s hot and sunny."
+              ]
+            ]
+          }
+        ],
+        "practicePhrases": [],
+        "schoolChecks": [
+          "O título no .docx diz \"Unit 1\", mas a lição está no arquivo da Unit 2. (pergunta 29)"
+        ]
+      },
+      "requiresImages": true,
+      "imageNote": "Debbie shows the pictures about the weather and asks what the weather is like."
+    },
+    {
+      "code": "9B",
+      "title": "Grammar and Reading",
+      "skill": null,
+      "order": 9,
+      "tasks": [
+        {
+          "order": 1,
+          "instruction": "Debbie shows the pictures from the previous lesson, but in a different way. Debbie shows the picture and describes it incorrectly. The student must correct it, for example,",
+          "type": "demonstrate",
+          "imageDependency": "visual",
+          "items": [
+            {
+              "prompt": "It’s warm.",
+              "expectedAnswer": "It’s not warm. It’s cold.",
+              "imageFloatingInCell": true,
+              "imagePath": "book02/unit02/9B/task-1-item-1.jpg"
+            },
+            {
+              "prompt": "It’s snowing.",
+              "expectedAnswer": "It’s not snowing. It’s raining.",
+              "imagePath": "book02/unit02/9B/task-1-item-2.jpg"
+            },
+            {
+              "prompt": "It’s sunny and warm.",
+              "expectedAnswer": "It’s not sunny and warm. It’s cloudy and cool.",
+              "imagePath": "book02/unit02/9B/task-1-item-3.jpg"
+            },
+            {
+              "prompt": "It’s snowing and cold.",
+              "expectedAnswer": "It’s not snowing and cold. It’s sunny and warm.",
+              "imagePath": "book02/unit02/9B/task-1-item-4.jpg"
+            },
+            {
+              "prompt": "It’s cloudy.",
+              "expectedAnswer": "It’s not cloudy. It’s windy.",
+              "imagePath": "book02/unit02/9B/task-1-item-5.jpg"
+            },
+            {
+              "prompt": "It’s sunny and hot.",
+              "expectedAnswer": "It’s not sunny and hot. It’s snowing and freezing.",
+              "imagePath": "book02/unit02/9B/task-1-item-6.jpg"
+            },
+            {
+              "prompt": "It’s cloudy and cold.",
+              "expectedAnswer": "It’s not cloudy and cold. It’s hot and sunny.",
+              "imagePath": "book02/unit02/9B/task-1-item-7.jpg"
+            }
+          ],
+          "itemsAreExamples": true
+        }
+      ],
+      "referenceContent": {
+        "dialogues": [],
+        "vocabulary": [
+          "It’s raining – affirmative form",
+          "It’s not raining – Negative form",
+          "Don’t forget – the contraction of IS NOT can be ISN’T."
+        ],
+        "grammarNotes": [
+          "There’s a cloud as small as a man’s hand",
+          "The name of this lesson is “There’s a cloud as small as a man’s hand.”. “Small” means “pequeno”, as we learned in Book 1.",
+          "There’s a passage in the Bible that has three different types of weather conditions. The Bible character is Elijah. Elijah was a prophet in the Old Testament. His story is in the book of 1 Kings. During Elijah’s time, there is a drought in Israel. “Drought”",
+          "means “seca”, that is, “no rain”. Elijah prays for rain. Do you remember that story?",
+          "Read and answer the questions.",
+          "Elijah went to the top of Carmel to pray for rain. Elijah told his servant,",
+          "“Go and look at the sea.”",
+          "Elijah sent him seven times. The seventh time, his servant said,",
+          "“There’s a cloud as small as a man’s hand.”",
+          "The sky got black with clouds, the wind rose and a heavy rain came on.",
+          "Adapted from: 1 Kings 18. 42-45",
+          "And the answers are:",
+          "Where is Elijah praying in Picture 1?",
+          "He’s praying at the top of Carmel. (Carmel is a small mountain in that region)",
+          "What does Elijah tell his servant?",
+          "“Go and look at the sea.”",
+          "How many times does he send his servant?",
+          "Seven times.",
+          "What happens at the seventh time?",
+          "There’s a cloud as small as a man’s hand.",
+          "Does it rain at the end of the story?",
+          "Yes, it does.",
+          "That’s an incredible story about perseverance and faith! The four weather conditions are in Pictures 1, 2 and 3 – it’s sunny. In picture 4 it’s cloudy and windy and in Picture 5, it’s raining.",
+          "Now let’s look at the story again and this time, correct the sentences about the weather.",
+          "1. In picture 1, it’s raining.",
+          "It’s not raining. It’s sunny.",
+          "2. In picture 2, it’s windy.",
+          "It’s not windy. It’s sunny.",
+          "3. In picture 3, it’s cloudy.",
+          "It’s not cloudy. It’s sunny.",
+          "4. In picture 4, it’s sunny and windy.",
+          "It’s not sunny and windy. It’s cloudy and windy.",
+          "5. In picture 5, it’s snowing.",
+          "It’s not snowing. It’s raining.",
+          "Now look at these two sentences based on the pictures 1 and 5 and on the text.",
+          "1. It’s not raining.",
+          "5. It’s not snowing.",
+          "That’s the negative form of the present continuous tense. Similar to the verb to be, just add NOT after the verb.",
+          "Here are some more examples.",
+          "I am not studying.",
+          "You are not singing.",
+          "He is not reading.",
+          "She is not dancing.",
+          "It is not raining.",
+          "We are not doing anything.",
+          "They are not painting.",
+          "Let’s practice that more on the platform?"
+        ],
+        "tables": [],
+        "practicePhrases": []
+      },
+      "requiresImages": true,
+      "imageNote": "Debbie shows the pictures from the previous lesson, but in a different way. Debbie shows the picture and describes it incorrectly. The student must correct it, for example,"
+    },
+    {
+      "code": "10",
+      "title": "REVIEW LESSONS 6 TO 9",
+      "skill": null,
+      "order": 10,
+      "tasks": [
+        {
+          "order": 1,
+          "instruction": "Debbie repeats all the tasks from the unit randomly, revising the content, but repeating fewer times. If the student has difficulties, Debbie suggests going back to the respective lessons.",
+          "type": "review",
+          "imageDependency": "oral",
+          "items": []
+        },
+        {
+          "order": 2,
+          "instruction": "Debbie asks the student to translate random sentences from Book 1 unit 2, correcting them and suggesting them to go back to the lessons that they have more trouble with.",
+          "type": "translate",
+          "imageDependency": "oral",
+          "items": [],
+          "schoolCheck": "Diz \"random sentences from Book 1 unit 2\" — não seria Book 2 Unit 2? (pergunta 35)"
+        }
+      ],
+      "referenceContent": {
+        "dialogues": [],
+        "vocabulary": [],
+        "grammarNotes": [
+          "In this second unit of Book 2, you learned to DESCRIBE PICTURES.",
+          "The Bible characters in these lessons are John, the Baptist, Elijah and of course, Jesus Christ.",
+          "In GRAMMAR you learned:",
+          "the present continuous tense in the affirmative, interrogative and negative forms",
+          "the -ing form of verbs",
+          "the difference between the simple present and the present continuous tenses",
+          "In VOCABULARY, you learned",
+          "about 20 new action verbs",
+          "about clothes",
+          "parts of the body and the face",
+          "new time expressions",
+          "words about the weather and temperature",
+          "In SPEAKING, you learned",
+          "to describe pictures and actions",
+          "to talk about parts of your body",
+          "In PRONUNCIATION, you learned",
+          "the pronunciation of the -ing form of verbs",
+          "In READING, you practiced reading for specific information. The topics of the reading exercises were",
+          "clothes around the world",
+          "Palm Sunday",
+          "Now let’s do more review exercises on the platform to consolidate these topics even more."
+        ],
+        "tables": [],
+        "practicePhrases": []
+      },
+      "requiresImages": false
+    }
+  ]
+}

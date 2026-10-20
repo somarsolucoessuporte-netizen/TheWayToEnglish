@@ -1,0 +1,2005 @@
+{
+  "book": "Book 1",
+  "unit": "Unit 3",
+  "unitTheme": "Vocabulary and Speaking; Listening; Reading; Vocabulary and Pronunciation; Presentation and Grammar; Speaking and Listening; Grammar 2; Presentation Reading and Grammar; REVIEW LESSONS 11 TO 14",
+  "sourceFile": "THE WAY for AI_Book 1_Unit 3_prompts.docx",
+  "globalPrinciples": [],
+  "tutorIdentity": {
+    "name": "Debbie Ann Pamp",
+    "age": 28,
+    "nationality": "Brazilian",
+    "occupation": "AI Tutor"
+  },
+  "lessons": [
+    {
+      "code": "11A",
+      "title": "Vocabulary and Speaking – What’s the time",
+      "skill": "Vocabulary and Speaking",
+      "order": 1,
+      "tasks": [
+        {
+          "order": 1,
+          "instruction": "The AI Tutor starts by asking “What time is it?” The student answers with the actual time.",
+          "type": "student_answers",
+          "imageDependency": "oral",
+          "items": []
+        },
+        {
+          "order": 2,
+          "instruction": "The AI Tutor shows different digital times and asks the student to read it. For example,",
+          "type": "student_reads",
+          "imageDependency": "oral",
+          "items": [
+            {
+              "prompt": "What time is it? 10:12",
+              "expectedAnswer": "It's ten twelve."
+            },
+            {
+              "prompt": "What time is it? 12:43",
+              "expectedAnswer": "It's twelve forty-three."
+            },
+            {
+              "prompt": "What time is it? 8:04",
+              "expectedAnswer": "It's eight-oh-four"
+            },
+            {
+              "prompt": "What time is it? 7",
+              "expectedAnswer": "It's seven / seven o’ clock."
+            },
+            {
+              "prompt": "What time is it? 6:45",
+              "expectedAnswer": "It's six forty-five."
+            },
+            {
+              "prompt": "What time is it? 11:20",
+              "expectedAnswer": "It's eleven twenty."
+            },
+            {
+              "prompt": "What time is it? 4:18",
+              "expectedAnswer": "It's four eighteen."
+            }
+          ],
+          "itemsAreExamples": true
+        },
+        {
+          "order": 3,
+          "instruction": "The AI Tutor asks the student to tell time from these pictures, for example,",
+          "type": "student_answers",
+          "imageDependency": "visual",
+          "items": [
+            {
+              "prompt": "What time is it?",
+              "expectedAnswer": "It’s midnight.\nIt’s 12 a.m.",
+              "imagePath": "book01/unit03/11A/task-3-item-1.jpg"
+            },
+            {
+              "prompt": "What time is it?",
+              "expectedAnswer": "It’s midday\nIt’s noon\nIt’s 12 p.m.",
+              "imagePath": "book01/unit03/11A/task-3-item-2.jpg"
+            }
+          ],
+          "itemsAreExamples": true
+        }
+      ],
+      "referenceContent": {
+        "dialogues": [],
+        "vocabulary": [
+          "8:00 - It's eight o'clock.",
+          "1) DIGITAL TIME – Say the hour first and then the minutes. (Hour + Minutes)",
+          "10:12 - It's ten twelve.",
+          "12:43 – It’s twelve forty-three.",
+          "8:04 – It's eight oh-four (pronounce the zero as oh)",
+          "11:20 - It's twenty past eleven",
+          "4:18 – It's eighteen after four",
+          "8:51 - It's nine to nine",
+          "2:59 - It's one to three"
+        ],
+        "grammarNotes": [
+          "This lesson is about TIME. Let’s learn to TELL THE TIME in English? Let’s learn some vocabulary first, ok?",
+          "Time = hora (de relógio)",
+          "Clock = relógio de parede",
+          "Watch = relógio de pulso",
+          "What time is it / What’s the time? = Que horas são?",
+          "Hour = hora (60 minutos)",
+          "Minute = minuto",
+          "Second = segundo",
+          "Morning = manhã",
+          "Afternoon = tarde",
+          "Evening = noitinha",
+          "Night = noite (enquanto se dorme)",
+          "Seven o’clock = sete horas",
+          "Past or After = depois (de)",
+          "Before = antes (de)",
+          "To = para (prep.)",
+          "a quarter = quinze minutos",
+          "half = trinta minutos / meia hora",
+          "a.m. = de madrugada e de manhã",
+          "p.m. = a partir de meio-dia até meia-noite",
+          "noon / midday = meio-dia",
+          "midnight = meia noite",
+          "Asking for the Time",
+          "The common question to ask for the time is:",
+          "What time is it?",
+          "Telling Time",
+          "We use It is or It's to respond to the questions that ask for the time.",
+          "It is seven o’clock (7:00).",
+          "O'clock",
+          "We use o'clock when there are NO minutes.",
+          "For example,",
+          "or",
+          "What time is it?",
+          "It’s eight. (not necessary to say o’clock)",
+          "What time is it?",
+          "It’s three.",
+          "There are two common ways of telling the time in English.",
+          "The DIGITAL time (hour + minutes) and the TRADITIONAL time (minutes + hour).",
+          "2) TRADITIONAL / ANALOGIC TIME – Say the minutes first and then the hour.  (Minutes + PAST / TO + Hour)",
+          "Antes da existência dos relógios digitais, se usavam os relógios analógicos.",
+          "There are 60 minutes in an hour.",
+          "For minutes 1-30 we use PAST or AFTER after the minutes.",
+          "For minutes 31-59 we use TO after the minutes.",
+          "So, it’s 5 after 3, it’s ten after 3, etc.",
+          "So, when it’s 7:15, we say it’s “quarter past seven”. Or when it’s 1:15, we say it’s “quarter after one”.",
+          "At minute 30, we say it’s “half past”.",
+          "So at 9:30, we would say it’s “half past nine” (or half an hour after 9:00).",
+          "At minute 45, we say it’s “quarter to” the next hour.",
+          "For example, at 5:45, we say it’s “quarter to six”",
+          "AM vs. PM",
+          "We don't normally use the 24-hour clock in English.",
+          "We use a.m. (am) for the morning and p.m. (pm) for the afternoon and evening.",
+          "a.m. is an abbreviation of the Latin phrase ante merīdiem meaning “before midday.”",
+          "P.m. is an abbreviation of post merīdiem, meaning “after midday.”",
+          "3am = Three o'clock in the morning. (não há uma palavra específica para “madrugada” em inglês)",
+          "3pm = Three o'clock in the afternoon.",
+          "12:00",
+          "For 12:00 there are four expressions in English.",
+          "Let’s practice! Now let’s do more exercises on the platform!"
+        ],
+        "tables": [
+          {
+            "rows": [
+              [
+                "",
+                "midnight = 12 a.m."
+              ],
+              [
+                "",
+                "midday = noon = 12 p.m."
+              ]
+            ]
+          }
+        ],
+        "practicePhrases": []
+      },
+      "requiresImages": true,
+      "imageNote": "The AI Tutor asks the student to tell time from these pictures, for example,"
+    },
+    {
+      "code": "11B",
+      "title": "Listening – The Clock",
+      "skill": "Listening",
+      "order": 2,
+      "tasks": [
+        {
+          "order": 1,
+          "instruction": "The AI Tutor asks the student to transform the digital time into analogic/traditional time, for example,",
+          "type": "student_answers",
+          "imageDependency": "oral",
+          "items": [
+            {
+              "prompt": "What time is it? 10:10",
+              "expectedAnswer": "It's ten after ten."
+            },
+            {
+              "prompt": "What time is it? 12:45",
+              "expectedAnswer": "It's a quarter to one."
+            },
+            {
+              "prompt": "What time is it? 8:05",
+              "expectedAnswer": "It's five after 8."
+            },
+            {
+              "prompt": "What time is it? 7:30.",
+              "expectedAnswer": "It's half past seven."
+            },
+            {
+              "prompt": "What time is it? 11:20",
+              "expectedAnswer": "It's twenty after eleven."
+            },
+            {
+              "prompt": "What time is it? 4:50",
+              "expectedAnswer": "It's ten to five."
+            }
+          ],
+          "itemsAreExamples": true
+        }
+      ],
+      "referenceContent": {
+        "dialogues": [],
+        "vocabulary": [
+          "2.00 – It’s two (o’clock).",
+          "2.05 – It’s five after two.",
+          "2.10 – It’s ten after two.",
+          "2.15 – It’s a quarter after two.",
+          "2.20 – It’s twenty after two.",
+          "2.25 – It’s twenty-five after two.",
+          "2.30 – It’s half past two.",
+          "2.35 – It’s twenty-five to three.",
+          "2.40 – It’s twenty to three.",
+          "2.45 – It’s a quarter to three.",
+          "2.50 – It’s ten to three.",
+          "2.55 – It’s five to three.",
+          "3.00 – It’s three (o’clock)."
+        ],
+        "grammarNotes": [
+          "In this lesson, I’ll compare digital and traditional or analogic clocks.",
+          "Listen.",
+          "Traditional (analogic) time – from 5 to 5 minutes",
+          "Traditional time vs. Digital time",
+          "Practice telling time in English.",
+          "Do the exercises on the platform."
+        ],
+        "tables": [
+          {
+            "rows": [
+              [
+                "Traditional (analogic) Time",
+                "Digital Time"
+              ],
+              [
+                "2.00 – It’s two (o’clock).",
+                "2.00 – It’s two (o’clock)."
+              ],
+              [
+                "2.05 – It’s five after two.",
+                "2.05 – It’s five after two. = It’s two-oh five."
+              ],
+              [
+                "2.10 – It’s ten after two.",
+                "2.10 – It’s ten after two. = It’s two ten."
+              ],
+              [
+                "2.15 – It’s a quarter after two.",
+                "2.15 – It’s a quarter after two. = It’s two fifteen."
+              ],
+              [
+                "2.20 – It’s twenty after two.",
+                "2.20 – It’s twenty after two. = It’s two twenty."
+              ],
+              [
+                "2.25 – It’s twenty-five after two.",
+                "2.25 – It’s twenty-five after two. = It’s two twenty-five."
+              ],
+              [
+                "2.30 – It’s half past two.",
+                "2.30 – It’s half past two. = It’s two thirty."
+              ],
+              [
+                "2.35 – It’s twenty-five to three.",
+                "2.35 – It’s twenty-five to three. = It’s two thirty-five."
+              ],
+              [
+                "2.40 – It’s twenty to three.",
+                "2.40 – It’s twenty to three. = It’s two forty."
+              ],
+              [
+                "2.45 – It’s a quarter to three.",
+                "2.45 – It’s a quarter to three. = It’s two forty-five."
+              ],
+              [
+                "2.50 – It’s ten to three.",
+                "2.50 – It’s ten to three. = It’s two fifty."
+              ],
+              [
+                "2.55 – It’s five to three.",
+                "2.55 – It’s five to three. = It’s two fifty-five."
+              ],
+              [
+                "3.00 – It’s three (o’clock).",
+                "3.00 – It’s three (o’clock)."
+              ]
+            ],
+            "caption": "Traditional time vs. Digital time"
+          }
+        ],
+        "practicePhrases": []
+      },
+      "requiresImages": false
+    },
+    {
+      "code": "11C",
+      "title": "Reading – Time in the Bible",
+      "skill": "Reading",
+      "order": 3,
+      "tasks": [],
+      "referenceContent": {
+        "dialogues": [],
+        "vocabulary": [
+          "third hour – 9 am",
+          "sixth hour – 12 pm",
+          "ninth hour – 3 pm",
+          "eleventh hour – 5pm"
+        ],
+        "grammarNotes": [
+          "This lesson is about TIME IN THE BIBLE. Read the text 1 and compare.",
+          "Naquela época de Jesus, se liam as horas de formas diferentes. Eles não tinham relógios como nós temos hoje, então vamos ler um texto que fala sobre a diferença de como eles contavam a hora naquela época, ok?",
+          "This is text number 1, ok? Read it, please.",
+          "TEXT 1",
+          "Modern time vs. time in the Bible",
+          "In the Bible, in Jesus’ time, the day is divided into twenty-four hours, but the day starts and ends at sunset, about 6 p.m. They tell time with ordinal numbers. The graph below shows the difference between modern time and time in the Bible.",
+          "TEXT 2",
+          "Tem uma parábola de Jesus em que ele cita vários horários diferentes segundo a forma deles dizerem as horas naquela época. É a parábola dos Trabalhadores da Vinha. Quem lembra? É aquele sobre o dono de uma vinha que chama trabalhadores em diferentes horas do dia para trabalhar na sua terra.",
+          "Read the text in English. Convert the time in the Bible to the modern time, according to the information in Text 1. Pause the video and do the exercise.",
+          "THE PARABLE OF THE VINEYARD",
+          "“For the kingdom of heaven is like a landowner who went out early in the morning to hire men to work in his vineyard. He agreed to pay them a denarius for the day and sent them into his vineyard.",
+          "About the third hour (1) he went out and saw others standing in the marketplace doing nothing. He told them, ‘You also go and work in my vineyard and I will pay you whatever is right.’ So they went.",
+          "He went out again about the sixth hour (2) and the ninth hour (3) and did the same thing. \nAbout the eleventh hour (4) he went out and found still others standing around and asked them to go and work in his vineyard.”",
+          "Adapted from: Matthew 20. 1-6",
+          "And the answers are:"
+        ],
+        "tables": [
+          {
+            "rows": [
+              [
+                "In Jesus’ time\nsunset\nfirst watch of the night\nsecond watch of the night\nthird watch of the night \nfirst hour\nsecond hour\n\t\t\t\tthird hour\nfourth hour\nfifth hour\nsixth hour\nseventh hour\neighth hour\nninth hour\ntenth hour\neleventh hour\nsunset",
+                "In our time\n6 p.m.\nfrom 6 p.m. to 10 p.m \nfrom 10 p.m. to 2 a.m.\nfrom 2 a.m. to 6 a.m.      \n7 a.m.\n8 a.m.\n9 a.m.\n10 a.m.\n11 a.m.\n12 p.m.\n1 p.m.\n2 p.m.\n3 p.m.\n4 p.m.\n5 p.m.\n6 p.m."
+              ]
+            ]
+          }
+        ],
+        "practicePhrases": []
+      },
+      "requiresImages": false,
+      "practiceNote": "Sem tarefa oral nessa lição."
+    },
+    {
+      "code": "11D",
+      "title": "Vocabulary and Pronunciation – Ordinal numbers",
+      "skill": "Vocabulary and Pronunciation",
+      "order": 4,
+      "tasks": [
+        {
+          "order": 1,
+          "instruction": "The AI Tutor asks the student to transform cardinal numbers into ordinal numbers – from 1 to 12. The Tutor corrects the pronunciation. For example,\netc",
+          "type": "student_answers",
+          "imageDependency": "oral",
+          "items": [
+            {
+              "prompt": "1",
+              "expectedAnswer": "First"
+            },
+            {
+              "prompt": "2",
+              "expectedAnswer": "Second."
+            }
+          ],
+          "itemsAreExamples": true
+        }
+      ],
+      "referenceContent": {
+        "dialogues": [],
+        "vocabulary": [
+          "six – sixth",
+          "One – first",
+          "Two – second",
+          "Three – third",
+          "Twelve – twelfth",
+          "Cardinal\t-\tOrdinal",
+          "one (1)\t-\t1st (first)",
+          "two (2)\t-\t2nd (second)",
+          "three (3)\t-\t3rd (third)",
+          "four (4)\t-\t4th (fourth)",
+          "five (5)\t-\t5th (fifth)",
+          "six (6)\t-\t6th (sixth)",
+          "seven (7)\t-\t7th (seventh)",
+          "eight (8)\t-\t8th (eighth)",
+          "nine (9)\t-\t9th (ninth)",
+          "ten (10)\t-\t10th (tenth)",
+          "eleven (11) -\t11th (eleventh)",
+          "twelve (12) -\t12th (twelfth)"
+        ],
+        "grammarNotes": [
+          "Conforme falamos no vídeo anterior sobre como dizer as horas nos tempos de Jesus, vimos que eles usavam outra terminologia usando os ORDINAL NUMBERS.",
+          "In English, you form ordinal numbers with t suffix -th at the end of the cardinal number. For example:",
+          "Attention to the pronunciation of TH, like three, thirteen, truth (To review this sound, go to Lesson 2 Pronunciation of TH.)",
+          "Also, attention that there are four exceptions from 1 to 12.",
+          "Let’s learn the ordinal numbers from 1 to 12. Read, listen and repeat.",
+          "Numbers"
+        ],
+        "tables": [],
+        "practicePhrases": []
+      },
+      "requiresImages": false
+    },
+    {
+      "code": "12A",
+      "title": "Presentation and Grammar – Simple Present",
+      "skill": "Presentation and Grammar",
+      "order": 5,
+      "tasks": [
+        {
+          "order": 1,
+          "instruction": "The AI Tutor asks questions about Daniel.",
+          "type": "student_answers",
+          "imageDependency": "oral",
+          "items": [
+            {
+              "label": "A1",
+              "prompt": "Is Daniel’s story in the Old or in the New Testament?",
+              "expectedAnswer": "In the Old Testament."
+            },
+            {
+              "label": "A2",
+              "prompt": "Is Daniel a prophet?",
+              "expectedAnswer": "Yes, he is."
+            }
+          ]
+        },
+        {
+          "order": 2,
+          "instruction": "The AI Tutor asks the student to complete the sentences, for example,",
+          "type": "student_answers",
+          "imageDependency": "oral",
+          "items": [
+            {
+              "label": "B1",
+              "prompt": "Daniel _____  from Jerusalem.",
+              "expectedAnswer": "is"
+            },
+            {
+              "label": "B2",
+              "prompt": "He ______ in Babylon.",
+              "expectedAnswer": "lives"
+            },
+            {
+              "label": "B3",
+              "prompt": "He ______ for King Darius in his palace.",
+              "expectedAnswer": "works"
+            },
+            {
+              "label": "B4",
+              "prompt": "He ______ three friends.",
+              "expectedAnswer": "has"
+            },
+            {
+              "label": "B5",
+              "prompt": "Three times a day he ______ down to his knees.",
+              "expectedAnswer": "gets"
+            },
+            {
+              "label": "B6",
+              "prompt": "He ______ and ______ thanks to God.",
+              "expectedAnswer": "prays – gives"
+            },
+            {
+              "label": "B7",
+              "prompt": "Every day he ______ to work.",
+              "expectedAnswer": "goes"
+            },
+            {
+              "label": "B8",
+              "prompt": "When he ______ home, he ______.",
+              "expectedAnswer": "comes – prays"
+            },
+            {
+              "label": "B9",
+              "prompt": "Daniel ______ God for help.",
+              "expectedAnswer": "asks"
+            }
+          ],
+          "itemsAreExamples": true
+        },
+        {
+          "order": 3,
+          "instruction": "The AI Tutor asks the student to conjugate the verbs in the simple present, for example,",
+          "type": "student_answers",
+          "imageDependency": "oral",
+          "items": [
+            {
+              "prompt": "Please conjugate the verb TO LIVE in the simple present. The AI Tutor gives an example with the verb LIVE.\nI live\nYou live\nHe, she, it lives\nWe live\nYou live\nThey live",
+              "expectedAnswer": null
+            },
+            {
+              "prompt": "Please conjugate the verb TO WORK in the simple present.",
+              "expectedAnswer": "I work\nYou work\nHe, she, it works\nWe work\nYou work\nThey work"
+            },
+            {
+              "prompt": "Please conjugate the verb TO GO in the simple present.",
+              "expectedAnswer": "I go\nYou go\nHe, she, it goes\nWe go\nYou go\nThey go"
+            },
+            {
+              "prompt": "Please conjugate the verb TO PRAY in the simple present.",
+              "expectedAnswer": "I pray\nYou pray\nHe, she, it prays\nWe pray\nYou pray\nThey pray"
+            },
+            {
+              "prompt": "Please conjugate the verb TO GET in the simple present.",
+              "expectedAnswer": "I get\nYou get\nHe, she, it gets\nWe get\nYou get\nThey get"
+            },
+            {
+              "prompt": "Please conjugate the verb TO ASK in the simple present.",
+              "expectedAnswer": "I ask\nYou ask\nHe, she, it asks\nWe ask\nYou ask\nThey ask"
+            }
+          ],
+          "itemsAreExamples": true
+        }
+      ],
+      "referenceContent": {
+        "dialogues": [],
+        "vocabulary": [],
+        "grammarNotes": [
+          "Hello, guys! This is Book 1 Lesson 12 What time do you go to work? In this lesson you’ll learn about routines. The Bible character in this lesson is Daniel.",
+          "Let’s test your Bible knowledge. Answer these two questions.",
+          "Is Daniel’s story in the Old or in the New Testament?",
+          "Is Daniel a prophet? Yes or no?",
+          "Well, Daniel’s story is in the Old Testament and yes, he is a prophet!",
+          "Now read about Daniel’s routine and answers the questions.",
+          "I’m Daniel. I’m God’s prophet. I’m from Jerusalem, but I live in Babylon. I work for King Darius in his palace. I’m one of his administrators. I have three friends. Their names are: Hananiah, Mishael, and Azariah. Three times a day I get down to my knees. I pray and give thanks to God. Every day I go to work and when I come home, I pray and ask God for help.",
+          "From Daniel 6",
+          "And the answers are:",
+          "1. a\t\t2. b\t\t3. a\t\t4. b\t\t5. C",
+          "Ok, now let’s learn some grammar.",
+          "Pause the video on the text. Underline the verbs in the text about Daniel. And the answers are:",
+          "I’m Daniel. I’m God’s prophet. I’m from Jerusalem, but I live in Babylon. I work for King Darius in his palace. I’m one of his administrators. I have three friends. Their names are: Hananiah, Mishael, and Azariah. Three times a day I get down to my knees. I pray and give thanks to God. Every day I go to work and when I come home, I pray and ask God for help.",
+          "From Daniel 6",
+          "These verbs are different than the verb TO BE. They are in the Simple Present. You use this verb tense to talk about routines, or habitual actions.",
+          "This is how you conjugate the verbs in the simple present.",
+          "Infinitive – TO LIVE",
+          "I live",
+          "You live",
+          "He, she, it lives",
+          "We live",
+          "You live",
+          "They live",
+          "I work",
+          "You work",
+          "He, she, it works",
+          "We work",
+          "You work",
+          "They work",
+          "I go",
+          "You go",
+          "He, she, it goes",
+          "We go",
+          "You go",
+          "They go",
+          "I pray",
+          "You pray",
+          "He, she, it prays",
+          "We pray",
+          "You pray",
+          "They pray",
+          "I get",
+          "You get",
+          "He, she, it gets",
+          "We get",
+          "You get",
+          "They get",
+          "I ask",
+          "You ask",
+          "He, she, it asks",
+          "We ask",
+          "You ask",
+          "They ask",
+          "Easy, huh? In the simple present, the verb has only two forms!",
+          "In the third person singular, you add -S, -ES, or -IES. Remember how you form the plural? That’s the same. Let’s review the rules?",
+          "Verbs ending in ss, sh, ch, x and o add es to form the third person singular:",
+          "I kiss, he kisses\tI watch, he watches",
+          "When y follows a consonant, CONSONANT + Y, we change the y into i and add es:",
+          "I study, he studies",
+          "When y follows a vowel, VOWEL + Y, we obey the usual rule:",
+          "I pray, he prays",
+          "Exception: verb to have - I have, you have, he, she, it has, we have, you have, they have",
+          "Now let’s do the exercises in the platform to consolidate this grammar topic."
+        ],
+        "tables": [],
+        "practicePhrases": []
+      },
+      "requiresImages": false
+    },
+    {
+      "code": "12B",
+      "title": "Vocabulary and Pronunciation – Verbs about routines",
+      "skill": "Vocabulary and Pronunciation",
+      "order": 6,
+      "tasks": [],
+      "referenceContent": {
+        "dialogues": [],
+        "vocabulary": [],
+        "grammarNotes": [
+          "Let’s learn some vocabulary about routines. Look at the pictures of this man’s routines. Match the words and the pictures.",
+          "Respostas: wake up / get up (mostre a diferença)",
+          "take a shower",
+          "eat breakfast / lunch / dinner",
+          "go to school",
+          "go to work",
+          "study",
+          "read (the Bible)",
+          "go home / come home",
+          "go to church",
+          "pray",
+          "go to bed",
+          "Note the pronunciation of these verbal expressions with the weak T:",
+          "get up",
+          "go to work",
+          "go to school",
+          "go to bed",
+          "go to church",
+          "In American English the letter T between two vowels in a weak syllable is pronounced in a special way. The sound is a flap. In Portuguese, it sounds like r as in caro, arara, maravilha, for example.",
+          "Now, let’s do the exercises on the platform to practice this topic."
+        ],
+        "tables": [],
+        "practicePhrases": []
+      },
+      "requiresImages": false
+    },
+    {
+      "code": "12C",
+      "title": "Speaking and Listening – What time do you get up?",
+      "skill": "Speaking and Listening",
+      "order": 7,
+      "tasks": [
+        {
+          "order": 1,
+          "instruction": "The AI Tutor explains that they’ll combine the lessons about time and  about routines. The tutor asks,\nStudent: I take a shower in the morning, at 7am, at noon, etc\nNote: 1) The student’s answer will vary according to their own routine.\n2) The AI Tutor corrects pronunciation (the weak t, for example) and grammar. If the student says, “7 o’clock”, the AI tutor may ask, “7 am or pm”. If it’s not clear, for example,\nIt is obvious that it’s at 11 pm, but if it’s not clear, the AI asks if it’s am or pm, for example,",
+          "type": "explain",
+          "imageDependency": "oral",
+          "items": [
+            {
+              "prompt": "What time do you… take a shower",
+              "expectedAnswer": null
+            },
+            {
+              "prompt": "What time do you… eat breakfast / lunch / dinner",
+              "expectedAnswer": null
+            },
+            {
+              "prompt": "What time do you… go to school",
+              "expectedAnswer": null
+            },
+            {
+              "prompt": "What time do you… go to work",
+              "expectedAnswer": null
+            },
+            {
+              "prompt": "What time do you… study",
+              "expectedAnswer": null
+            },
+            {
+              "prompt": "What time do you… read (the Bible)",
+              "expectedAnswer": null
+            },
+            {
+              "prompt": "What time do you… go home / come home",
+              "expectedAnswer": null
+            },
+            {
+              "prompt": "What time do you… go to church",
+              "expectedAnswer": null
+            },
+            {
+              "prompt": "What time do you… pray",
+              "expectedAnswer": null
+            },
+            {
+              "prompt": "What time do you… go to bed",
+              "expectedAnswer": null
+            },
+            {
+              "prompt": "What time do you… get up",
+              "expectedAnswer": null
+            },
+            {
+              "prompt": "What time do you go to bed?",
+              "expectedAnswer": "11 o’clock."
+            },
+            {
+              "prompt": "What time do you pray?",
+              "expectedAnswer": "at 9 o’clock."
+            },
+            {
+              "prompt": "am or pm?",
+              "expectedAnswer": "9 am."
+            }
+          ],
+          "itemsAreExamples": true
+        }
+      ],
+      "referenceContent": {
+        "dialogues": [],
+        "vocabulary": [
+          "Me too. – Eu também.",
+          "usually – normalmente",
+          "At around 8. – mais ou menos 8 horas.",
+          "Weekend – final de semana",
+          "That’s (very) late! – É (muito) tarde!",
+          "That’s (very) early! – É (muito) cedo!",
+          "Take care. – Se cuida.",
+          "Later – mais tarde",
+          "Karla – get up – at _____– Karla gets up at 7 o´clock.",
+          "2. Karla – go to bed – at _____ p.m.",
+          "3. Debora – get up – at _____",
+          "4. Debora – go to bed – at _____",
+          "5. Sam – get up – at ____ – on weekdays",
+          "6. Sam – get up – at ____ – on weekends",
+          "7. Sam – go to bed – at _____",
+          "8. Bernhard – get up – at _____",
+          "9. Bernhard – go to bed – at _____ during the week",
+          "10. Bernhard – go to bed – at _____ on weekends"
+        ],
+        "grammarNotes": [
+          "Vamos juntar o que aprendemos na Lesson 11, sobre as horas, What time is it, com essa informação que aprendemos agora sobre routines?",
+          "Question, “What time do you get up?”",
+          "Answer, “I get up at 7.”",
+          "Question, “What time do you go to bed?”",
+          "Answer, “I go to bed at 10”.",
+          "Listen to the conversations and complete the sentences.",
+          "Pre-listening vocabulary",
+          "On weekdays / during the week – durante a semana (dias úteis)",
+          "Dialogue 1 – Karla",
+          "Debora: Hi, Karla. How are you doing?",
+          "Karla: I’m fine, thank you. And you?",
+          "Debora: I’m okay. Karla, what time do you get up?",
+          "Karla: Uh, I get up at 7 a.m.",
+          "Debora: Seven? Ok. Me too. I get up at 7, too.",
+          "Karla: Nice.",
+          "Debora: And what time do you go to bed?",
+          "Karla: Uh, I go to bed at 10. 10 p.m.",
+          "Debora: Oh, me too! That’s great! I go to bed at 10 too. Oh, okay, thank you! See you!",
+          "Karla: See you! Bye!",
+          "Dialogue 2 – Sam",
+          "Debora: Hi, Sam. How are you?",
+          "Sam: Hi, Debs! I’m fine. And you?",
+          "Debora: I’m great. Uh, Sam what time do you get up?",
+          "Sam: Well, I usually get up at 8 o’clock, ok?",
+          "Debora: Eight. Ok.",
+          "Sam: Yes, 8 o’clock, at around 8, but that’s on the weekdays, because on the weekend I usually get up at nine, at ten.",
+          "Debora: Uh-huh, I see.",
+          "Sam: Yes, because I don’t have to work.",
+          "Debora: Oh, okay. Good. And what time do you go to bed?",
+          "Sam: Oh, that´s late. That’s very late. I usually go to bed very late.",
+          "Debora: At midnight?",
+          "Sam: I usually go to bed at around 11 o’clock, midnight.",
+          "Debora: Uhm. Midnight! That’s late! That’s very late.",
+          "Sam: That’s late, yes!",
+          "Debora: (laughs) OK, thank you!",
+          "Sam: You’re welcome.",
+          "Dialogue 3 – Bernhard",
+          "Debora: Hi, Bernhard. How are you?",
+          "Bernhard: Hi, Deb. I’m fine. How are YOU?",
+          "Debora: Good! Bernhard, what time do you get up?",
+          "Bernhard: Uhumm, usually at 6:30.",
+          "Debora: 6:30? Uh-huh! And what time do you go to bed?",
+          "Bernhard: Hum, during the week at 11 p.m.? And on the weekend, it might be later. Midnight.",
+          "Debora: Midnight? Ok. I go to bed at 10.",
+          "Bernhard: Oh, that’s very early.",
+          "Debora: Ok, thank you. Bye.",
+          "Now write sentences about the people in the dialogue",
+          "Example:",
+          "And the answers are:",
+          "2. Karla goes to bed at 10 p.m.",
+          "3. Debora gets up at 7 (too).",
+          "4. Debora goes to bed at 10 (too).",
+          "5. Sam gets up at 8 on weekdays.",
+          "6. Sam gets up at 9 or 10 on weekends.",
+          "7. Sam goes to bed at 11 o’clock or midnight.",
+          "8. Bernhard gets up at 6:30 on weekdays.",
+          "9. Bernhard goes to bed at 11 p.m. on weekdays.",
+          "10. Bernhard goes to bed at midnight on weekends"
+        ],
+        "tables": [],
+        "practicePhrases": []
+      },
+      "requiresImages": false
+    },
+    {
+      "code": "12D",
+      "title": "Reading – Guessing the meaning of new words",
+      "skill": "Reading",
+      "order": 8,
+      "tasks": [],
+      "referenceContent": {
+        "dialogues": [],
+        "vocabulary": [],
+        "grammarNotes": [
+          "In this Reading exercise, let’s learn an important reading strategy - “guessing the meaning of new words”, ou seja, deduzir o significado das palavras em um texto. Esta dedução poderá ser tanto pelas palavras serem cognatas, por causa do contexto ou por causa do conhecimento prévio que você tenha do texto. Parte do seu aprendizado vai depender da sua habilidade de deduzir o que está sendo dito na língua em que você está aprendendo!",
+          "Vamos testar essa habilidade. Guess the meaning of the words you don’t know in Psalm 23, a very famous psalm.",
+          "Read the psalm.",
+          "The Lord is my shepherd; I shall not want.",
+          "He makes me lie down in green pastures. He leads me beside still waters.",
+          "He restores my soul. He leads me in paths of righteousness for his name’s sake.",
+          "Even though I walk through the valley of the shadow of death, I will fear no evil, for you are with me; your rod and your staff, they comfort me.",
+          "You prepare a table before me in the presence of my enemies; you anoint my head with oil; my cup overflows.",
+          "Surely goodness and mercy shall follow me all the days of my life, and I shall dwell in the house of the Lord forever.",
+          "Now compare the psalms in English and in Portuguese.",
+          "Você conseguiu deduzir o significado de muitas palavras? Você pode aplicar essa estratégia de leitura a outros textos que você conheça em sua língua materna, não só da Bíblia, mas como de qualquer outro texto, como letras de músicas, poemas, ou até mesmo de livros completos! Pratique essa sua nova habilidade!",
+          "Há também Bíblias em português e inglês na mesma página. Você pode adquirir uma Bíblia dessas e criar esse hábito. Tenho certeza de que você vai aprender muitas palavras assim!",
+          "I have another question for you. Which verbs in Psalm 23 are in the simple present? Underline them.",
+          "Look at the text again and find these verbs. Pause the video and do the exercise.",
+          "The Lord is my shepherd; I shall not want.",
+          "He makes me lie down in green pastures. He leads me beside still waters.",
+          "He restores my soul. He leads me in paths of righteousness for his name’s sake.",
+          "Even though I walk through the valley of the shadow of death, I will fear no evil, for you are with me; your rod and your staff, they comfort me.",
+          "You prepare a table before me in the presence of my enemies; you anoint my head with oil; my cup overflows.",
+          "Surely goodness and mercy shall follow me all the days of my life, and I shall dwell in the house of the Lord forever.",
+          "And the answers are:",
+          "makes, leads, restores, guides, walk, comfort, prepare, anoint, overflows",
+          "Don’t forget to do the exercises on the platform."
+        ],
+        "tables": [],
+        "practicePhrases": []
+      },
+      "requiresImages": false,
+      "practiceNote": "SEM TAREFAS NESSA LIÇÃO"
+    },
+    {
+      "code": "13A",
+      "title": "Presentation and Grammar",
+      "skill": null,
+      "order": 9,
+      "tasks": [
+        {
+          "order": 1,
+          "instruction": "The AI Tutor asks the student the yes-no questions about Daniel. If the answer is NO, or if possible, the AI continues to a wh- question.",
+          "type": "student_answers",
+          "imageDependency": "oral",
+          "items": [
+            {
+              "prompt": "Does Daniel work in Jerusalem?",
+              "expectedAnswer": "No, he doesn’t."
+            },
+            {
+              "prompt": "Where does he work?",
+              "expectedAnswer": "He works in Babylon."
+            },
+            {
+              "prompt": "Does he live in Babylon?",
+              "expectedAnswer": "Yes, he does."
+            },
+            {
+              "prompt": "Does he work for the king?",
+              "expectedAnswer": "Yes, he does."
+            },
+            {
+              "prompt": "What does he do?",
+              "expectedAnswer": "He’s an administrator."
+            },
+            {
+              "prompt": "Does he pray four times a day?",
+              "expectedAnswer": "No, he doesn’t."
+            },
+            {
+              "prompt": "How often does he play",
+              "expectedAnswer": null,
+              "schoolCheck": "Item sem resposta e talvez com erro de digitação (play → pray?). Resposta seria \"He prays three times a day\"? (pergunta 15)"
+            },
+            {
+              "prompt": "Does he have two friends?",
+              "expectedAnswer": "No, he doesn’t."
+            },
+            {
+              "prompt": "Does he ask God for help?",
+              "expectedAnswer": "Yes, he does."
+            }
+          ]
+        },
+        {
+          "order": 2,
+          "instruction": "The AI tutor asks the student to conjugate the verb DO.",
+          "type": "student_answers",
+          "imageDependency": "oral",
+          "items": [
+            {
+              "prompt": "Please, conjugate the verb TO DO.",
+              "expectedAnswer": "I do my homework.\nYou do your homework.\nDaniel / Sarah does his/her homework.\nWe do our homework.\nThey do their homework."
+            }
+          ]
+        }
+      ],
+      "referenceContent": {
+        "dialogues": [],
+        "vocabulary": [
+          "Look at the examples - the questions about Daniel.",
+          "Affirmative form – Daniel LIVES in Babylon.",
+          "Interrogative form – DOES Daniel LIVE in Babylon?",
+          "DOES – auxiliary verb",
+          "DO – main verb (no conjugatiion – infinitive form)",
+          "Exercise – transform these affirmative sentences to interrogative"
+        ],
+        "grammarNotes": [
+          "Let’s test your memory! These questions about Daniel are from Lesson 12. Answer them with Yes, he does or No, he doesn’t.",
+          "1. Does Daniel work in Jerusalem?",
+          "2. Does he live in Babylon?",
+          "3. Does he work for the king?",
+          "4. Does he pray four times a day?",
+          "5. Does he have two friends?",
+          "6. Does he ask God for help?",
+          "The answers are:",
+          "1. Does Daniel work in ? No, he doesn’t.",
+          "2. Does he live in ? Yes, he does.",
+          "3. Does he work for the king? Yes, he does.",
+          "4. Does he pray four times a day? No, he doesn’t.",
+          "5. Does he have two friends? No, he doesn’t.",
+          "6. Does he ask God for help? Yes, he does.",
+          "Do you remember the two types of questions?",
+          "Yes-no questions (Are you John?)",
+          "Wh-questions (Where are you from)?",
+          "Ok, so now let’s learn to form questions with the simple present. Let’s learn Yes-no questions first.",
+          "Does Daniel live in Babylon?",
+          "Observe, que para fazer a pergunta usamos a palavra “DOES” no começo da oração. Essa palavra é um verbo, chamado de verbo auxiliar (auxiliary verb) Mas auxiliar o que? O verbo auxiliar vem para auxiliar o verbo principal (main verb) da oração. Quando se usa o verbo auxiliar (auxiliary verb), o verbo principal (main verb) não precisa ser conjugado!",
+          "Observe que na pergunta “Does Daniel live in Babylon”, o verbo LIVE não precisou do S que usamos na forma afirmativa: Daniel lives in Babylon, exatamente porque existe o verbo auxiliar.",
+          "Então:",
+          "O verbo auxiliar DO é também o verbo FAZER:",
+          "I do my homework.",
+          "You do your homework.",
+          "Daniel / Sarah does his/her homework.",
+          "We do our homework.",
+          "They do their homework.",
+          "Sendo assim, o verbo DO é tanto o auxiliary verb quanto o main verb. Por exemplo:",
+          "DOES Daniel DO his homework?",
+          "With yes-no questions, you form the short answers with DO or DOES.",
+          "Do I know your brother? Yes, you do. / No, you don’t.",
+          "Do you speak English? Yes, I do. / No, I don’t",
+          "Does Daniel have any brothers and sisters? Yes, he does. / No, he doesn’t?",
+          "Do we have internet? Yes, we do. / No, we don’t.",
+          "Do they live in Europe? Yes, they do. / No they don’t.",
+          "1. Tyson goes to work at 9 a.m.",
+          "2. Abigail has a Portuguese class in the afternoon.",
+          "3. Fernanda and Daniel get up at 6 a.m.",
+          "4. Teresa takes three showers a day.",
+          "5. Cindy goes to school in the morning.",
+          "6. I go to bed at midnight.",
+          "7. You go home at 5 p.m.",
+          "And the answers are:",
+          "1. Tyson goes to work at 9 a.m.",
+          "Does Tyson go to work at 9 a.m.?",
+          "2. Abigail has a Portuguese class in the afternoon.",
+          "Does Abigail have a Portuguese class in the afternoon?",
+          "3. Fernanda and Daniel get up at 6 a.m.",
+          "Do Fernanda and Daniel get up at 6 a.m.?",
+          "4. Teresa takes three showers a day.",
+          "Does Teresa take three showers a day?",
+          "5. Cindy goes to school in the morning.",
+          "Does Cindy go to school in the morning?",
+          "6. I go to bed at midnight.",
+          "Do I go to bed at midnight?",
+          "7. You go home at 5 p.m.",
+          "Do you go home at 5 p.m.?",
+          "Now let’s do more exercises on the platform."
+        ],
+        "tables": [],
+        "practicePhrases": []
+      },
+      "requiresImages": false
+    },
+    {
+      "code": "13B",
+      "title": "Vocabulary and Pronunciation – Days of the Week",
+      "skill": "Vocabulary and Pronunciation",
+      "order": 10,
+      "tasks": [
+        {
+          "order": 1,
+          "instruction": "The AI Tutor asks the student, “What day is today?” The answer depends on the day of the week when the class takes place, for example,",
+          "type": "student_answers",
+          "imageDependency": "oral",
+          "items": [
+            {
+              "prompt": "What day is today?",
+              "expectedAnswer": "(It’s) _____day."
+            }
+          ],
+          "itemsAreExamples": true
+        },
+        {
+          "order": 2,
+          "instruction": "The AI Tutor shows the calendars and asks the student, “What day is today?” The questions and answers are below.",
+          "type": "student_answers",
+          "imageDependency": "visual",
+          "items": [
+            {
+              "prompt": "What day is today?",
+              "expectedAnswer": "It’s Sunday.",
+              "imageFloatingInCell": true,
+              "imagePath": "book01/unit03/13B/task-2-item-1.png"
+            },
+            {
+              "prompt": "What day is today?",
+              "expectedAnswer": "It’s Saturday.",
+              "imageFloatingInCell": true,
+              "imagePath": "book01/unit03/13B/task-2-item-2.jpg"
+            },
+            {
+              "prompt": "What day is today?",
+              "expectedAnswer": "It’s Tuesday.",
+              "imageFloatingInCell": true,
+              "imagePath": "book01/unit03/13B/task-2-item-3.png"
+            },
+            {
+              "prompt": "What day is today?",
+              "expectedAnswer": "It’s Tuesday.",
+              "imageFloatingInCell": true,
+              "imagePath": "book01/unit03/13B/task-2-item-4.jpg"
+            },
+            {
+              "prompt": "What day is today?",
+              "expectedAnswer": "It’s Thursday.",
+              "imageFloatingInCell": true,
+              "imagePath": "book01/unit03/13B/task-2-item-5.png"
+            },
+            {
+              "prompt": "What day is today?",
+              "expectedAnswer": "It’s Friday.",
+              "imageFloatingInCell": true,
+              "imagePath": "book01/unit03/13B/task-2-item-6.png"
+            },
+            {
+              "prompt": "What day is today?",
+              "expectedAnswer": "It’s Wednesday.",
+              "imageFloatingInCell": true,
+              "imagePath": "book01/unit03/13B/task-2-item-7.png"
+            }
+          ]
+        },
+        {
+          "order": 3,
+          "instruction": "The AI tutor asks the student to start the dialogues similar to b).\nNOTE: The AI tutor corrects the pronunciation and the intonation, which is “rising-falling intonation”, according to previous lessons.",
+          "type": "student_leads",
+          "imageDependency": "oral",
+          "items": []
+        }
+      ],
+      "referenceContent": {
+        "dialogues": [],
+        "vocabulary": [],
+        "grammarNotes": [
+          "Let’s learn the days of the week in English.",
+          "Look at the calendar.",
+          "The days of the week are",
+          "Sunday Monday Tuesday Wednesday Thursday Friday Saturday",
+          "To ask what day it is, you say:",
+          "What day is today?",
+          "It’s Tuesday.",
+          "Don´t forget you spell the first letter of the days of the week with capital letters.",
+          "It’s Monday, NOT it’s monday, with a small letter M.",
+          "Look at the calendars. What day is today?",
+          "Today is the day to go to the platform and practice the days of the week more!"
+        ],
+        "tables": [
+          {
+            "rows": [
+              [
+                "TUTOR",
+                "STUDENT"
+              ],
+              [
+                "What day is today?",
+                "It’s Sunday."
+              ],
+              [
+                "What day is today?",
+                "It’s Saturday."
+              ],
+              [
+                "What day is today?",
+                "It’s Tuesday."
+              ],
+              [
+                "What day is today?",
+                "It’s Tuesday."
+              ],
+              [
+                "What day is today?",
+                "It’s Thursday."
+              ],
+              [
+                "What day is today?",
+                "It’s Friday."
+              ],
+              [
+                "What day is today?",
+                "It’s Wednesday."
+              ]
+            ]
+          }
+        ],
+        "practicePhrases": []
+      },
+      "requiresImages": true,
+      "imageNote": "The AI Tutor shows the calendars and asks the student, “What day is today?” The questions and answers are below."
+    },
+    {
+      "code": "13C",
+      "title": "Vocabulary and Pronunciation – Frequency",
+      "skill": "Vocabulary and Pronunciation",
+      "order": 11,
+      "tasks": [
+        {
+          "order": 1,
+          "instruction": "Ask the student to complete the sentences",
+          "type": "student_answers",
+          "imageDependency": "oral",
+          "items": [
+            {
+              "prompt": "One day equals ________ hours.",
+              "expectedAnswer": null
+            },
+            {
+              "prompt": "Seven days equals ______ week",
+              "expectedAnswer": null
+            },
+            {
+              "prompt": "Four weeks equals one ______",
+              "expectedAnswer": null
+            },
+            {
+              "prompt": "twelve months equals one _______",
+              "expectedAnswer": null
+            }
+          ]
+        },
+        {
+          "order": 2,
+          "instruction": "The AI Tutor explains that they’ll talk about how often. The answers will vary. The tutor asks,\nStudent: go to school every day / five times a week",
+          "type": "explain",
+          "imageDependency": "oral",
+          "items": [
+            {
+              "prompt": "How often do you… go to school",
+              "expectedAnswer": null
+            },
+            {
+              "prompt": "How often do you… go to work",
+              "expectedAnswer": null
+            },
+            {
+              "prompt": "How often do you… study English",
+              "expectedAnswer": null
+            },
+            {
+              "prompt": "How often do you… read (the Bible)",
+              "expectedAnswer": null
+            },
+            {
+              "prompt": "How often do you… go to church",
+              "expectedAnswer": null
+            },
+            {
+              "prompt": "How often do you… pray",
+              "expectedAnswer": null
+            }
+          ]
+        }
+      ],
+      "referenceContent": {
+        "dialogues": [],
+        "vocabulary": [
+          "Sunday – church",
+          "Monday – Mary English class",
+          "Tuesday – Helen play soccer",
+          "Wednesday – Mary English class",
+          "Saturday – Dave go skiing / Mary get a manicure",
+          "1. Mary – have – English classes",
+          "2. Helen – play soccer",
+          "3. Mary – get a manicure",
+          "4. Dave – go skiing",
+          "5. They – go to church",
+          "Mary – have – English classes",
+          "2. Helen – play soccer",
+          "3. Mary – get a manicure",
+          "4. Dave – go skiing",
+          "5. They – go to church"
+        ],
+        "grammarNotes": [
+          "ANSWERS",
+          "1 day = 24 hours",
+          "7 days = 1 week",
+          "4 weeks = 1 month",
+          "12 months = 1 year",
+          "In this lesson, we’ll learn to express FREQUENCY.",
+          "HOW OFTEN does Daniel pray? Do you remember?",
+          "Daniel prays every day.",
+          "In this lesson, you’ll learn some FREQUENCY EXPRESSIONS, but before that, we need some more vocabulary about periods of time.",
+          "One day equals 24 hours.",
+          "Seven days equals one week",
+          "Four weeks equals one month",
+          "twelve months equals one year",
+          "1 day = 24 hours",
+          "7 days = 1 week",
+          "4 weeks = 1 month",
+          "12 months = 1 year",
+          "The word “time” means \"hora\", \"tempo\" e \"vez\". In this case, it means “vez”, so three times means “três vezes”, etc.",
+          "There’s a special word for “one time” – it’s “once” – and “two times” is “twice”, so",
+          "Daniel prays three times A day",
+          "or",
+          "Daniel prays three times PER day.",
+          "Here are some FREQUENCY EXPRESSIONS:",
+          "every day",
+          "every Monday/ every Tuesday, etc",
+          "every other day",
+          "once a week",
+          "twice a day",
+          "three times a month",
+          "Note: You also use the simple present to express frequency (habitual actions). You use these expressions at the end of the sentence.",
+          "Daniel prays three times a day.",
+          "Look at the calendar. How often do these people do these actions?",
+          "Look at the calendar. Write sentences. Add the frequency expressions.",
+          "And the answers are:",
+          "Write sentences. Add the frequency expressions.",
+          "Mary has English classes twice a week / every Monday and Tuesday.",
+          "Helen plays soccer once a week / every Tuesday.",
+          "Mary gets a manicure once a month.",
+          "Dave goes skiing every week / Saturday.",
+          "They go to church every Sunday.",
+          "Now let’s practice that more on the platform."
+        ],
+        "tables": [],
+        "practicePhrases": []
+      },
+      "requiresImages": false
+    },
+    {
+      "code": "13D",
+      "title": "Grammar 2 – Wh- questions",
+      "skill": "Grammar 2",
+      "order": 12,
+      "tasks": [
+        {
+          "order": 1,
+          "instruction": "The AI Tutor asks the student the yes-no questions about Daniel. If the answer is NO, or if possible, the AI continues to a wh- question.",
+          "type": "student_answers",
+          "imageDependency": "oral",
+          "items": [
+            {
+              "prompt": "Does Daniel work in Jerusalem?",
+              "expectedAnswer": "No, he doesn’t."
+            },
+            {
+              "prompt": "Where does he work?",
+              "expectedAnswer": "He works in Babylon."
+            },
+            {
+              "prompt": "Does Daniel work at a school?",
+              "expectedAnswer": "No, he doesn’t."
+            },
+            {
+              "prompt": "Where does he work?",
+              "expectedAnswer": "He works in a palace."
+            },
+            {
+              "prompt": "Does he live in Babylon?",
+              "expectedAnswer": "Yes, he does."
+            },
+            {
+              "prompt": "Does he work for the king?",
+              "expectedAnswer": "Yes, he does."
+            },
+            {
+              "prompt": "What does he do?",
+              "expectedAnswer": "He’s an administrator."
+            },
+            {
+              "prompt": "Does he pray four times a day?",
+              "expectedAnswer": "No, he doesn’t."
+            },
+            {
+              "prompt": "How often does he pray?",
+              "expectedAnswer": "He prays three times a day."
+            },
+            {
+              "prompt": "Does he have two friends?",
+              "expectedAnswer": "No, he doesn’t."
+            },
+            {
+              "prompt": "How many friends does he have?",
+              "expectedAnswer": "He has three friends."
+            },
+            {
+              "prompt": "Does he ask God for help?",
+              "expectedAnswer": "Yes, he does."
+            }
+          ]
+        },
+        {
+          "order": 2,
+          "instruction": "The AI asks the students the following Wh- questions. The answers will vary.",
+          "type": "student_answers",
+          "imageDependency": "oral",
+          "items": [
+            {
+              "prompt": "Where do you live?",
+              "expectedAnswer": null
+            },
+            {
+              "prompt": "How often do you go to church?",
+              "expectedAnswer": null
+            },
+            {
+              "prompt": "What do you do?",
+              "expectedAnswer": null
+            },
+            {
+              "prompt": "Where do you live?",
+              "expectedAnswer": null
+            },
+            {
+              "prompt": "What time do you pray?",
+              "expectedAnswer": null
+            },
+            {
+              "prompt": "What do your parents do?",
+              "expectedAnswer": null
+            },
+            {
+              "prompt": "What does your best friend look like?",
+              "expectedAnswer": null
+            }
+          ]
+        }
+      ],
+      "referenceContent": {
+        "dialogues": [],
+        "vocabulary": [
+          "Affirmative – Daniel lives in Babylon.",
+          "Interrogative – Yes-no questions – Does Daniel live in Babylon?",
+          "Wh- question – Where does Daniel live?"
+        ],
+        "grammarNotes": [
+          "Now that you know the Yes-no questions, it is easy to form Wh questions –",
+          "All you have to do is put the interrogative pronoun in the beginning of the sentence.",
+          "For example,",
+          "É só colocar o pronome interrogativo “where” no começo da oração.",
+          "Em português é possível colocar o pronome interrogativo no final da oração. Você mora onde? Em inglês, isso não é possível. Você coloca o pronome interrogativo no início da oração.",
+          "Where does Daniel live?",
+          "Let’s see more examples.",
+          "How often do you go to church?",
+          "What do you do?",
+          "Where does he live?",
+          "Então a sequência da Wh- questions é Wh + AV + S + MV + C (if necessary)",
+          "For example,"
+        ],
+        "tables": [
+          {
+            "rows": [
+              [
+                "Wh-word",
+                "Auxiliary verb",
+                "Subject",
+                "Main Verb",
+                "Complement"
+              ],
+              [
+                "How often",
+                "do",
+                "you",
+                "go",
+                "to church?"
+              ],
+              [
+                "What",
+                "do",
+                "you",
+                "do?",
+                ""
+              ],
+              [
+                "Where",
+                "does",
+                "he",
+                "live?",
+                ""
+              ],
+              [
+                "What time",
+                "do",
+                "you",
+                "pray?",
+                ""
+              ],
+              [
+                "What",
+                "does",
+                "she",
+                "do?",
+                ""
+              ],
+              [
+                "What",
+                "does",
+                "he",
+                "look",
+                "like?"
+              ]
+            ],
+            "caption": "For example,"
+          }
+        ],
+        "practicePhrases": []
+      },
+      "requiresImages": false
+    },
+    {
+      "code": "13E",
+      "title": "Listening – Interview with an American missionary",
+      "skill": "Listening",
+      "order": 13,
+      "tasks": [],
+      "referenceContent": {
+        "dialogues": [],
+        "vocabulary": [
+          "live – she – does – where",
+          "she – how often – does – go to church"
+        ],
+        "grammarNotes": [
+          "This is a listening exercise. Before you listen, form questions with the following words.",
+          "Answers",
+          "1.       Where does she live?",
+          "2.       How often does she go to church?",
+          "OK, now listen to a dialogue with the American missionary, Sophie. Answer the questions",
+          "Where does she live?",
+          "How often does she go to church?",
+          "Listen to the dialogue twice.",
+          "Débora: Hi, Sophia.",
+          "Sophia: Hello!",
+          "Débora: You’re an American missionary living in Brazil, right?",
+          "Sophia: Yes, I am.",
+          "Débora  Nice to meet you.",
+          "Sophia: Nice to meet you too.",
+          "Débora: I’d like to ask you some questions.",
+          "Sophia: Go for it!",
+          "Débora: Sophia, do you speak Portuguese?",
+          "Sophia: A little bit. I’m learning.",
+          "Débora: Uh-huh. And where do you live in Brazil?",
+          "Sophia: I live in Fortaleza.",
+          "Débora: Oh, all right. And do you go to church in Fortaleza?",
+          "Sophia: Yes, I do.",
+          "Débora: How often?",
+          "Sophia: I go every Sunday.",
+          "Débora: Oh, great. Huh... How about the Bible, do you read it every day?",
+          "Sophia: Yes, I do.",
+          "Débora: And do you read it in English or in Portuguese?",
+          "Sophia: I read it in English. I don’t know enough Portuguese yet.",
+          "Débora: And do you have a job?",
+          "Sophia: Uh, my work is full-time mission. Missions work with college students.",
+          "Débora: Oh, that’s very nice! OK, thank you very much, Sophia.",
+          "Sophia: No problem",
+          "And the answers are:",
+          "1. She lives in Fortaleza.     2. She goes to church every Sunday.",
+          "Now listen to the conversation again and copy the questions. There are 7 questions.",
+          "And the questions are:",
+          "1. Do you speak Portuguese?",
+          "2. Where do you live in Brazil?",
+          "3. Do you go to church in Fortaleza?",
+          "4. How often?",
+          "5. How about the Bible, do you read it every day?",
+          "6. Do you read it in English or in Portuguese?",
+          "7. Do you have a job?",
+          "Now listen once again. Answer the questions.",
+          "Yes, she speaks a little.",
+          "She lives in Fortaleza.",
+          "Yes, she does.",
+          "She goes to church every Sunday.",
+          "Yes, she does. She reads the Bible every day.",
+          "She reads it in English (She doesn’t know enough Portuguese yet).",
+          "Yes, she does. She’s a missionary. She works with college students.",
+          "Now listen to the conversation one more time. This time listen and read."
+        ],
+        "tables": [],
+        "practicePhrases": []
+      },
+      "requiresImages": false,
+      "practiceNote": "Não há TAREFAS nessa lição"
+    },
+    {
+      "code": "13F",
+      "title": "Vocabulary and Speaking – What does it mean? How do you say it in English?",
+      "skill": "Vocabulary and Speaking",
+      "order": 14,
+      "tasks": [
+        {
+          "order": 1,
+          "instruction": "The AI Tutor asks the student the following questions In this order.",
+          "type": "student_answers",
+          "imageDependency": "oral",
+          "items": [
+            {
+              "label": "1",
+              "prompt": "What does “Excuse me” mean?",
+              "expectedAnswer": "Com licença ou Desculpa."
+            },
+            {
+              "label": "2",
+              "prompt": "What does “I’m sorry” mean?",
+              "expectedAnswer": "Desculpa."
+            },
+            {
+              "label": "3",
+              "prompt": "What does “That’s ok” mean?",
+              "expectedAnswer": "Tudo bem."
+            },
+            {
+              "label": "4",
+              "prompt": "What does “Please” mean?",
+              "expectedAnswer": "Por favor."
+            },
+            {
+              "label": "5",
+              "prompt": "What does “Thanks” mean?",
+              "expectedAnswer": "Obrigada."
+            },
+            {
+              "label": "6",
+              "prompt": "What does “Thank you. I appreciate it” mean?",
+              "expectedAnswer": "Muito obrigada."
+            },
+            {
+              "label": "7",
+              "prompt": "What does “Pardon me?” me?",
+              "expectedAnswer": "Como?"
+            },
+            {
+              "label": "8",
+              "prompt": "How do you say “Muito obrigada” in English?",
+              "expectedAnswer": "Thank you very much. (I appreciate it)"
+            },
+            {
+              "label": "9",
+              "prompt": "How do you say “Muito legal da sua parte” in English?",
+              "expectedAnswer": "That’s very nice of you."
+            },
+            {
+              "label": "10",
+              "prompt": "How do you say “De nada” in English?",
+              "expectedAnswer": "You’re welcome."
+            },
+            {
+              "label": "11",
+              "prompt": "How do you say “Entendeu?” in English?",
+              "expectedAnswer": "Do you understand?"
+            },
+            {
+              "label": "12",
+              "prompt": "How do you say “Lembra?” in English?",
+              "expectedAnswer": "Do you remember?"
+            },
+            {
+              "label": "13",
+              "prompt": "How do you say “Desculpa. Não entendi” in English?",
+              "expectedAnswer": "Sorry. I don’t understand."
+            },
+            {
+              "label": "14",
+              "prompt": "How do you say “Poderia repetir?” in English?",
+              "expectedAnswer": "Can/Could you repeat, please?"
+            },
+            {
+              "label": "15",
+              "prompt": "How do you say “Como?”?",
+              "expectedAnswer": "Sorry? / Pardon me?"
+            }
+          ]
+        }
+      ],
+      "referenceContent": {
+        "dialogues": [],
+        "vocabulary": [],
+        "grammarNotes": [
+          "There are two very used questions in the simple present for students.",
+          "What does “___” mean? = O que significa “___”? = O que quer dizer?",
+          "The answer for this question is “It means ___”.",
+          "For example,",
+          "What does “Excuse me” mean?",
+          "(It means) “Com licença” ou “Desculpa”.",
+          "What does “please” mean?",
+          "(It means) “Por favor”.",
+          "The second useful question is,",
+          "How do you say “___” in English? = Como (é que) se diz “___” in English?",
+          "The answer for this question is “the translation of the word”.",
+          "For example,",
+          "How do you say “Por favor” in English?",
+          "“Please.”",
+          "How do you say “Desculpa” in English?",
+          "“Excuse me.”",
+          "Let’s practice this?",
+          "Study these popular phrases. What do they mean?",
+          "Excuse me.",
+          "I’m sorry.",
+          "That’s ok.",
+          "Please.",
+          "Thanks.",
+          "Thank you (very much). I appreciate it.",
+          "That’s very nice of you!",
+          "You’re welcome.",
+          "Do you understand?",
+          "Do you remember?",
+          "Sorry, I don’t understand.",
+          "Sorry?",
+          "Pardon me?",
+          "Could / Can you repeat, please?",
+          "Let’s practice. Answer the questions after the beep. Then check the answers.",
+          "And the answers are:",
+          "1. What does “Excuse me” mean?",
+          "Resposta: Com licença ou Desculpa.",
+          "2. What does “I’m sorry” mean?",
+          "Resposta: Desculpa.",
+          "3. What does “That’s ok” mean?",
+          "Resposta: Tudo bem.",
+          "4. What does “Please” mean?",
+          "Resposta: Por favor.",
+          "5. What does “Thanks” mean?",
+          "Resposta: Obrigada.",
+          "6. What does “Thank you. I appreciate it” mean?",
+          "Resposta: Muito obrigada.",
+          "7. What does “Pardon me?” me?",
+          "Resposta: Como?",
+          "8. How do you say “Muito obrigada” in English?",
+          "Resposta: Thank you very much. (I appreciate it)",
+          "9. How do you say “Muito legal da sua parte” in English?",
+          "Resposta: That’s very nice of you.",
+          "10. How do you say “De nada” in English?",
+          "Resposta: You’re welcome.",
+          "11. How do you say “Entendeu?” in English?",
+          "Resposta: Do you understand?",
+          "12. How do you say “Lembra?” in English?",
+          "Resposta: Do you remember?",
+          "13. How do you say “Desculpa. Não entendi” in English?",
+          "Resposta: Sorry. I don’t understand.",
+          "14. How do you say “Poderia repetir?” in English?",
+          "Resposta: Can/Could you repeat, please?",
+          "15. How do you say “Como?”?",
+          "Resposta: Sorry? / Pardon me?",
+          "TRANSLATION OF THESE EXPRESSIONS",
+          "Excuse me. = Com licença. / Desculpa.",
+          "I’m sorry. = Desculpa.",
+          "That’s ok. = Tudo bem.",
+          "Please. = Por favor.",
+          "Thanks. = Obrigada.",
+          "Thank you (very much). I appreciate it. = Muito obrigada.",
+          "That’s very nice of you. = Muito legal da sua parte.",
+          "You’re welcome. = De nada.",
+          "Do you understand? = Entendeu?",
+          "Do you remember? = Lembra?",
+          "Sorry. I don’t understand. = Desculpa. Não entendi.",
+          "Sorry? / Pardon me? / What? = Como? O que?",
+          "Could you repeat, please? = Poderia repetir, por favor?",
+          "Can you repeat, please? = Pode repetir, por favor?"
+        ],
+        "tables": [],
+        "practicePhrases": []
+      },
+      "requiresImages": false
+    },
+    {
+      "code": "14A",
+      "title": "Presentation Reading and Grammar – Negative Sentences",
+      "skill": "Presentation Reading and Grammar",
+      "order": 15,
+      "tasks": [
+        {
+          "order": 1,
+          "instruction": "Ask the student to correct some sentences about Daniel and his friends. First the student says the sentence in the negative form. Then, in the affirmative form, for example,",
+          "type": "student_answers",
+          "imageDependency": "oral",
+          "items": [
+            {
+              "prompt": "Daniel has four friends.",
+              "expectedAnswer": "Daniel doesn’t have four friends. He has three friends."
+            },
+            {
+              "prompt": "Daniel and his friends drink wine.",
+              "expectedAnswer": "Daniel and his friends don’t drink wine. They only drink water."
+            },
+            {
+              "prompt": "Daniel lives in Jerusalem.",
+              "expectedAnswer": "Daniel doesn’t live in Jerusalem. He lives in Babylon."
+            },
+            {
+              "prompt": "Daniel eats the royal food.",
+              "expectedAnswer": "Daniel doesn’t eat the royal food. He only eats vegetables."
+            },
+            {
+              "prompt": "Daniel and his friends worship different gods.",
+              "expectedAnswer": "Daniel and his friends don’t worship different gods. They have only one God."
+            }
+          ],
+          "itemsAreExamples": true
+        },
+        {
+          "order": 2,
+          "instruction": "The AI asks the student to talk about their life using the phrases below. The answers will vary.\nNOTE: The student can use the contractions don’t or doesn’t or the full form do not or does not.",
+          "type": "student_answers",
+          "imageDependency": "oral",
+          "items": [
+            {
+              "label": "B1",
+              "prompt": "drink wine",
+              "expectedAnswer": "I don’t drink wine or I drink _______."
+            },
+            {
+              "label": "B2",
+              "prompt": "eat only vegetables",
+              "expectedAnswer": "I don’t eat only vegetables or  I eat ______."
+            },
+            {
+              "label": "B3",
+              "prompt": "live in Canada",
+              "expectedAnswer": "I don’t live in Canada or I live in ______."
+            },
+            {
+              "label": "B4",
+              "prompt": "work at a school",
+              "expectedAnswer": "I don’t work at a school or I work at a _____."
+            },
+            {
+              "label": "B5",
+              "prompt": "pray twice a day",
+              "expectedAnswer": "I don’t pray twice a day. I pray _______."
+            }
+          ]
+        }
+      ],
+      "referenceContent": {
+        "dialogues": [],
+        "vocabulary": [
+          "New vocabulary – Please use the technique “guessing the meaning of new words”",
+          "Affirmative – They drink WATER.",
+          "Negative – They don’t drink wine."
+        ],
+        "grammarNotes": [
+          "In this video you’ll learn to form negative sentences with the Simple Present.",
+          "Do you remember Daniel? Remember how many friends he has? Well, he has three friends.",
+          "They live in Babylon, but they are different than the people in Babylon.",
+          "First, let’s learn some vocabulary.",
+          "1. live in Babylon\t5. eat the royal food",
+          "2. drink wine\t \t6. eat vegetables",
+          "3. drink water\t\t7. worship different gods",
+          "4. worship idols\t\t8. have only one God",
+          "Verbs",
+          "Drink / worship",
+          "Nouns",
+          "Wine / water / idols / food / vegetables",
+          "Adjective",
+          "royal",
+          "Now read the passage. Complete the table with the phrases under “yes” or “no”. For example, live in Babylon – Yes",
+          "Daniel and his 3 friends",
+          "Daniel, Azariah, Mishael, and Hananiah are Jews, and they live in Babylon, but they are different from the people in Babylon. They don’t eat the royal food. They don’t drink wine. They only eat vegetables and drink water, but they are very strong. The people of Babylon worship different gods, but Daniel and his three friends only have one God. They don’t worship idols and they don’t serve strange gods.",
+          "Condensed from: Daniel 1",
+          "And the answers are:",
+          "YES",
+          "Daniel and his friends live in Babylon.",
+          "They (only) drink water.",
+          "- They eat vegetables.",
+          "- They have only one God.",
+          "NO",
+          "They don’t drink wine.",
+          "- They don’t worship idols.",
+          "- They don’t serve strange gods.",
+          "- They don’t eat the royal food.",
+          "- They don’t worship different gods.",
+          "Look At the sentences under NO",
+          "Read THE text again. Find the negative sentences in the text.",
+          "And the answers are:",
+          "They don’t eat the royal food.",
+          "They don’t drink wine.",
+          "They don’t worship idols.",
+          "They don’t worship different gods.",
+          "Look at the two sentences from the text about Daniel.",
+          "To form negative sentences in the simple present, just use DON’T or DOESN’T BEFORE THE VERB.",
+          "Don’t is the contraction of DO + NOT and Doesn’t is the contraction of DOES + NOT",
+          "Remember – YOU DON’T CONJUGATE THE MAIN VERB",
+          "For I, you, we, and they, use don’t.",
+          "I don’t",
+          "you don’t",
+          "we don’t",
+          "they don’t + MAIN VERB",
+          "Example: I don’t like coffee.",
+          "For he, she, and it use DOESN’T.",
+          "he doesn’t",
+          "she doesn’t",
+          "it doesn’t + MAIN VERB",
+          "Example: He doesn’t like coffee.",
+          "Now let’s conjugate this sentence in the negative form. DRINK WINE",
+          "I \tdon’t\t\tdrink wine.",
+          "You\tdon’t \t\tdrink wine.",
+          "He \tdoesn’t \t\tdrink wine.",
+          "She \tdoesn’t \t\tdrink wine.",
+          "We \tdon’t \t\tdrink wine.",
+          "They \t\tdon’t \t\tdrink wine.",
+          "So, what don’t Daniel and his friends do? Test your memory. In this text, there are four things they don’t do.",
+          "Pause the video now and write four sentences about what Daniel and his friends don’t do.",
+          "The answers are:",
+          "They don’t eat the royal food.",
+          "They don’t drink wine.",
+          "They don’t worship idols.",
+          "They don’t worship different gods.",
+          "Remember that the Main Verb doesn’t change.",
+          "I don’t drink.",
+          "He doesn’t drink.",
+          "Let’s form more negative sentences. Please, do the exercises on the platform."
+        ],
+        "tables": [],
+        "practicePhrases": []
+      },
+      "requiresImages": false
+    },
+    {
+      "code": "14B",
+      "title": "Vocabulary and Speaking – likes and dislikes",
+      "skill": "Vocabulary and Speaking",
+      "order": 16,
+      "tasks": [
+        {
+          "order": 1,
+          "instruction": "The AI Tutor expresses her likes and dislikes about 5 of the topics below randomly. The tutor should use the verbs “love”, “like”, “not like” or “hate”. She tells the student that they should react with “Me too”, “Me neither”, “I do” or “I don’t”.\nFor example,",
+          "type": "student_answers",
+          "imageDependency": "oral",
+          "items": [
+            {
+              "prompt": "I love swimming.",
+              "expectedAnswer": "Me too or I don’t."
+            },
+            {
+              "prompt": "I don’t like country music.",
+              "expectedAnswer": "Me neither or I do."
+            }
+          ],
+          "itemsAreExamples": true
+        },
+        {
+          "order": 2,
+          "instruction": "A IA pede para o aluno iniciar o mesmo diálogo. A IA",
+          "type": "student_leads",
+          "imageDependency": "oral",
+          "items": [],
+          "schoolCheck": "A instrução termina no meio da frase: \"A IA pede para o aluno iniciar o mesmo diálogo. A IA\". O que vinha depois? (pergunta 16)"
+        }
+      ],
+      "referenceContent": {
+        "dialogues": [
+          [
+            "A: Let’s go swimming in the lake. It’s such a beautiful day!",
+            "B: Great idea! I love swimming!",
+            "A: Me too."
+          ],
+          [
+            "A: There’s a soccer game on TV.",
+            "B: Oh, no! Please! I hate soccer!",
+            "A: Well, I don’t. What time do you go to bed?",
+            "B: At 10.",
+            "A: Good! The game is at 11. And I love soccer!",
+            "B: Ok, then. I don’t."
+          ],
+          [
+            "A: Please, turn off the radio. I don’t like country music.",
+            "B: Me neither."
+          ],
+          [
+            "A: I love donuts!",
+            "B: Well, I don’t."
+          ]
+        ],
+        "vocabulary": [
+          "Sports  swimming – basketball – volleyball – soccer – tennis",
+          "Music  classical music – gospel music – jazz – pop music – country music",
+          "Food  pizza – lasagna – vegetables – fast food – donuts",
+          "Activities walking – reading – jogging – cooking",
+          "Sports  swimming – basketball – volleyball – soccer – tennis",
+          "Music  classical music – gospel music – jazz – pop music – country music",
+          "Food  pizza – lasagna – vegetables – fast food – donuts",
+          "Activities walking – reading – jogging – cooking"
+        ],
+        "grammarNotes": [
+          "In this lesson we will learn how to express likes and dislikes. The word “like” is in Portuguese too! On Instagram or on social media, you “like” a picture or a post, right?",
+          "“Like” can be a verb or noun.",
+          "I like this Picture! (verb)",
+          "My Instagram post has 245 likes! (noun)",
+          "And in this lesson, “like” is the verb, ok?",
+          "For example,",
+          "I like pizza.",
+          "There are four more expressions for your likes and dislikes in this lesson.",
+          "+++ love",
+          "++ like",
+          "- not like",
+          "--- hate",
+          "So love and like are positive and not like and hate are negative (dislikes)",
+          "When you express a like or a dislike, the common response is:",
+          "AGREE (ou seja “concordar”)",
+          "I like pizza.",
+          "Me too.",
+          "I love swimming.",
+          "Me too.",
+          "I hate soccer.",
+          "Me too.",
+          "I don’t like cooking.",
+          "Me neither.",
+          "DISAGREE (ou seja “discordar”)",
+          "I like pizza.",
+          "I don’t. = I don’t like pizza.",
+          "I love reading books.",
+          "I don’t.",
+          "I hate country music.",
+          "I don’t.",
+          "I don’t like donuts.",
+          "I do. = I like donuts.",
+          "Now repeat and practice the pronunciation and intonation.",
+          "Me too.",
+          "Me neither.",
+          "I do.",
+          "I don’t.",
+          "About Intonation, when you express likes and dislikes, the stressed syllable is normally the verb. Listen.",
+          "I like pizza.",
+          "I don’t like pizza.",
+          "And when you disagree, the stress is on the subject. Listen.",
+          "I do.",
+          "I don’t.",
+          "Now let’s practice this topic but first let’s learn some vocabulary.",
+          "Listen again and repeat the words. Practice the pronunciation",
+          "Now listen to Laura and Gary expressing their likes and dislikes.",
+          "1.",
+          "2.",
+          "3.",
+          "4.",
+          "And the answers are:",
+          "Laura and Gary love Swimming. True",
+          "Laura and Gary like soccer. False",
+          "Laura likes country music, but Gary doesn’t. False",
+          "Laura and Gary hate donuts. False",
+          "Now let’s do more exercises on the platform?"
+        ],
+        "tables": [],
+        "practicePhrases": []
+      },
+      "requiresImages": false
+    },
+    {
+      "code": "15",
+      "title": "REVIEW LESSONS 11 TO 14",
+      "skill": null,
+      "order": 17,
+      "tasks": [
+        {
+          "order": 1,
+          "instruction": "A IA repete aleatoriamente todas as tarefas feitas nessa unidade, revisando o conteúdo, mas repetindo menos vezes. Se o aluno tiver dificuldades, sugerir retornar para as respectivas lições.",
+          "type": "review",
+          "imageDependency": "oral",
+          "items": []
+        }
+      ],
+      "referenceContent": {
+        "dialogues": [],
+        "vocabulary": [
+          "a new strategy – guessing the meaning of new words."
+        ],
+        "grammarNotes": [
+          "In this unit, you learned the Simple Present tense, and you learned a lot of new verbs! You have certainly expanded your vocabulary! Daniel was the main Bible character of this unit.",
+          "In Lesson 11, you learned about telling time.",
+          "In 12, you learned about routines.",
+          "In 13, you learned about routines and frequency.",
+          "In Lesson 14, you learned to express likes and dislikes.",
+          "Grammar",
+          "the main topic was the Simple Present Tense in the affirmative, interrogative (yes-No and Wh- questions) and negative forms.",
+          "Vocabulary",
+          "at least 20 new verbs,",
+          "ordinal numbers,",
+          "time,",
+          "frequency.",
+          "Sports",
+          "Music",
+          "food,",
+          "activities.",
+          "Speaking",
+          "tell time",
+          "ask about how often you do things",
+          "talk about your routine",
+          "express likes and dislikes and react to them",
+          "Pronunciation",
+          "the pronunciation of the ordinal numbers with the ending -th",
+          "Reading",
+          "Now, let’s do more exercises on the platform."
+        ],
+        "tables": [],
+        "practicePhrases": []
+      },
+      "requiresImages": false
+    }
+  ]
+}

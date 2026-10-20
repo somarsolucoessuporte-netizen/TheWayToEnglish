@@ -40,8 +40,8 @@ async function main() {
   const json = loadTs(path.join(root, 'src/app-config/curriculum/json-source.ts'));
   const db = loadTs(path.join(root, 'src/app-config/curriculum/supabase-source.ts'));
 
-  // Task images (imagePath) are uploaded in /admin and live only in the
-  // database — everything else about each task must still match the JSON.
+  // Old per-task images (task.imagePath) were uploaded in /admin and live
+  // only in the database. Item pictures come from the .docx and are in both.
   const withoutImages = (lesson) => lesson && { ...lesson, tasks: lesson.tasks.map(({ imagePath, ...task }) => task) };
 
   assert.deepEqual(await db.getGlobalPrinciples(), json.getGlobalPrinciples(), 'global principles');
@@ -52,11 +52,13 @@ async function main() {
   const fromJson = json.getAllLessons();
   assert.equal(fromDb.length, fromJson.length, 'lesson count');
   for (let i = 0; i < fromJson.length; i++) {
-    const code = fromJson[i].code;
-    assert.deepEqual(fromDb[i], fromJson[i], `lesson ${code}: getAllLessons`);
-    assert.deepEqual(withoutImages(await db.getLessonByCode(code)), json.getLessonByCode(code), `lesson ${code}: getLessonByCode`);
-    assert.deepEqual(withoutImages(await db.getNextLesson(code)), json.getNextLesson(code), `lesson ${code}: getNextLesson`);
+    const id = fromJson[i].id;
+    assert.deepEqual(fromDb[i], fromJson[i], `lesson ${id}: getAllLessons`);
+    assert.deepEqual(withoutImages(await db.getLessonByCode(id)), json.getLessonByCode(id), `lesson ${id}: getLessonByCode`);
+    assert.deepEqual(withoutImages(await db.getNextLesson(id)), json.getNextLesson(id), `lesson ${id}: getNextLesson`);
   }
+  assert.equal((await db.getLessonByCode('1A')).id, 'book01-unit01-1a', "a bare code is Book 1's");
+  assert.equal((await db.getLessonByCode('book02-unit01-1a')).id, 'book02-unit01-1a', "the id picks Book 2's 1A");
   assert.equal(await db.getLessonByCode('nope'), undefined);
   assert.equal(await db.getNextLesson('nope'), undefined);
 

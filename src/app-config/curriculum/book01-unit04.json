@@ -1,0 +1,1307 @@
+{
+  "book": "Book 1",
+  "unit": "Unit 4",
+  "unitTheme": "Vocabulary and Speaking; Speaking; Reading; Presentation Vocabulary; Presentation, Vocabulary and Grammar Count and non; Vocabulary and Pronunciation; Grammar; Presentation and Reading; Pronunciation; Speaking and Vocabulary; REVIEW LESSONS 16 TO 19",
+  "sourceFile": "THE WAY for AI_Book 1_Unit 4_prompts.docx",
+  "globalPrinciples": [],
+  "tutorIdentity": {
+    "name": "Debbie Ann Pamp",
+    "age": 28,
+    "nationality": "Brazilian",
+    "occupation": "AI Tutor"
+  },
+  "lessons": [
+    {
+      "code": "16A",
+      "title": "Vocabulary and Speaking – I’m hungry",
+      "skill": "Vocabulary and Speaking",
+      "order": 1,
+      "tasks": [
+        {
+          "order": 1,
+          "instruction": "The AI Tutor shows the pictures and asks the student how the people feel. If there’s a +, the student should say “so”, for example,",
+          "type": "student_answers",
+          "imageDependency": "visual",
+          "items": [
+            {
+              "prompt": "How do you feel?",
+              "expectedAnswer": "I’m hungry.",
+              "imageFloatingInCell": true,
+              "imagePath": "book01/unit04/16A/task-1-item-1.jpg"
+            },
+            {
+              "prompt": "How do you feel?",
+              "expectedAnswer": "I’m well / fine.",
+              "imageFloatingInCell": true,
+              "imagePath": "book01/unit04/16A/task-1-item-2.jpg"
+            },
+            {
+              "prompt": "What’s wrong?",
+              "expectedAnswer": "I’m so sick.",
+              "imageFloatingInCell": true,
+              "imagePath": "book01/unit04/16A/task-1-item-3.jpg",
+              "extraImagePaths": [
+                "book01/unit04/16A/task-1-item-3-2.png"
+              ]
+            },
+            {
+              "prompt": "How do you feel?",
+              "expectedAnswer": "I’m cold.",
+              "imageFloatingInCell": true,
+              "imagePath": "book01/unit04/16A/task-1-item-4.jpg"
+            },
+            {
+              "prompt": "How do you feel?",
+              "expectedAnswer": "I’m hot.",
+              "imageFloatingInCell": true,
+              "imagePath": "book01/unit04/16A/task-1-item-5.jpg"
+            },
+            {
+              "prompt": "What’s the matter?",
+              "expectedAnswer": "I’m so thirsty.",
+              "imageFloatingInCell": true,
+              "imagePath": "book01/unit04/16A/task-1-item-6.jpg",
+              "extraImagePaths": [
+                "book01/unit04/16A/task-1-item-6-2.png"
+              ]
+            },
+            {
+              "prompt": "What’s wrong?",
+              "expectedAnswer": "I’m so tired.",
+              "imageFloatingInCell": true,
+              "imagePath": "book01/unit04/16A/task-1-item-7.jpg",
+              "extraImagePaths": [
+                "book01/unit04/16A/task-1-item-7-2.png"
+              ]
+            }
+          ],
+          "itemsAreExamples": true
+        },
+        {
+          "order": 2,
+          "instruction": "The AI Tutor asks the student to start the dialogues. She shows the pictures and repeats the dialogues playing the role of the student instead.",
+          "type": "student_leads",
+          "imageDependency": "visual",
+          "items": [
+            {
+              "prompt": "",
+              "expectedAnswer": "How do you feel?",
+              "reply": "I’m hot."
+            }
+          ]
+        }
+      ],
+      "referenceContent": {
+        "dialogues": [],
+        "vocabulary": [],
+        "grammarNotes": [
+          "The name of this lesson is “I’m hungry”. In this lesson, you’ll learn about physical feelings.",
+          "In the Bible, there’s a Parable where Jesus teaches about helping people in need. Match the pictures with the sentences and the suggestions on the right.",
+          "In this Parable, the people have physical feelings.",
+          "1. When I’m hungry... \t\tc. you give me food.",
+          "2. When I’m thirsty... \t\te. you give me water.",
+          "3. When I’m sick... \t\ta. you take care of me.",
+          "4. When I’m naked... \t\tb. you give me clothes.",
+          "5. When I’m in prison...\td. you visit me.",
+          "Look at the pictures.",
+          "This boy is…",
+          "1. hungry",
+          "2. thirsty",
+          "3. cold",
+          "4. hot",
+          "5. sick",
+          "6. well / fine",
+          "7. tired",
+          "Match the feelings and the words.",
+          "And the answers are",
+          "Note: “Tired” means “cansado” or “com sono”, ok? Depends on the context.",
+          "LISTEN again and practice the pronunciation and the Intonation.",
+          "When you want to know how a person feels, you ask:",
+          "How do you feel? What’s the matter? Or “What’s wrong?”",
+          "To answer, you use the verb to be or the verb to feel (sentir), but the verb to be in these situations is more common.",
+          "How do you feel?",
+          "I’m hungry.",
+          "To emphasize this, you use I’m SO hungry, I’m so tired. etc.",
+          "Imagine you are these people.",
+          "Look at the picture. When there’s a +, use SO. Answer the question. Then listen to the answer.",
+          "1. How do you feel?",
+          "I’m hungry.",
+          "2. What’s the matter?",
+          "I’m sick.",
+          "3. How do you feel?",
+          "I’m fine. / I’m well.",
+          "4. What’s the matter?",
+          "I’m SO hot!",
+          "5. How do you feel?",
+          "I’m so cold!",
+          "6. How do you feel?",
+          "I’m thirsty.",
+          "7. What’s wrong?",
+          "I’m so tired!",
+          "Now please do more exercises on the platform to practice this vocabulary."
+        ],
+        "tables": [],
+        "practicePhrases": []
+      },
+      "requiresImages": true,
+      "imageNote": "The AI Tutor shows the pictures and asks the student how the people feel. If there’s a +, the student should say “so”, for example,"
+    },
+    {
+      "code": "16B",
+      "title": "Speaking – Requests",
+      "skill": "Speaking",
+      "order": 2,
+      "tasks": [
+        {
+          "order": 1,
+          "instruction": "The AI Tutor shows the picture below and presents the following dialogue,",
+          "type": "demonstrate",
+          "imageDependency": "visual",
+          "items": [
+            {
+              "prompt": "I’m cold. Could you close the window?",
+              "expectedAnswer": "Sure.",
+              "imagePath": "book01/unit04/16B/task-1-item-1.png"
+            }
+          ]
+        },
+        {
+          "order": 2,
+          "instruction": "Then, the AI Tutor suggests practicing a similar dialogue with other pictures, showing the different possibilities, as, for example,\nFor the answer, you can say, “Sure” or “Of course”\nThe AI Tutor and the student take turns practicing the dialogue with the different pictures.",
+          "type": "roleplay",
+          "imageDependency": "visual",
+          "items": [
+            {
+              "prompt": "“Could you close the window?” or “Can you close the window?”",
+              "expectedAnswer": null
+            },
+            {
+              "prompt": "I’m hungry. Can you give me some food?",
+              "expectedAnswer": "Of course.",
+              "imagePath": "book01/unit04/16B/task-2-item-2.png"
+            },
+            {
+              "prompt": "",
+              "expectedAnswer": "I’m hungry. Can you give me some food?",
+              "reply": "Sure.",
+              "imagePath": "book01/unit04/16B/task-2-item-3.png"
+            },
+            {
+              "prompt": "I’m sick. Could you take care of me?",
+              "expectedAnswer": "Sure.",
+              "imagePath": "book01/unit04/16B/task-2-item-4.png"
+            },
+            {
+              "prompt": "I’m sick. Could you pray for me?",
+              "expectedAnswer": "Sure.",
+              "imagePath": "book01/unit04/16B/task-2-item-5.png"
+            },
+            {
+              "prompt": "",
+              "expectedAnswer": "I’m thirsty. Can you give me some water?",
+              "reply": "Of course.",
+              "imagePath": "book01/unit04/16B/task-2-item-6.png"
+            }
+          ],
+          "itemsAreExamples": true
+        }
+      ],
+      "referenceContent": {
+        "dialogues": [],
+        "vocabulary": [],
+        "grammarNotes": [
+          "In this lesson you’ll learn to make “requests”. “Request” quer dizer um pedido, uma forma educada de pedir algo.",
+          "To make a polite request, you use the expression “Could you...” or “Can you...”, both in formal or in informal situations. You can answer with Sure or Of course.",
+          "For example,",
+          "I’m thirsty. Could you bring me some water?",
+          "Sure.",
+          "I’m so hot. Can you open the window?",
+          "Of course.",
+          "Match the feelings and the requests.",
+          "I’m cold.",
+          "I’m hungry.",
+          "I’m thirsty.",
+          "I’m hot.",
+          "I’m sick.",
+          "Could you open the window?",
+          "Could you pray for me?",
+          "Could you close the window?",
+          "Could you give me some food?",
+          "Could you give me some water?",
+          "Could you take care of me?",
+          "And the answers are:",
+          "I’m cold. \t\tCould you close the window?",
+          "I’m hungry. \tCould you give me some food?",
+          "I’m thirsty.\tCould you give me some water?",
+          "I’m hot. \t\tCould you open the window?",
+          "I’m sick. \t\tCould you pray for me? / Could you take care of me?",
+          "Now let’s practice some pronunciation. About the pronunciation of “Could you”, It’s the sound /U/, not /u/.",
+          "And the /d/ in COULD + the y in YOU become /dj/.",
+          "Listen.",
+          "It’s also important to mention that the expression Could you...? is a weak syllable. The stressed syllables in the sentence are the MAIN VERB after you and the last stressed syllables. For example,",
+          "Could you give me some water?",
+          "Could you open the window?",
+          "Listen to the phrases. Repeat them. Practice the pronunciation and the Intonation and stress.",
+          "Look at the pictures. Match.",
+          "And the answers are:",
+          "Dialogues with the pictures.",
+          "I’m cold. Could you close the window?",
+          "Sure.",
+          "I’m hungry. Could you give me some food?",
+          "Of course.",
+          "I’m sick. Can you take care of me? Can you pray for me?",
+          "Sure.",
+          "I’m hot. Can you open the window?",
+          "Of course.",
+          "Now let’s do more exercises about this on the platform."
+        ],
+        "tables": [],
+        "practicePhrases": []
+      },
+      "requiresImages": true,
+      "imageNote": "The AI Tutor shows the picture below and presents the following dialogue,"
+    },
+    {
+      "code": "16C",
+      "title": "Reading – Scanning",
+      "skill": "Reading",
+      "order": 3,
+      "tasks": [],
+      "referenceContent": {
+        "dialogues": [],
+        "vocabulary": [
+          "1 – In the feast of the Tabernacles.",
+          "2 – “If you are thirsty, come to me and drink”.",
+          "3 – Streams of living water.",
+          "4 – The Holy Spirit.",
+          "5 – Divided."
+        ],
+        "grammarNotes": [
+          "Look at this Picture. Jesus is preaching the word of God.",
+          "Let’s practice the strategy “Scanning”. Já vimos essa estratégia. Significa “procurar informações num texto só passando os olhos rapidamente por ele”. É uma importante estratégia para a sua compreensão leitora.",
+          "Use scanning. Answer the questions.",
+          "On the last day of the Feast of the Tabernacles, Jesus said in a loud voice:",
+          "“If you are thirsty, come to me and drink. Whoever believes in me, as the Scriptures say, streams of living water will flow from him.” By this he meant the Holy Spirit.",
+          "On hearing his words, some people said:",
+          "“Surely this man is the Prophet.”",
+          "Others said:",
+          "“He is the Christ.”",
+          "Still others said:",
+          "“Doesn’t the Scripture say the Christ will come from Bethlehem, the city where David is from?”",
+          "But some people were divided because of Jesus.",
+          "Adapted from John 7.37-43",
+          "Where is Jesus in this passage?",
+          "Complete Jesus’s words, “If you are thirsty, ________ and ______.”",
+          "3.\tWhat does Jesus give to the thirsty?",
+          "4.\tWhat do the “streams of living water” represent?",
+          "5. In the text, how do people feel about Jesus?",
+          "OK, now read the text carefully. Check your answers.",
+          "And the answers are:",
+          "Now go to the platform and do more exercises."
+        ],
+        "tables": [],
+        "practicePhrases": []
+      },
+      "requiresImages": false,
+      "practiceNote": "Nenhuma tarefa para essa lição."
+    },
+    {
+      "code": "17A",
+      "title": "Presentation Vocabulary – We have only five loaves of bread and two fish.",
+      "skill": "Presentation Vocabulary",
+      "order": 4,
+      "tasks": [
+        {
+          "order": 1,
+          "instruction": "The AI Tutor shows the pictures of the food, vegetables and beverages and the student says their name, for example,\nNote: The AI uses the pictures and vocabulary from the pictures below.",
+          "type": "demonstrate",
+          "imageDependency": "visual",
+          "items": [
+            {
+              "prompt": "",
+              "expectedAnswer": "apple"
+            },
+            {
+              "prompt": "",
+              "expectedAnswer": null,
+              "imagePath": "book01/unit04/17A/task-1-item-2.jpg"
+            },
+            {
+              "prompt": "",
+              "expectedAnswer": null,
+              "imagePath": "book01/unit04/17A/task-1-item-3.jpg"
+            },
+            {
+              "prompt": "",
+              "expectedAnswer": null,
+              "imagePath": "book01/unit04/17A/task-1-item-4.jpg"
+            },
+            {
+              "prompt": "",
+              "expectedAnswer": null,
+              "imagePath": "book01/unit04/17A/task-1-item-5.jpg"
+            },
+            {
+              "prompt": "Fruit – grapes – oranges – strawberry – pineapple – watermelon – apple – lemon – coconut – cherries – banana – melon – avocado",
+              "expectedAnswer": null
+            },
+            {
+              "prompt": "Vegetables – tomatoes -cabbage – peppers – onions – potatoes – lettuce – carrot – broccoli",
+              "expectedAnswer": null
+            },
+            {
+              "prompt": "Beverages (drinks) – soda – milk – coffee – water – wine",
+              "expectedAnswer": null
+            },
+            {
+              "prompt": "Meats – pork -chicken – beef",
+              "expectedAnswer": null
+            },
+            {
+              "prompt": "Seafood – fish – crab – shrimp",
+              "expectedAnswer": null
+            }
+          ],
+          "itemsAreExamples": true
+        }
+      ],
+      "referenceContent": {
+        "dialogues": [],
+        "vocabulary": [
+          "Beverages (drinks) – soda – milk – coffee – water – wine",
+          "Meats – pork -chicken – beef",
+          "Seafood – fish – crab – shrimp"
+        ],
+        "grammarNotes": [
+          "The name of this lesson is “Five loaves of bread and two fish”. In this lesson you’ll learn more vocabulary about food and drinks.",
+          "Look at the pictures. What biblical passage is that?",
+          "If you think it’s the passage when Jesus gives food to 5,000 people, you’re right! It’s an incredible miracle!",
+          "Look at the sentences a to e. Put them in the right bubble. Pause the video and do the exercise.",
+          "Jesus and the disciples go to a quiet place, but the people follow them.",
+          "a. What do you have?",
+          "b. Give it to me.",
+          "c. We only have five loaves of bread and two fish.",
+          "d. But there are 5,000 men here, plus women and children!",
+          "e. The people are hungry. Give them something to eat.",
+          "Now listen to the dialogue and check your answers.",
+          "The answers are:",
+          "1. e\t2. D\t3. A\t4. C\t5. B",
+          "So, they only have five loaves of bread and two fish and Jesus feeds a crowd!",
+          "Now let’s learn more vocabulary about food and drinks? Look at the pictures. Repeat the words you hear.",
+          "Fruit – grapes – oranges – strawberry – pineapple – watermelon – apple – lemon – coconut – cherries – banana – melon – avocado",
+          "Vegetables – tomatoes -cabbage – peppers – onions – potatoes – lettuce – carrot – broccoli",
+          "Now let’s do more exercises about this vocabulary on the platform."
+        ],
+        "tables": [],
+        "practicePhrases": []
+      },
+      "requiresImages": true,
+      "imageNote": "The AI Tutor shows the pictures of the food, vegetables and beverages and the student says their name, for example,"
+    },
+    {
+      "code": "17B",
+      "title": "Speaking – Ask about quantity",
+      "skill": "Speaking",
+      "order": 5,
+      "tasks": [
+        {
+          "order": 1,
+          "instruction": "The AI Tutor explains the task – You want to make dinner, but you need some ingredients – 1 onion, 2 tomatoes, 2 green peppers, 1 pineapple, 2 potatoes and half a fish. The tutor shows the picture of the basket below. She asks the student if they have any of the foods that are necessary for the salad, using the following dialogues.",
+          "type": "explain",
+          "imageDependency": "visual",
+          "items": [
+            {
+              "prompt": "Do you have any onions?",
+              "expectedAnswer": "Yes, I have one.",
+              "label": "onion"
+            },
+            {
+              "label": "2 tomatoes",
+              "prompt": "Do you have any tomatoes?",
+              "expectedAnswer": "Yes, I do. I have four."
+            },
+            {
+              "label": "3 green pepper",
+              "prompt": "Do you have any green peppers?",
+              "expectedAnswer": "Yes, I do. I have one."
+            }
+          ]
+        },
+        {
+          "order": 2,
+          "instruction": "The AI tutor asks the student to start the dialogue. Now the Tutor has the basket. The student asks the question.",
+          "type": "student_leads",
+          "imageDependency": "oral",
+          "items": [
+            {
+              "label": "4",
+              "prompt": "pineapple",
+              "expectedAnswer": "Do you have any pineapples?",
+              "reply": "No, I don’t have any."
+            },
+            {
+              "label": "5",
+              "prompt": "potatoes",
+              "expectedAnswer": "Do you have any potatoes?",
+              "reply": "Yes, I have one."
+            },
+            {
+              "label": "6",
+              "prompt": "fish",
+              "expectedAnswer": "Do you have any fish?",
+              "reply": "No, I don’t have any."
+            }
+          ]
+        }
+      ],
+      "referenceContent": {
+        "dialogues": [
+          [
+            "The question is",
+            "A: Do you have any apples?",
+            "B: Yes, I do. I have two. / No, I don’t. I don’t have any."
+          ],
+          [
+            "onion",
+            "A: Do you have any onions?",
+            "B: Yes, I have one."
+          ],
+          [
+            "2. tomatoes",
+            "A: Do you have any tomatoes?",
+            "B: Yes, I do. I have four."
+          ],
+          [
+            "3. green pepper",
+            "A: Do you have any green peppers?",
+            "B: Yes, I do. I have one."
+          ],
+          [
+            "4. pineapple",
+            "A: Do you have any pineapples?",
+            "B: No, I don’t have any."
+          ],
+          [
+            "5. potatoes",
+            "A: Do you have any potatoes?",
+            "B: Yes, I have one."
+          ],
+          [
+            "6. fish",
+            "A: Do you have any fish?",
+            "B: No, I don’t have any."
+          ]
+        ],
+        "vocabulary": [],
+        "grammarNotes": [
+          "In this lesson, you’ll learn to ask about food quantities.",
+          "The question is",
+          "Remember to use the plural in the question. “Do you have any apples? Do you have any oranges?",
+          "Now, let’s practice. You want to make dinner, but you need some ingredients.",
+          "1 onion, 2 tomatoes, 2 green peppers, 1 pineapple, 2 potatoes and half a fish.",
+          "Look at the basket. Ask if they have any of the items for your dinner. Then listen to the correct answers.",
+          "For example,",
+          "onion",
+          "2. tomatoes",
+          "3. green pepper",
+          "Now you have the basket. Answer the questions with “Yes, I have ___” or “No, I don’t have any”. Then listen to the correct answers.",
+          "4. pineapple",
+          "5. potatoes",
+          "6. fish",
+          "Let’s practice more on the platform."
+        ],
+        "tables": [],
+        "practicePhrases": []
+      },
+      "requiresImages": true,
+      "imageNote": "The AI Tutor explains the task – You want to make dinner, but you need some ingredients – 1 onion, 2 tomatoes, 2 green peppers, 1 pineapple, 2 potatoes and half a fish. The tutor shows the picture of the basket below. She asks the student if they have any of the foods that are necessary for the salad, using the following dialogues."
+    },
+    {
+      "code": "17C",
+      "title": "Reading – Metaphors and symbols in the Bible",
+      "skill": "Reading",
+      "order": 6,
+      "tasks": [],
+      "referenceContent": {
+        "dialogues": [],
+        "vocabulary": [
+          "manna – maná; flesh – carne; blood – sangue",
+          "the Old Testament – f",
+          "The New Testament – a",
+          "believe in Jesus – d, e"
+        ],
+        "grammarNotes": [
+          "In the Bible, Jesus compares himself with inanimate things. That is a metaphor, a symbol or a representation, for example, “Jesus is the door” (John 10). It is not a literal sentence, because Jesus is not really a door. It is just a symbol, a comparison.",
+          "You use a door to pass from one place to another place. With Jesus you pass from life on earth to eternal life with God, so that's why we say Jesus is a door!",
+          "The Bible has a lot of metaphors. Look at the sentences. Which verses from the book of John are food metaphors?",
+          "1. __ I am the bread of life. (6.48)",
+          "2. __ I am the light of the world. (8.12)",
+          "3. __ I am the door. (10.7)",
+          "4. __ I am the door of the sheep. (10.9)",
+          "5. __ I am the living bread which came down from heaven. (6.51)",
+          "6. __ I am the resurrection and the life. (11.25)",
+          "7. __ I am the way, the truth and the life. (14.6)",
+          "8. __ I am the true vine. (15.5)",
+          "The food metaphors are “I am the bread of life” and “I am the living bread that came down from heaven”.",
+          "Now read the passage from John 6. It says that Jesus is the bread of life. This text has some metaphors.",
+          "Pause the video and do exercises 1 to 3.",
+          "Jesus: I am the bread of life. Your fathers ate manna in the desert, but I am the living bread which comes from heaven. When you eat this bread, you have eternal life. This bread is my flesh. I give it for the life of the world.",
+          "The Jews: How can you give your flesh to eat?",
+          "Jesus: When you eat my flesh and drink my blood, you have life in you. My flesh is real food and my blood is real drink. When you eat my flesh and drink my blood, you have eternal life.",
+          "Adapted from John 6.48-56",
+          "And the answers are",
+          "1. Guess the meaning of the words manna, flesh, and blood.",
+          "2. In the text, the words bread, flesh, blood, eat, drink, and manna are symbols. What do they represent?",
+          "a. bread\t\t_________ the Old Testament",
+          "b. Jesus’ flesh\t\t_________ the New Testament",
+          "c. Jesus’ blood\t_________ Jesus’ sacrifice for the world",
+          "d. eat his flesh\t\t_________ believe in Jesus",
+          "e. drink his blood",
+          "f. manna",
+          "3. When you eat Jesus’ flesh you have",
+          "a. eternal life\t\t\tb. manna",
+          "And the answers are:",
+          "Jesus’ sacrifice for the world – b, c",
+          "a",
+          "Now let’s do more exercises on the platform."
+        ],
+        "tables": [],
+        "practicePhrases": []
+      },
+      "requiresImages": false,
+      "practiceNote": "Nenhuma tarefa para essa lição."
+    },
+    {
+      "code": "18A",
+      "title": "Presentation, Vocabulary and Grammar Count and non-count nouns",
+      "skill": "Presentation, Vocabulary and Grammar Count and non",
+      "order": 7,
+      "tasks": [],
+      "referenceContent": {
+        "dialogues": [],
+        "vocabulary": [],
+        "grammarNotes": [
+          "The name of this lesson is “Could you bring me a little water?”. In this lesson, you’ll learn more vocabulary about food or beverages. You’ll also learn a very important grammar concept about nouns (substantivos) – the concept of count and non-count nouns.",
+          "The Bible character in this lesson is Elijah. His story is in 1 Kings. In 1 Kings 17.10-14, Elijah visits a widow, the widow of Zarephtah. A widow is a woman who doesn’t have a husband, because he has died (ele faleceu). Do you know this story?",
+          "Look at the pictures. Read the story. Answer the questions.",
+          "Elijah and the Widow of Zarephtah",
+          "Elijah: I’m thirsty. Could you bring me a little water? Bring me, please, a little bread.",
+          "Widow: I don’t have any bread – just a handful of flour in a jar and a little oil in a jug.",
+          "Elijah: Don’t be afraid. First make some bread for me. Then make some bread for you and your son. This is what the Lord, the God of Israel says: “The jar of flour and the jug of oil will not end until there’s rain on the land!”",
+          "1.\tWho are the people in this story? ________________________________________________",
+          "2.\tHow does Elijah feel? _______________________________________________",
+          "3.\tDoes the woman have any children? How many_____________________________",
+          "And the answers are:",
+          "1.\tWho are the people in this story? Elijah, the widow of Zarephtah, and her son",
+          "2.\tHow does Elijah feel? He’s hungry and thirsty.",
+          "3.\tDoes the woman have any children? How many? Yes, she has one son.",
+          "Read the text again. There are four food items or beverages in the story. Find them.",
+          "The four food items in this story are:",
+          "- water (água)",
+          "- bread (pão)",
+          "- flour (farinha)",
+          "- oil (óleo)",
+          "Essa é uma linda história que descreve a provisão de Deus! Ele não deixou faltar o alimento para aquela família num momento de grande seca na terra de Israel. Ele continua fazendo o mesmo ainda hoje!",
+          "Mas voltando aos alimentos na casa da viúva:",
+          "These food items and beverages have one thing in common – they are non-count nouns. This type of noun doesn’t have a plural form. You don’t say one water, two waters, for example, or two breads, three oils, five flours. You only use these nouns in the singular form: water, bread, flour, oil.",
+          "Count nouns have a plural form, for example, bananas, avocados, apples, tomatoes. You count bananas, for example,",
+          "But with non-count nouns, to express quantity, you have to add a quantity expression.",
+          "COULD YOU GIVE ME A LITTLE WATER?",
+          "Bring me A LITTLE bread.",
+          "I only have a HANDFUL of flour",
+          "A LITTLE oil in a jug",
+          "Note that liquids and meats are non-count, but the animal is count. For example, crab and shrimp:",
+          "There are two crabs here. There are two shrimps on the plate,",
+          "but when you speak about the food, it’s non-count.",
+          "I love shrimp. / I don’t like crab.",
+          "Let’s do one more exercise. Look at the pictures of food and beverages. Are the nouns count or non-count?",
+          "And the answers are:",
+          "Count nouns: strawberry, lemon, watermelon",
+          "Non-count nouns: cabbage, milk, pork, tea, chicken",
+          "Remember: liquids are non-count! An exception is “coffee”. Informally, you can say “a coffee”. It means “a cup of coffee”.",
+          "Now let’s do more exercises on the platform."
+        ],
+        "tables": [],
+        "practicePhrases": []
+      },
+      "requiresImages": false,
+      "practiceNote": "Sem TAREFA para essa lição"
+    },
+    {
+      "code": "18B",
+      "title": "Vocabulary and Pronunciation – Ask about quantity",
+      "skill": "Vocabulary and Pronunciation",
+      "order": 8,
+      "tasks": [
+        {
+          "order": 1,
+          "instruction": "The AI Tutor shows the pictures and asks the student to describe it using the vocabulary about quantity, for example,\nNote: The Tutor corrects the pronunciation of de preposition OF in these phrases.",
+          "type": "student_answers",
+          "imageDependency": "visual",
+          "items": [
+            {
+              "prompt": "",
+              "expectedAnswer": "a can of soda"
+            }
+          ],
+          "itemsAreExamples": true
+        }
+      ],
+      "referenceContent": {
+        "dialogues": [],
+        "vocabulary": [
+          "a bottle of wine – a can of soda – a cup of coffee – a loaf of bread"
+        ],
+        "grammarNotes": [
+          "In this lesson, you’ll learn vocabulary about quantity with non-count nouns for food and beverages. Remember the story about Elijah and the widow of Zarephtah?",
+          "The food items in the story are:",
+          "- a little water",
+          "- a little bread",
+          "- a handful of flour in a jar",
+          "- a little oil in a jug",
+          "Well, to express quantity with non-count nouns, you use some expressions. Look at the pictures.",
+          "A box of cereal",
+          "A bottle of wine",
+          "A pitcher of juice",
+          "A can of soda",
+          "A cup of coffee",
+          "A glass of water",
+          "A pound of potatoes",
+          "A loaf of bread",
+          "A handful of coffee",
+          "Note: a pound is equivalent to about half a kilo",
+          "1 pound = 453 grams",
+          "Pitcher (American English) = jug (British English)",
+          "Attention to the pronunciation of the preposition OF the phrases, for example in “a cup of coffee” OF is a weak word, so you pronounce it with the schwa /E/ and the sound /v/, as in /Ev/. You can also pronounce it only with the schwa, no /v/, for example, a cup o’ coffee",
+          "Listen and repeat.",
+          "Now let’s practice this more on the platform."
+        ],
+        "tables": [],
+        "practicePhrases": []
+      },
+      "requiresImages": true,
+      "imageNote": "The AI Tutor shows the pictures and asks the student to describe it using the vocabulary about quantity, for example,"
+    },
+    {
+      "code": "18C",
+      "title": "Grammar – How much and How many",
+      "skill": "Grammar",
+      "order": 9,
+      "tasks": [
+        {
+          "order": 1,
+          "instruction": "The AI Tutor says a noun and asks the student to say HOW MUCH or HOW MANY, for example,\nThe words are coffee, milk (how much), bananas, tomatoes (how many), bread (how much), apples (how many)",
+          "type": "student_answers",
+          "imageDependency": "oral",
+          "items": [
+            {
+              "prompt": "coffee",
+              "expectedAnswer": "how much coffee"
+            }
+          ],
+          "itemsAreExamples": true
+        },
+        {
+          "order": 2,
+          "instruction": "The tutor shows the picture below and asks the questions from a) about it with coffee, milk, and bananas. The answers are,",
+          "type": "student_answers",
+          "imageDependency": "visual",
+          "items": [
+            {
+              "prompt": "How much coffee do you have?",
+              "expectedAnswer": "I have one cup."
+            },
+            {
+              "prompt": "How much milk do you have?",
+              "expectedAnswer": "I have 2 glasses."
+            },
+            {
+              "prompt": "How many bananas do you have?",
+              "expectedAnswer": "I have two."
+            }
+          ]
+        },
+        {
+          "order": 3,
+          "instruction": "The tutor asks the student to start the dialogue with tomatoes, bread, and apples.",
+          "type": "student_leads",
+          "imageDependency": "oral",
+          "items": [
+            {
+              "prompt": "tomatoes",
+              "expectedAnswer": "How many tomatoes do you have?",
+              "reply": "I have three."
+            },
+            {
+              "prompt": "bread",
+              "expectedAnswer": "How much bread do you have?",
+              "reply": "I have one loaf."
+            },
+            {
+              "prompt": "Bread",
+              "expectedAnswer": "How many apples do you have?",
+              "reply": "I have two.",
+              "schoolCheck": "Dica \"Bread\" com resposta \"How many apples do you have?\" — deveria ser \"apples\"? (pergunta 20)"
+            }
+          ]
+        }
+      ],
+      "referenceContent": {
+        "dialogues": [],
+        "vocabulary": [
+          "(coffee – non-count)",
+          "(cups – count)"
+        ],
+        "grammarNotes": [
+          "In this lesson, you’ll learn about How many and How Much. You use these two interrogative pronouns to ask about quantity.",
+          "With count nouns, you use “How many”, for example:",
+          "How many bananas?",
+          "How many tomatoes?",
+          "You use “How Much” with non-count nouns.",
+          "How much water do you drink?",
+          "How much coffee?",
+          "Note:",
+          "How much coffee do you have?",
+          "One cup.",
+          "How many cups of coffee do you have?",
+          "I have two cups.",
+          "Let’s do an exercise. Ask questions about the quantity of the items. Pause the video and complete with HOW MUCH or HOW MANY.",
+          "And the answers are:",
+          "How much coffee?",
+          "How much milk?",
+          "How many tomatoes?",
+          "How much bread?",
+          "How many apples?",
+          "Now look at the picture and answer the questions.",
+          "Example,",
+          "How much coffee do you have?",
+          "I have two cups.",
+          "And the answers are:",
+          "How much milk do you have?",
+          "I have 3 glasses.",
+          "How many bananas do you have?",
+          "I have two.",
+          "How many tomatoes do you have?",
+          "I have three.",
+          "How Much bread do you have?",
+          "I have one loaf.",
+          "How many apples do you have?",
+          "I have two.",
+          "Now please do more exercises about non-count nouns and their interrogative pronouns on the platform."
+        ],
+        "tables": [],
+        "practicePhrases": []
+      },
+      "requiresImages": true,
+      "imageNote": "The tutor shows the picture below and asks the questions from a) about it with coffee, milk, and bananas. The answers are,"
+    },
+    {
+      "code": "19A",
+      "title": "Presentation and Reading – Money in the Bible",
+      "skill": "Presentation and Reading",
+      "order": 10,
+      "tasks": [],
+      "referenceContent": {
+        "dialogues": [],
+        "vocabulary": [
+          "Metal – metal",
+          "Silver – prata",
+          "Gold – ouro",
+          "Copper – cobre",
+          "Nickel – níquel",
+          "Zinc – zinco",
+          "Plastic – plástico",
+          "Paper – papel",
+          "Coin – moeda",
+          "Bill – cédula"
+        ],
+        "grammarNotes": [
+          "The name of this lesson is “How Much is it?” That’s the question to ask about price. In this lesson we’ll talk about Money and Shopping for food, but first, let’s talk about Money in the Bible.",
+          "Look at the vocabulary. Translate the words.",
+          "metal",
+          "silver",
+          "gold",
+          "copper",
+          "nickel",
+          "zinc",
+          "plastic",
+          "paper",
+          "coin",
+          "bill",
+          "And the answers are:",
+          "Now read the passage about “Money in the Bible”. Say T for True and F for False.",
+          "MONEY IN THE BIBLE",
+          "The Bible mentions money in the Old and in the New Testament. In Abraham’s time, they used metals, especially silver. In about 560 B.C. they started using metal coins made of gold, silver, bronze, and copper.",
+          "In Jesus’ time, there were five different currencies in that region:",
+          "Currency\t\tNationality\tMaterial\t\tBiblical reference",
+          "Lepton \t\tJewish\t\tcopper\t\tMark 12.42, Luke 21.2",
+          "Dracma\t\tGreek\t\tsilver\t\tMatthew 17.24",
+          "Mina\t\t\tGreek\t\tsilver\t\tLuke 19.11-27",
+          "Denarius\t\tRoman\t\tsilver\t\tMatthew 20.1-16",
+          "Aureus (25 denarii)\tRoman\t\tgold\t\t\t\t-",
+          "From: Enciclopedia de Biblia e Teologia",
+          "1. Money is in the Bible only in the New Testament. ___________",
+          "2. In Abraham’s time, they used silver coins. ____________",
+          "3. In Jesus’ time, they used bronze coins. _______",
+          "4. The dracma was a Jewish coin. _________",
+          "5. The denarius was a gold coin. _________",
+          "And the answers are:",
+          "False. In the New and in the Old Testament.",
+          "True.",
+          "False. They used copper, silver, and gold medals.",
+          "False. It was a Greek coin.",
+          "False. It was a silver coin.",
+          "Now let’s see some vocabulary about American dollars? The American dollar is the currency they use in the United States. One dollar equals 100 cents. Their American dollar coins and bills have special names:",
+          "COINS",
+          "1 cent = 1 penny",
+          "5 cents = a nickel",
+          "10 cents = a dime",
+          "25 cents = a quarter",
+          "1 dollar = a dollar",
+          "BILLS",
+          "A dollar",
+          "A two",
+          "A five",
+          "A ten",
+          "A fifty",
+          "A hundred",
+          "Now let’s do more exercises about that on the platform."
+        ],
+        "tables": [],
+        "practicePhrases": []
+      },
+      "requiresImages": false,
+      "practiceNote": "Sem TAREFA para essa lição"
+    },
+    {
+      "code": "19B",
+      "title": "Grammar – Demonstratives",
+      "skill": "Grammar",
+      "order": 11,
+      "tasks": [
+        {
+          "order": 1,
+          "instruction": "The AI Tutor asks the student the following questions.",
+          "type": "student_answers",
+          "imageDependency": "oral",
+          "items": [
+            {
+              "prompt": "Are this and that for singular or plural?",
+              "expectedAnswer": "Singular."
+            },
+            {
+              "prompt": "Are these and those for singular or plural?",
+              "expectedAnswer": "Plural."
+            },
+            {
+              "prompt": "Are this and these for something close to you or far from you?",
+              "expectedAnswer": "close to you."
+            },
+            {
+              "prompt": "Are that and those for something close to you or far from you?",
+              "expectedAnswer": "Far from you."
+            }
+          ]
+        },
+        {
+          "order": 2,
+          "instruction": "The AI Tutor shows the pictures randomly and asks the student to describe the pictures using the demonstrative with the noun “bottle”.",
+          "type": "student_answers",
+          "imageDependency": "visual",
+          "items": [
+            {
+              "prompt": "THIS\t    \t\t       THAT\t\t\tTHESE\t\t\tTHOSE",
+              "expectedAnswer": null
+            },
+            {
+              "prompt": "",
+              "expectedAnswer": null,
+              "fromReference": true,
+              "imagePath": "book01/unit04/19B/task-2-item-2.png"
+            },
+            {
+              "prompt": "",
+              "expectedAnswer": null,
+              "fromReference": true,
+              "imagePath": "book01/unit04/19B/task-2-item-3.png"
+            },
+            {
+              "prompt": "",
+              "expectedAnswer": null,
+              "fromReference": true,
+              "imagePath": "book01/unit04/19B/task-2-item-4.png"
+            },
+            {
+              "prompt": "",
+              "expectedAnswer": null,
+              "fromReference": true,
+              "imagePath": "book01/unit04/19B/task-2-item-5.png"
+            }
+          ]
+        }
+      ],
+      "referenceContent": {
+        "dialogues": [],
+        "vocabulary": [],
+        "grammarNotes": [
+          "In this lesson, you’ll learn an important grammar topic for this lesson –demonstratives. You use demonstratives to point to specific objects. There are four demonstratives in English:",
+          "This \tThat \tThese \tThose",
+          "For example, this bottle of water is near me. It’s close to me.",
+          "That bottle of water is far from me.",
+          "These bottles of water are close to me. Those bottles of water are far from me.",
+          "So, complete:",
+          "Are this and that for singular or plural?",
+          "Are these and those for singular or plural?",
+          "Are this and these for something close to you or far from you?",
+          "Are that and those for something close to you or far from you?",
+          "THIS\t    \t\tTHAT\t\t\tTHESE\t\t\tTHOSE",
+          "Let’s practice this more on the platform."
+        ],
+        "tables": [],
+        "practicePhrases": []
+      },
+      "requiresImages": true,
+      "imageNote": "The AI Tutor shows the pictures randomly and asks the student to describe the pictures using the demonstrative with the noun “bottle”."
+    },
+    {
+      "code": "19C",
+      "title": "Pronunciation – /I/ and /i:/",
+      "skill": "Pronunciation",
+      "order": 12,
+      "tasks": [
+        {
+          "order": 1,
+          "instruction": "The AI Tutor asks the student to repeat the words after her and corrects the student, if necessary.",
+          "type": "student_repeats",
+          "imageDependency": "oral",
+          "items": [
+            {
+              "prompt": "/ I /\t/ i:/",
+              "expectedAnswer": null
+            },
+            {
+              "prompt": "this\tthese",
+              "expectedAnswer": null
+            },
+            {
+              "prompt": "give\tme",
+              "expectedAnswer": null
+            },
+            {
+              "prompt": "it’s\tplease",
+              "expectedAnswer": null
+            },
+            {
+              "prompt": "is\tfeel",
+              "expectedAnswer": null
+            }
+          ]
+        }
+      ],
+      "referenceContent": {
+        "dialogues": [],
+        "vocabulary": [],
+        "grammarNotes": [
+          "In this lesson, you’ll learn two vowel sounds – /I/ and /i:/.",
+          "For Portuguese speakers, these sounds are very close, so they are a little confusing, principalmente por causa da associação que fazemos com as vogais.",
+          "Listen:",
+          "o som /I/ é mais curto e aberto e na maioria das vezes é representado pela letra i (daí o problema para nós falantes de português, pois em português a letra i equivale ao som /i:/ e não pelo som /I/.",
+          "o som / i:/ é mais longo e fechado e na maioria das vezes é representado pelas letras e, ee ou ea, o que também nos faz confundir pois a letra e não equivale ao som / i:/ em português.",
+          "Listen and repeat some words with these sounds.",
+          "/ I /\t/ i:/",
+          "this\tthese",
+          "give\tme",
+          "it’s\tplease",
+          "is\tfeel",
+          "Let’s do more exercises about this on the platform."
+        ],
+        "tables": [],
+        "practicePhrases": []
+      },
+      "requiresImages": false
+    },
+    {
+      "code": "19D",
+      "title": "Speaking and Vocabulary – Shopping for Food",
+      "skill": "Speaking and Vocabulary",
+      "order": 13,
+      "tasks": [
+        {
+          "order": 1,
+          "instruction": "The AI Tutor explains the exercise to the student, that they will practice the dialogue for shopping for food into small parts. Debbie explains every part of the conversation, for example,\n*use the food items from Lesson 17A",
+          "type": "explain",
+          "imageDependency": "oral",
+          "items": [
+            {
+              "prompt": "Let’s practice part 1 – OFFER HELP",
+              "expectedAnswer": null
+            },
+            {
+              "prompt": "May I help you?",
+              "expectedAnswer": "Yes, I’d like some ___*, please."
+            }
+          ],
+          "itemsAreExamples": true
+        },
+        {
+          "order": 2,
+          "instruction": "After practicing Part 1, Debbie asks the student to start the dialogue.",
+          "type": "student_leads",
+          "imageDependency": "oral",
+          "items": []
+        },
+        {
+          "order": 3,
+          "instruction": "Debbie repeats the procedure in a) with the next dialogues.",
+          "type": "repeat_activity",
+          "imageDependency": "oral",
+          "items": [
+            {
+              "prompt": "Let’s practice part 2 – OFFER SOMETHING",
+              "expectedAnswer": null
+            },
+            {
+              "prompt": "Would you like some_______*? / Do you want some _____*?",
+              "expectedAnswer": "Yes, I’d like _____*, please. / No, thanks."
+            }
+          ]
+        },
+        {
+          "order": 4,
+          "instruction": "After practicing Part 2, Debbie asks the student to start the dialogue.",
+          "type": "student_leads",
+          "imageDependency": "oral",
+          "items": [
+            {
+              "prompt": "Let’s practice part 3 – ASK ABOUT PRICE",
+              "expectedAnswer": null
+            },
+            {
+              "label": "Singular",
+              "prompt": "How much is this / that ______*?",
+              "expectedAnswer": "It’s ________ (price)"
+            },
+            {
+              "label": "Plural",
+              "prompt": "How much are these / those_______*?",
+              "expectedAnswer": "They’re _______ (price)."
+            }
+          ]
+        },
+        {
+          "order": 5,
+          "instruction": "After practicing Part 3, Debbie asks the student to start the dialogue.\nNote about prices",
+          "type": "student_leads",
+          "imageDependency": "oral",
+          "items": [
+            {
+              "prompt": "4 for a dollar",
+              "expectedAnswer": null
+            },
+            {
+              "prompt": "50 cents each",
+              "expectedAnswer": null
+            },
+            {
+              "prompt": "Let’s practice part 4 – SAY WHAT YOU WANT",
+              "expectedAnswer": null,
+              "label": "50 cents a pound"
+            },
+            {
+              "prompt": "Give me _______. = I’ll take ______.",
+              "expectedAnswer": "Here (you are)."
+            }
+          ]
+        },
+        {
+          "order": 6,
+          "instruction": "After practicing Part 4, Debbie asks the student to start the dialogue.",
+          "type": "student_leads",
+          "imageDependency": "oral",
+          "items": [
+            {
+              "prompt": "Let’s practice part 5 – SAY THE TOTAL PRICE",
+              "expectedAnswer": null
+            },
+            {
+              "prompt": "Anything  else?",
+              "expectedAnswer": "No, that’s all."
+            },
+            {
+              "prompt": "That’ll be $_____.",
+              "expectedAnswer": null
+            }
+          ]
+        },
+        {
+          "order": 7,
+          "instruction": "After practicing Part 5, Debbie asks the student to start the dialogue.",
+          "type": "student_leads",
+          "imageDependency": "oral",
+          "items": []
+        },
+        {
+          "order": 8,
+          "instruction": "Debbie asks the student to practice the whole dialogue. Debbie is the salesperson and the student is the customer. Note: You can substitute the underlined phrases with other food, demonstratives and prices.",
+          "type": "student_answers",
+          "imageDependency": "oral",
+          "items": [
+            {
+              "prompt": "May I help you?",
+              "expectedAnswer": "Yes, I’d like some fruit and vegetables, please."
+            },
+            {
+              "prompt": "Would you like these grapes?",
+              "expectedAnswer": "How much are they?"
+            },
+            {
+              "prompt": "They’re 69¢ a pound.",
+              "expectedAnswer": "O.K. Give me a pound, please.\nAnd those apples? How much are they?"
+            },
+            {
+              "prompt": "Oh, these are 4 for a dollar. How many would you like?",
+              "expectedAnswer": "I’ll take four. Do you have any cabbage?"
+            },
+            {
+              "prompt": "Yes, these are only 50¢ a pound. Anything else?",
+              "expectedAnswer": "No, that’s all."
+            },
+            {
+              "prompt": "That’ll be $ 2.19.",
+              "expectedAnswer": null
+            }
+          ]
+        },
+        {
+          "order": 9,
+          "instruction": "After practicing the whole dialogue, Debbie asks the student to trade places – now the student is the salesperson and Debbie is the customer.",
+          "type": "student_leads",
+          "imageDependency": "oral",
+          "items": []
+        }
+      ],
+      "referenceContent": {
+        "dialogues": [
+          [
+            "SHOPPING FOR FOOD",
+            "A:\tMay I help you?",
+            "B:\tYes, I’d like some fruit and vegetables, please.",
+            "A:\tWould you like these grapes?",
+            "B:\tHow much are they?",
+            "A:\tThey’re 69¢ a pound.",
+            "B:\tO.K. Give me a pound, please."
+          ],
+          [
+            "A:\tOh, these are 4 for a dollar. How many would you like?",
+            "B:\tI’ll take four. Do you have any cabbage?",
+            "A:\tYes, these are only 50¢ a pound. Anything else?",
+            "B:\tNo, that’s all.",
+            "A:\tThat’ll be $ 2.19."
+          ],
+          [
+            "1 OFFER HELP – OFERECER AJUDA",
+            "A: May I help you? Posso ajudar?",
+            "B: Yes, I’d like___, please. Sim, eu gostaria de _____, por favor."
+          ],
+          [
+            "B: Yes, I’d like _____, please. / No, thanks. / Sim, eu gostaria de _____, por favor. / Não, obrigada."
+          ],
+          [
+            "Singular",
+            "A: How much is this / that ______? Quanto é/custa este/esse_____?",
+            "B: It’s ________. / É / Custa _."
+          ],
+          [
+            "Plural",
+            "A: How much are these / those_______? /Quanto são/custam estes/ esses ___?",
+            "B: They’re _______. / São / Custam ____."
+          ],
+          [
+            "4. SAY WHAT YOU WANT / DIZER O QUE VOCÊ QUER",
+            "A: Give me _______. = I’ll take ______. / Me dê _____ = Vou levar ______.",
+            "B: Here (you are). / Aqui está = Tá aqui."
+          ],
+          [
+            "5. SAY THE TOTAL PRICE / DIZER O PREÇO FINAL",
+            "A: Anything  else? / Mais alguma coisa?",
+            "B: No, that’s all. / Não. É só isso mesmo.",
+            "A: That’ll be $_____. / É___. Dá ___."
+          ]
+        ],
+        "vocabulary": [],
+        "grammarNotes": [
+          "In this lesson, you’ll learn to shop for food.",
+          "Listen and read this dialogue at a street market.",
+          "SHOPPING FOR FOOD",
+          "And those apples? How much are they?",
+          "Let’s split this dialogue into small parts?",
+          "1 OFFER HELP – OFERECER AJUDA",
+          "2. OFFER SOMETHING / OFERECER ALGO",
+          "A. Would you like some_______? / Do you want some _____? / A: Você gostaria de ________? Você quer ______?",
+          "3 ASK ABOUT PRICE",
+          "Singular",
+          "Plural",
+          "Note about prices",
+          "4 for a dollar = 4 por um dólar",
+          "50 cents each = 50 cents cada",
+          "50 cents a pound = 50 cents a libra",
+          "Pound é a medida usada nos Estados Unidos. Eles não usam o sistema métrico, como o quilo, grama, etc. Uma libra (one pound) equivale a 483 gramas.",
+          "4. SAY WHAT YOU WANT / DIZER O QUE VOCÊ QUER",
+          "5. SAY THE TOTAL PRICE / DIZER O PREÇO FINAL",
+          "OK, now let’s practice this more? Listen to the complete dialogue again and practice the pronunciation of the new words. Then, do more exercises on the platform!"
+        ],
+        "tables": [],
+        "practicePhrases": []
+      },
+      "requiresImages": false
+    },
+    {
+      "code": "20",
+      "title": "REVIEW LESSONS 16 TO 19",
+      "skill": null,
+      "order": 14,
+      "tasks": [
+        {
+          "order": 1,
+          "instruction": "A IA repete aleatoriamente todas as tarefas feitas nessa unidade, revisando o conteúdo, mas repetindo menos vezes. Se o aluno tiver dificuldades, sugerir retornar para as respectivas lições.",
+          "type": "review",
+          "imageDependency": "oral",
+          "items": []
+        }
+      ],
+      "referenceContent": {
+        "dialogues": [],
+        "vocabulary": [],
+        "grammarNotes": [
+          "The topic of these lessons is Food and Beverages.",
+          "The Bible characters were Jesus and Elijah and his beautiful story with the widow of Zarephtah. You’ve learned about God’s provision with our daily bread!",
+          "Grammar",
+          "count and non-count nouns",
+          "how much and how many",
+          "demonstratives",
+          "Vocabulary (about 100 words!)",
+          "about physical feelings,",
+          "food,",
+          "beverages",
+          "containers,",
+          "quantity,",
+          "money,",
+          "shopping for food",
+          "Pronunciation",
+          "Could you /kUdZE/",
+          "OF /Ev/ in phrases such as a cup of coffee",
+          "and the difference between the sounds /I/ and /i:/",
+          "Speaking",
+          "express physical states",
+          "make requests with Could you",
+          "express food quantity",
+          "shop for food.",
+          "Now let’s do some review exercises about Lessons 16 to 19 on the platform."
+        ],
+        "tables": [],
+        "practicePhrases": []
+      },
+      "requiresImages": false
+    }
+  ]
+}

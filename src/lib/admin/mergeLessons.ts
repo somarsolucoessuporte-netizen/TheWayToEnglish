@@ -11,6 +11,9 @@
 // - task images           → a task's imagePath (set by /admin's per-task
 //                           upload, it exists only in the database) is carried
 //                           over to the docx task with the same order
+// - item images           → come from the .docx itself (processar-unit.py
+//                           --images); hand edits to items (text, picture,
+//                           "Usar imagem") protect legacy_tasks as a whole
 
 /** The lesson columns a .docx import writes. */
 export const DOCX_LESSON_FIELDS = [
@@ -22,6 +25,7 @@ export const DOCX_LESSON_FIELDS = [
   "legacy_tasks",
   "requires_images",
   "image_note",
+  "source_excerpt",
 ] as const;
 
 export type DocxLessonField = (typeof DOCX_LESSON_FIELDS)[number];
@@ -38,6 +42,10 @@ export interface DocxLesson {
   referenceContent: unknown;
   requiresImages: boolean;
   imageNote?: string;
+  /** "Sem tarefa oral nessa lição" — the school's own red note. */
+  noTasksNote?: string;
+  /** The lesson's text as in the .docx, red lines marked. */
+  sourceExcerpt?: string;
 }
 
 export interface ExistingLesson {
@@ -94,10 +102,13 @@ export function docxLessonValues(lesson: DocxLesson): DocxLessonValues {
     skill: lesson.skill,
     order: lesson.order,
     reference_content: lesson.referenceContent,
-    practice_note: lesson.practiceNote ?? null,
+    // The "no task" note is red text too: it reaches the tutor with the
+    // practice note.
+    practice_note: [lesson.practiceNote, lesson.noTasksNote].filter(Boolean).join("\n") || null,
     legacy_tasks: lesson.tasks,
     requires_images: lesson.requiresImages,
     image_note: lesson.imageNote ?? null,
+    source_excerpt: lesson.sourceExcerpt ?? null,
   };
 }
 
@@ -124,4 +135,62 @@ export function planLessonMerge(existing: ExistingLesson[], fromDocx: DocxLesson
   const docxCodes = new Set(fromDocx.map((l) => l.code));
   plan.missingFromDocx = existing.filter((l) => !docxCodes.has(l.code)).map((l) => l.code);
   return plan;
+}
+
+// ------------------------------------------------- school adjustments --
+
+/** src/app-config/curriculum/ajustes-escola.json, for one unit: marks laid
+ * over what the .docx says — never a correction of the school's text.
+ * schoolCheck = "verificar com a escola" in /admin; disabled = the task is
+ * off until a decision (the tutor skips it). */
+export interface UnitAdjustments {
+  [lessonCode: string]: {
+    schoolChecks?: string[];
+    tasks?: {
+      order: number;
+      disabled?: string;
+      schoolCheck?: string;
+      items?: { match: string; schoolCheck: string }[];
+    }[];
+  };
+}
+
+type ItemLike = { prompt?: unknown; expectedAnswer?: unknown; schoolCheck?: unknown } & Record<string, unknown>;
+
+/** Applies the adjustments to the lessons read from a .docx (in place) and
+ * returns what could not be found — a lesson, task or item the .docx no
+ * longer has — so the caller reports it instead of failing silently. */
+export function applySchoolAdjustments(lessons: DocxLesson[], adjustments: UnitAdjustments | undefined): string[] {
+  const missing: string[] = [];
+  for (const [code, adjust] of Object.entries(adjustments ?? {})) {
+    const lesson = lessons.find((l) => l.code === code);
+    if (!lesson) {
+      missing.push(`${code}: lição não encontrada`);
+      continue;
+    }
+    if (adjust.schoolChecks?.length) {
+      const reference = (lesson.referenceContent && typeof lesson.referenceContent === "object" ? lesson.referenceContent : {}) as Record<string, unknown>;
+      lesson.referenceContent = { ...reference, schoolChecks: adjust.schoolChecks };
+    }
+    for (const taskAdjust of adjust.tasks ?? []) {
+      const task = asTasks(lesson.tasks).find((t) => t.order === taskAdjust.order);
+      if (!task) {
+        missing.push(`${code} task-${taskAdjust.order}: task não encontrada`);
+        continue;
+      }
+      if (taskAdjust.disabled) {
+        task.disabled = true;
+        task.disabledReason = taskAdjust.disabled;
+      }
+      if (taskAdjust.schoolCheck) task.schoolCheck = taskAdjust.schoolCheck;
+      const items = (Array.isArray(task.items) ? task.items : []) as ItemLike[];
+      for (const itemAdjust of taskAdjust.items ?? []) {
+        const needle = itemAdjust.match.toLowerCase();
+        const item = items.find((i) => `${i.prompt ?? ""}\n${i.expectedAnswer ?? ""}`.toLowerCase().includes(needle));
+        if (item) item.schoolCheck = itemAdjust.schoolCheck;
+        else missing.push(`${code} task-${taskAdjust.order}: item "${itemAdjust.match}" não encontrado`);
+      }
+    }
+  }
+  return missing;
 }

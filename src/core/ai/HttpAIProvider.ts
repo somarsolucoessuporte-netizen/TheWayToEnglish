@@ -17,7 +17,23 @@ const CHAT_TIMEOUT_MS = 15000;
 export class HttpAIProvider implements AIProvider {
   constructor(private readonly endpoint: string = "/api/chat") {}
 
+  /** See setLesson. */
+  private lesson: { id: string; code: string } | undefined;
+  /** The item the tutor's last reply asked (TutorResponse.item) — /api/chat
+   * checks the student's answer against that item's expected answer. */
+  private lastItem: string | undefined;
+
+  /** The lesson being taught, by id: lesson codes repeat across units
+   * (Book 2 / Unit 1 has a 1A too), and the orchestrator only carries the
+   * code. Sent with every request whose currentLessonCode is that code. */
+  setLesson(lesson: { id: string; code: string } | undefined): void {
+    this.lesson = lesson;
+    this.lastItem = undefined;
+  }
+
   async send(messages: Message[], opts?: AIOptions): Promise<TutorResponse> {
+    const lesson =
+      this.lesson && opts?.currentLessonCode?.toLowerCase() === this.lesson.code.toLowerCase() ? this.lesson : undefined;
     const controller = new AbortController();
     const timeoutId = window.setTimeout(() => controller.abort(), CHAT_TIMEOUT_MS);
     const onExternalAbort = () => controller.abort();
@@ -34,6 +50,8 @@ export class HttpAIProvider implements AIProvider {
           detectedLanguage: opts?.detectedLanguage,
           studentName: opts?.studentName,
           currentLessonCode: opts?.currentLessonCode,
+          lessonId: lesson?.id,
+          currentItemId: lesson ? this.lastItem : undefined,
           timeWarning: opts?.timeWarning,
           attemptCount: opts?.attemptCount,
           nudge: opts?.nudge,
@@ -59,7 +77,8 @@ export class HttpAIProvider implements AIProvider {
       throw new Error(`Chat HTTP ${response.status}: ${errText.slice(0, 300)}`);
     }
 
-    const data = await response.json();
-    return TutorResponseSchema.parse(data);
+    const data = TutorResponseSchema.parse(await response.json());
+    if (lesson && lesson === this.lesson) this.lastItem = data.item;
+    return data;
   }
 }

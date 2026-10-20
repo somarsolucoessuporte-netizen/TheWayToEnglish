@@ -88,4 +88,40 @@ assert.deepEqual(carryImagePaths(stripImagePaths(stored), stored), stored, 'JSON
 assert.deepEqual(carryImagePaths([{ order: 1, instruction: 'x', type: 't', imagePath: 'forged' }], []),
   [{ order: 1, instruction: 'x', type: 't' }], 'imagePath typed into the JSON editor is ignored');
 
-console.log('admin merge: hand-edited fields, status and task images are preserved on .docx import');
+// The school's "no task" note (red) reaches the tutor with the practice
+// note; the lesson's original text goes to source_excerpt.
+const noTask = planLessonMerge([], [docxLesson('11C', { tasks: [], practiceNote: 'Pratique 2x.', noTasksNote: 'Sem tarefa oral nessa lição.', sourceExcerpt: 'Lesson 11C\n[VERMELHO] Sem tarefa' })]).inserts[0];
+assert.equal(noTask.practice_note, 'Pratique 2x.\nSem tarefa oral nessa lição.');
+assert.equal(noTask.source_excerpt, 'Lesson 11C\n[VERMELHO] Sem tarefa');
+
+// ajustes-escola.json marks, never rewrites: a task off, items and the lesson
+// flagged "verificar com a escola"; what it can't find is reported.
+const { applySchoolAdjustments } = loadTs(path.resolve(__dirname, '../src/lib/admin/mergeLessons.ts'));
+const lessons = [docxLesson('6A', { tasks: [
+  { order: 2, instruction: 'describe', type: 'x', items: [{ prompt: 'Joel – hug Mirna', expectedAnswer: 'Joel is hugging Mirna.' }] },
+  { order: 3, instruction: 'show a picture', type: 'x', items: [] },
+] })];
+const missing = applySchoolAdjustments(lessons, {
+  '6A': {
+    schoolChecks: ['título'],
+    tasks: [
+      { order: 3, disabled: 'sem fotos do aluno' },
+      { order: 2, items: [{ match: 'hugging', schoolCheck: 'confirmar' }, { match: 'nope', schoolCheck: 'x' }] },
+    ],
+  },
+  '9Z': { schoolChecks: ['x'] },
+});
+assert.equal(lessons[0].tasks[1].disabled, true);
+assert.equal(lessons[0].tasks[1].disabledReason, 'sem fotos do aluno');
+assert.equal(lessons[0].tasks[0].items[0].schoolCheck, 'confirmar');
+assert.equal(lessons[0].tasks[0].items[0].expectedAnswer, 'Joel is hugging Mirna.', 'the school text is kept as written');
+assert.deepEqual(lessons[0].referenceContent.schoolChecks, ['título']);
+assert.deepEqual(missing, ['6A task-2: item "nope" não encontrado', '9Z: lição não encontrada']);
+
+// The real adjustments file matches the material as processed.
+const adjustments = JSON.parse(fs.readFileSync(path.resolve(__dirname, '../src/app-config/curriculum/ajustes-escola.json'), 'utf8'));
+const sixA = JSON.parse(fs.readFileSync(path.resolve(__dirname, '../src/app-config/curriculum/book02-unit02.json'), 'utf8')).lessons.find((l) => l.code === '6A');
+assert.equal(adjustments['book02/unit02']['6A'].tasks[0].order, 3);
+assert.equal(sixA.tasks[2].disabled, true, '6A task 3 is off in the loaded JSON');
+
+console.log('admin merge: hand-edited fields, status and task images are preserved on .docx import; school adjustments only mark');

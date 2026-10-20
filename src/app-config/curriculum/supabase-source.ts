@@ -2,13 +2,15 @@ import "server-only";
 import { createServiceClient } from "../../lib/supabase";
 import {
   buildCurriculumLesson,
-  lessonTitle,
+  principlesOf,
   type CurriculumLesson,
   type CurriculumReferenceContent,
   type CurriculumTask,
   type LessonUnitInfo,
   type RawLessonPlan,
+  type StoredPrinciples,
 } from "./json-source";
+import { findLessonByRef, nextLessonAfter } from "./lookup";
 
 // The curriculum read from Supabase — the same functions as json-source.ts,
 // async. The app reads it through ./index.ts (loadSnapshot + JSON fallback);
@@ -17,8 +19,8 @@ import {
 // Server-only: uses SUPABASE_SERVICE_ROLE_KEY (RLS has no policies, so only
 // the service role can read). Never import this from a "use client" file.
 //
-// Like index.ts, lessons are addressed by code alone — fine while the
-// database holds a single unit, ambiguous once a second unit repeats "A".
+// Lessons are addressed by id ("book02-unit01-1a" — book + unit + code; see
+// lookup.ts), a bare code meaning the first match in course order.
 
 interface LessonRow {
   code: string;
@@ -36,14 +38,9 @@ interface UnitRow {
   code: string;
   title: string | null;
   order: number;
-  global_principles: string[] | null;
+  global_principles: StoredPrinciples;
   book: { code: string; title: string; order: number };
   lessons: LessonRow[];
-}
-
-interface LoadedLesson {
-  plan: RawLessonPlan;
-  unitInfo: LessonUnitInfo;
 }
 
 const supabase = createServiceClient;
@@ -77,69 +74,58 @@ async function loadUnits(): Promise<UnitRow[]> {
   return units;
 }
 
-async function loadLessons(): Promise<LoadedLesson[]> {
+function unitInfoOf(unit: UnitRow): LessonUnitInfo {
+  const { principles, inheritedFrom } = principlesOf(unit.global_principles);
+  return {
+    book: unit.book.title,
+    unit: unit.title ?? unit.code,
+    bookCode: unit.book.code,
+    unitCode: unit.code,
+    principles,
+    ...(inheritedFrom && { principlesInheritedFrom: inheritedFrom }),
+  };
+}
+
+async function loadLessons(): Promise<CurriculumLesson[]> {
   const units = await loadUnits();
   return units.flatMap((unit) => {
-    const unitInfo: LessonUnitInfo = {
-      book: unit.book.title,
-      unit: unit.title ?? unit.code,
-      idPrefix: `${unit.book.code}-${unit.code}`,
-    };
-    return unit.lessons.map((row) => ({ plan: toPlan(row), unitInfo }));
+    const unitInfo = unitInfoOf(unit);
+    return unit.lessons.map((row) => buildCurriculumLesson(toPlan(row), unitInfo));
   });
-}
-
-function normalize(code: string): string {
-  return code.trim().toLowerCase();
-}
-
-function build({ plan, unitInfo }: LoadedLesson): CurriculumLesson {
-  return buildCurriculumLesson(plan, unitInfo);
 }
 
 /** Everything the app needs in one query: every lesson (book → unit → lesson
  * order) plus the first unit's global principles. Throws on any Supabase
  * error or an empty curriculum, so the caller can fall back to the JSON. */
 export async function loadSnapshot(): Promise<{ lessons: CurriculumLesson[]; principles: string[] }> {
-  const units = await loadUnits();
-  const lessons = units.flatMap((unit) => {
-    const unitInfo: LessonUnitInfo = { book: unit.book.title, unit: unit.title ?? unit.code, idPrefix: `${unit.book.code}-${unit.code}` };
-    return unit.lessons.map((row) => buildCurriculumLesson(toPlan(row), unitInfo));
-  });
+  const lessons = await loadLessons();
   if (lessons.length === 0) throw new Error("Supabase curriculum is empty");
-  return { lessons, principles: units[0]?.global_principles ?? [] };
+  return { lessons, principles: lessons[0].globalPrinciples };
 }
 
 export async function getGlobalPrinciples(): Promise<string[]> {
-  const [first] = await loadUnits();
-  return first?.global_principles ?? [];
+  const [first] = await loadLessons();
+  return first?.globalPrinciples ?? [];
 }
 
-export async function getLessonByCode(code: string): Promise<CurriculumLesson | undefined> {
-  const normalized = normalize(code);
-  const found = (await loadLessons()).find((l) => l.plan.code.toLowerCase() === normalized);
-  return found ? build(found) : undefined;
+export async function getLessonByCode(ref: string): Promise<CurriculumLesson | undefined> {
+  return findLessonByRef(await loadLessons(), ref);
 }
 
 export async function getFirstLesson(): Promise<CurriculumLesson> {
   const [first] = await loadLessons();
   if (!first) throw new Error("No lessons in the Supabase curriculum");
-  return build(first);
+  return first;
 }
 
-export async function getCourseOverview(): Promise<{ lessonCode: string; title: string }[]> {
-  return (await loadLessons()).map(({ plan }) => ({ lessonCode: plan.code, title: lessonTitle(plan) }));
+export async function getCourseOverview(): Promise<{ id: string; lessonCode: string; title: string }[]> {
+  return (await loadLessons()).map((l) => ({ id: l.id, lessonCode: l.lessonCode, title: l.title }));
 }
 
 export async function getAllLessons(): Promise<CurriculumLesson[]> {
-  return (await loadLessons()).map(build);
+  return loadLessons();
 }
 
-export async function getNextLesson(code: string): Promise<CurriculumLesson | undefined> {
-  const normalized = normalize(code);
-  const lessons = await loadLessons();
-  const index = lessons.findIndex((l) => l.plan.code.toLowerCase() === normalized);
-  if (index === -1) return undefined;
-  const next = lessons[index + 1];
-  return next ? build(next) : undefined;
+export async function getNextLesson(ref: string): Promise<CurriculumLesson | undefined> {
+  return nextLessonAfter(await loadLessons(), ref);
 }

@@ -2,7 +2,7 @@
 
 import { startTransition, useActionState, useEffect, useState } from "react";
 import { usesImage } from "@/lib/admin/tasks";
-import { importDocx, saveLesson, saveTask, uploadTaskImage, type ActionResult } from "./actions";
+import { importDocx, saveLesson, saveTask, saveUnitPrinciples, uploadTaskImage, type ActionResult } from "./actions";
 
 function Result({ state }: { state: ActionResult | null }) {
   if (!state) return null;
@@ -173,6 +173,12 @@ export interface TaskEditorValues {
   type?: string;
   instruction?: string;
   imageDependency?: string;
+  disabled?: boolean;
+  disabledReason?: string;
+  schoolCheck?: string;
+  /** Tasks with items get their pictures per item (see ItemsEditor) — the
+   * old per-task upload only shows for tasks without items. */
+  hasItems?: boolean;
 }
 
 /** One task: editable instruction, "Usar imagem" toggle and its own Salvar.
@@ -189,12 +195,20 @@ export function TaskEditor({
 }) {
   const [state, action, pending] = useActionState(saveTask, null);
   const [useImage, setUseImage] = useState(usesImage(task.imageDependency));
+  const [disabled, setDisabled] = useState(!!task.disabled);
   return (
     <>
       <div className="admin-task-meta">
         {task.type && <span className="admin-tag">{task.type}</span>}
         {useImage && <span className="admin-badge-image">requer imagem</span>}
+        {disabled && <span className="admin-badge-off">desativada — a Debbie pula</span>}
       </div>
+      {task.disabled && task.disabledReason && <p className="admin-hint">Desativada: {task.disabledReason}</p>}
+      {task.schoolCheck && (
+        <div className="admin-school-check">
+          <strong>Verificar com a escola:</strong> {task.schoolCheck}
+        </div>
+      )}
       <form
         className="admin-task-form"
         onSubmit={(event) => {
@@ -218,6 +232,10 @@ export function TaskEditor({
             <input type="checkbox" name="useImage" checked={useImage} onChange={(e) => setUseImage(e.currentTarget.checked)} />
             Usar imagem
           </label>
+          <label className="admin-checkbox-inline">
+            <input type="checkbox" name="disabled" checked={disabled} onChange={(e) => setDisabled(e.currentTarget.checked)} />
+            Desativada
+          </label>
           <button type="submit" className="admin-button is-small" disabled={pending}>
             {pending ? "Salvando…" : "Salvar"}
           </button>
@@ -226,9 +244,54 @@ export function TaskEditor({
       </form>
       {/* Hidden, not unmounted: an image uploaded in this visit stays on
           screen if the box is checked again. */}
-      <div hidden={!useImage}>
-        <TaskImageUpload lessonId={lessonId} order={task.order} initialUrl={initialUrl} />
-      </div>
+      {!task.hasItems && (
+        <div hidden={!useImage}>
+          <TaskImageUpload lessonId={lessonId} order={task.order} initialUrl={initialUrl} />
+        </div>
+      )}
     </>
+  );
+}
+
+/** A unit's global principles, one per line. Inherited ones (copied from
+ * Book 1 / Unit 1 while the school hasn't answered) are flagged; saving
+ * makes them the unit's own. */
+export function UnitPrinciplesForm({
+  unitId,
+  principles,
+  inheritedFrom,
+}: {
+  unitId: string;
+  principles: string[];
+  inheritedFrom?: string;
+}) {
+  const [state, action, pending] = useActionState(saveUnitPrinciples, null);
+  return (
+    <details className="admin-details admin-principles">
+      <summary>
+        Princípios gerais ({principles.length})
+        {inheritedFrom && <span className="admin-badge-inherited">herdado da {inheritedFrom} — aguardando escola</span>}
+      </summary>
+      <form
+        className="admin-form"
+        onSubmit={(event) => {
+          event.preventDefault();
+          const formData = new FormData(event.currentTarget);
+          startTransition(() => action(formData));
+        }}
+      >
+        <input type="hidden" name="unitId" value={unitId} />
+        <label>
+          <span>Um princípio por linha — a Debbie segue estes em todas as lições da unit.</span>
+          <textarea name="principles" rows={10} defaultValue={principles.join("\n")} />
+        </label>
+        <div className="admin-actions">
+          <button type="submit" className="admin-button is-small" disabled={pending}>
+            {pending ? "Salvando…" : "Salvar princípios"}
+          </button>
+        </div>
+        <Result state={state} />
+      </form>
+    </details>
   );
 }

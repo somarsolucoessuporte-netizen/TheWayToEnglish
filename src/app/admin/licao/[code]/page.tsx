@@ -2,7 +2,8 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { connection } from "next/server";
 import { requireAdmin } from "@/lib/admin/auth";
-import { LESSON_STATUSES, findLessons, listSteps, signImagePaths } from "@/lib/admin/data";
+import { LESSON_STATUSES, findLessons, listLessonFolderImages, listSteps, signImagePaths } from "@/lib/admin/data";
+import { TaskItemsEditor, UnlinkedImages, type EditorItem } from "../../ItemsEditor";
 import { stripImagePaths } from "@/lib/admin/mergeLessons";
 import { releaseField } from "../../actions";
 import { DataError } from "../../DataError";
@@ -15,6 +16,20 @@ interface TaskRow {
   instruction?: string;
   imageDependency?: string;
   imagePath?: string;
+  items?: EditorItem[];
+  disabled?: boolean;
+  disabledReason?: string;
+  schoolCheck?: string;
+}
+
+/** "…/pendentes/imagem-3-sugestao-task-2.png" → 2 (see processar-unit.py's export_images). */
+function suggestedTask(path: string): number | undefined {
+  const match = path.match(/-sugestao-task-(\d+)\.\w+$/);
+  return match ? Number(match[1]) : undefined;
+}
+
+function itemPaths(item: EditorItem): string[] {
+  return [item.imagePath, ...(item.extraImagePaths ?? [])].filter((p): p is string => typeof p === "string");
 }
 
 
@@ -63,16 +78,29 @@ export default async function AdminLessonPage({
   const tasks = (Array.isArray(lesson.legacy_tasks) ? (lesson.legacy_tasks as TaskRow[]) : [])
     .filter((t) => t && typeof t.order === "number")
     .sort((a, b) => a.order - b.order);
+  const usedPaths = new Set(
+    tasks.flatMap((t) => [t.imagePath, ...(t.items ?? []).flatMap(itemPaths)]).filter((p): p is string => typeof p === "string")
+  );
   let steps: Awaited<ReturnType<typeof listSteps>>;
   let imageUrls: Record<string, string>;
+  let folderImages: string[];
   try {
-    [steps, imageUrls] = await Promise.all([
-      listSteps(lesson.id),
-      signImagePaths(tasks.map((t) => t.imagePath).filter((p): p is string => typeof p === "string")),
-    ]);
+    [steps, folderImages] = await Promise.all([listSteps(lesson.id), listLessonFolderImages(lesson)]);
+    imageUrls = await signImagePaths(Array.from(new Set([...usedPaths, ...folderImages])));
   } catch (error) {
     return <DataError error={error} />;
   }
+  const unlinked = folderImages
+    .filter((p) => !usedPaths.has(p))
+    .map((path) => ({ path, url: imageUrls[path], suggestedTask: suggestedTask(path) }));
+  const linkTargets = tasks.flatMap((t) =>
+    (t.items ?? []).map((item, index) => ({
+      order: t.order,
+      index,
+      label: `Task ${t.order} · item ${index + 1}${item.imagePath ? " (troca a imagem)" : ""} — ${(item.prompt || item.expectedAnswer || "").slice(0, 60)}`,
+    }))
+  );
+  const reference = (lesson.reference_content ?? {}) as { schoolChecks?: string[] };
 
   return (
     <>
@@ -82,6 +110,18 @@ export default async function AdminLessonPage({
       <h1 className="admin-title">
         {lesson.code} — {lesson.title ?? "(sem título)"}
       </h1>
+
+      {(reference.schoolChecks ?? []).length > 0 && (
+        <div className="admin-card admin-school-check">
+          <h3>Verificar com a escola</h3>
+          <ul>
+            {reference.schoolChecks!.map((check) => (
+              <li key={check}>{check}</li>
+            ))}
+          </ul>
+          <p className="admin-hint">Gravado como a escola escreveu — nada foi corrigido por conta própria.</p>
+        </div>
+      )}
 
       {lesson.edited_fields.length > 0 && (
         <div className="admin-card">
@@ -132,14 +172,38 @@ export default async function AdminLessonPage({
                 <div className="admin-task-body">
                   <TaskEditor
                     lessonId={lesson.id}
-                    task={{ order: task.order, type: task.type, instruction: task.instruction, imageDependency: task.imageDependency }}
+                    task={{
+                      order: task.order,
+                      type: task.type,
+                      instruction: task.instruction,
+                      imageDependency: task.imageDependency,
+                      disabled: task.disabled,
+                      disabledReason: task.disabledReason,
+                      schoolCheck: task.schoolCheck,
+                      hasItems: (task.items ?? []).length > 0,
+                    }}
                     initialUrl={task.imagePath ? imageUrls[task.imagePath] : undefined}
                   />
+                  <details className="admin-details" open={(task.items ?? []).length > 0 && (task.items ?? []).length <= 12}>
+                    <summary>Itens ({(task.items ?? []).length})</summary>
+                    <TaskItemsEditor
+                      key={JSON.stringify(task.items ?? [])}
+                      lessonId={lesson.id}
+                      order={task.order}
+                      initialItems={task.items ?? []}
+                      imageUrls={imageUrls}
+                    />
+                  </details>
                 </div>
               </li>
             ))}
           </ol>
         )}
+      </div>
+
+      <div className="admin-card">
+        <h3>Imagens sem item ({unlinked.length})</h3>
+        <UnlinkedImages lessonId={lesson.id} images={unlinked} targets={linkTargets} />
       </div>
 
       <div className="admin-card">
@@ -150,6 +214,15 @@ export default async function AdminLessonPage({
         </p>
         <ReferenceContentEditor lessonId={lesson.id} initial={lesson.reference_content} />
       </div>
+
+      {lesson.source_excerpt && (
+        <div className="admin-card">
+          <details className="admin-details">
+            <summary>Texto original do .docx</summary>
+            <pre className="admin-source">{lesson.source_excerpt}</pre>
+          </details>
+        </div>
+      )}
 
       <div className="admin-card">
         <h3>Steps</h3>

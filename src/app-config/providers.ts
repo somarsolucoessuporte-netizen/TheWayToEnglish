@@ -7,7 +7,6 @@ import type { SpeechToTextProvider } from "@/core/stt/SpeechToTextProvider";
 import { BrowserSTTProvider } from "@/core/stt/BrowserSTTProvider";
 import { WhisperSTTProvider } from "@/core/stt/WhisperSTTProvider";
 
-import type { AIProvider } from "@/core/ai/AIProvider";
 import { HttpAIProvider } from "@/core/ai/HttpAIProvider";
 
 /**
@@ -26,4 +25,5 @@ export const speechProvider: SpeechProvider = new OpenAITTSProvider();
 export const sttProvider: SpeechToTextProvider = new WhisperSTTProvider();
 // export const sttProvider: SpeechToTextProvider = new BrowserSTTProvider("en-US");
 
-export const aiProvider: AIProvider = new HttpAIProvider();
+// Typed as the class (not AIProvider) for setLesson — see TutorApp.
+export const aiProvider = new HttpAIProvider();

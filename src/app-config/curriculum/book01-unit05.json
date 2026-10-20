@@ -1,0 +1,1466 @@
+{
+  "book": "Book 1",
+  "unit": "Unit 5",
+  "unitTheme": "Presentation Grammar; VOCABULARY; Pronunciation; Presentation and Grammar; Vocabulary and Speaking; Presentation and Vocabulary; Vocabulary; Reading; Speaking; Reading and Grammar; Bible Search; REVIEW LESSONS 21 TO 24",
+  "sourceFile": "THE WAY for AI_Book 1_Unit 5_prompts.docx",
+  "globalPrinciples": [],
+  "tutorIdentity": {
+    "name": "Debbie Ann Pamp",
+    "age": 28,
+    "nationality": "Brazilian",
+    "occupation": "AI Tutor"
+  },
+  "lessons": [
+    {
+      "code": "21A",
+      "title": "Presentation Grammar – the Imperative",
+      "skill": "Presentation Grammar",
+      "order": 1,
+      "tasks": [
+        {
+          "order": 1,
+          "instruction": "Debbie tells the Student to complete the commandments, correcting grammar and pronunciation.",
+          "type": "student_answers",
+          "imageDependency": "oral",
+          "items": [
+            {
+              "prompt": "________ no other God but me.",
+              "expectedAnswer": "Have"
+            },
+            {
+              "prompt": "________ your father and your mother.",
+              "expectedAnswer": "Honor"
+            },
+            {
+              "prompt": "________ false testimony.",
+              "expectedAnswer": "Do not give"
+            },
+            {
+              "prompt": "________ the name of the Lord in vain.",
+              "expectedAnswer": "Do not take"
+            },
+            {
+              "prompt": "______ an idol. ______ bow down to them. _____ worship them.",
+              "expectedAnswer": "Do not make – Do not bow down – Do not worship"
+            },
+            {
+              "prompt": "______ adultery.",
+              "expectedAnswer": "Do not commit"
+            }
+          ]
+        },
+        {
+          "order": 2,
+          "instruction": "Debbie asks the student questions about the commandments, correcting them, if necessary.",
+          "type": "student_answers",
+          "imageDependency": "oral",
+          "items": [
+            {
+              "prompt": "What is the first commandment?",
+              "expectedAnswer": "Have no other god but me."
+            },
+            {
+              "prompt": "What commandment is about your parents?",
+              "expectedAnswer": "Honor your father and your mother."
+            },
+            {
+              "prompt": "What commandment is about your husband or your wife?",
+              "expectedAnswer": "Do not commit adultery."
+            },
+            {
+              "prompt": "What commandment is about idols? (3 actions)",
+              "expectedAnswer": "Do not make an idol. Do not bow down to them. Do not worship them."
+            }
+          ]
+        }
+      ],
+      "referenceContent": {
+        "dialogues": [],
+        "vocabulary": [
+          "Make – bow down – worship",
+          "Affirmative – have – observe – honor"
+        ],
+        "grammarNotes": [
+          "In this lesson, you’ll learn the 10 Commandments in English.",
+          "God gave Moses the 10 Commandments in a tablet at Mount Sinai. That story is in Exodus 20.",
+          "Before you read the 10 Commandments, can you remember them in Portuguese. Take your time and think about it.",
+          "Now here they are in English. How many can you remember?",
+          "Have no other God but me.",
+          "Do not make an idol of anything in heaven or on earth or under the earth. Do not bow down to them or worship them.",
+          "Do not take the name of the Lord your God in vain.",
+          "Observe the Sabbath and keep it holy.",
+          "5. Honor your father and your mother.",
+          "6. Do not murder.",
+          "7. Do not commit adultery.",
+          "8. Do not steal.",
+          "9. Do not give false testimony.",
+          "10. Do not covet your neighbor’s house.",
+          "From: The Good News Bible, Exodus 20",
+          "Guess where the verbs in each commandment are. For example, 1 Have",
+          "Pause the video and write down the verbs. In some commandments, there are 2 or 3 verbs.",
+          "And the answers are:",
+          "Have",
+          "Take",
+          "Observe",
+          "Honor",
+          "Murder",
+          "Commit",
+          "Steal",
+          "Give",
+          "Covet",
+          "The verbs in the 10 Commandments are",
+          "a. in the simple present",
+          "b. in the imperative",
+          "If you guessed “b. the imperative”, you’re right. This form of the verb is good for commands (orders) or Instructions.",
+          "Now, look at the verbs. Which are affirmative? Which are negative?",
+          "Negative – do not make – do not bow down – do not worship – do not murder – do not commit – do not steal – do not give – do not covet",
+          "As you can see, you form the imperative with the infinitive (e.g., to do, that is, the name of the verb)",
+          "a. with TO",
+          "b. without TO",
+          "The answer is b. WITHOUT to",
+          "You form the imperative with the infinitive form of the verb without TO.",
+          "In the negative, add DO NOT before the verb.",
+          "In informal situations and in speaking, use the contraction “Don’t”.",
+          "The imperative is always in the second person.",
+          "(You) Honor your father and your mother.",
+          "When the imperative involves the First person I or we, you use LET US + verb.",
+          "Informally and in speaking, use the contraction Let’s (Let us).",
+          "Let us go (you and me).",
+          "Let´s go.",
+          "It’s polite to use PLEASE with imperatives.",
+          "Now please do more exercises about the imperative form on the platform and let’s practice this more!"
+        ],
+        "tables": [],
+        "practicePhrases": []
+      },
+      "requiresImages": false
+    },
+    {
+      "code": "21B",
+      "title": "VOCABULARY – Action verbs",
+      "skill": "VOCABULARY",
+      "order": 2,
+      "tasks": [
+        {
+          "order": 1,
+          "instruction": "The AI Tutor suggests a translation exercise. She asks to use the imperative with informal language, with the contraction “don’t” or “let’s”, correcting the student if necessary.",
+          "type": "translate",
+          "imageDependency": "oral",
+          "items": [
+            {
+              "prompt": "How do you say, “Fique em pé”",
+              "expectedAnswer": "Stand up”"
+            },
+            {
+              "prompt": "How do you say, “Por favor, não fale aqui.”",
+              "expectedAnswer": "“Please, don’t talk here.”"
+            },
+            {
+              "prompt": "How do you say, “Vamos dançar”",
+              "expectedAnswer": "Let’s dance"
+            },
+            {
+              "prompt": "How do you say, “Sente-se, por favor”",
+              "expectedAnswer": "Sit down, please."
+            },
+            {
+              "prompt": "How do you say, “Corra”",
+              "expectedAnswer": "Run."
+            },
+            {
+              "prompt": "How do you say, “Está tão quente. Abre a janela, por favor.”",
+              "expectedAnswer": "It’s so hot. Open the window, please."
+            },
+            {
+              "prompt": "How do you say, “Me dá um copo com água, por favor”",
+              "expectedAnswer": "Give me a glass of water, please."
+            }
+          ]
+        }
+      ],
+      "referenceContent": {
+        "dialogues": [],
+        "vocabulary": [],
+        "grammarNotes": [
+          "Let’s learn more verbs. Let’s learn about ACTION VERBS. These verbs describe actions, for example:",
+          "SING, PRAY, RUN, DRIVE A CAR, RIDE A BIKE, READ, SLEEP, TALK, DANCE, STAND UP, SIT DOWN, KNEEL DOWN",
+          "Let’s practice this vocabulary about action verbs and the imperative form. Let’s play a game! The name of the game is “Simon says”. Literalmente em português Simon says quer dizer “O Simon disse”, ou seja, deu uma ordem. Tem um jogo semelhante que chamamos de “O Rei mandou”. Como Jesus é o nosso Rei, vamos mudar o nome do jogo para “Jesus says”. When I say, “Jesus says, “Stand up”, you stand up! When I say, “Dance”, you dance. Do you understand?",
+          "Let’s see an example with Dudu and Samuel.",
+          "Jesus says, “Stand up”. Jesus says, “Dance”. Jesus says, “Drive a car”. Jesus says, “Run”. Jesus says, “Ride a bike”.  Jesus says, “Talk”. Jesus says, “Sing”. Jesus says, “Sleep”. Jesus says, “Kneel down”. Jesus says, “Pray”. Very good”!",
+          "Assista ao vídeo novamente e tire o som. Write the action verbs. Then listen again with the sound and check your answers.",
+          "The answers are: STAND UP, DANCE, DRIVE A CAR, RUN, RIDE A BIKE, TALK, SING, SLEEP, KNEEL DOWN, PRAY",
+          "Agora, você que está nos assistindo, quer participar da brincadeira? Siga as ordens de Jesus também!",
+          "Listen to the video again and follow Jesus’ orders!",
+          "Now let’s do more exercises on the platform."
+        ],
+        "tables": [],
+        "practicePhrases": []
+      },
+      "requiresImages": false
+    },
+    {
+      "code": "21C",
+      "title": "Pronunciation – Vowel sounds",
+      "skill": "Pronunciation",
+      "order": 3,
+      "tasks": [
+        {
+          "order": 1,
+          "instruction": "Debbie shows a random word from the chart below and asks the student to pronounce them, correcting the pronunciation of the vowel sounds, if necessary.",
+          "type": "student_reads",
+          "imageDependency": "oral",
+          "items": [
+            {
+              "label": "eI",
+              "prompt": "take",
+              "expectedAnswer": null
+            },
+            {
+              "label": "eI",
+              "prompt": "pray",
+              "expectedAnswer": null
+            },
+            {
+              "label": "aU",
+              "prompt": "Bow",
+              "expectedAnswer": null
+            },
+            {
+              "label": "i:",
+              "prompt": "steal",
+              "expectedAnswer": null
+            },
+            {
+              "label": "i:",
+              "prompt": "keep",
+              "expectedAnswer": null
+            },
+            {
+              "label": "i:",
+              "prompt": "sleep",
+              "expectedAnswer": null
+            },
+            {
+              "label": "i:",
+              "prompt": "kneel",
+              "expectedAnswer": null
+            },
+            {
+              "label": "i:",
+              "prompt": "read",
+              "expectedAnswer": null
+            },
+            {
+              "label": "∂",
+              "prompt": "covet",
+              "expectedAnswer": null
+            },
+            {
+              "label": "∂",
+              "prompt": "run",
+              "expectedAnswer": null
+            },
+            {
+              "label": "∂",
+              "prompt": "up",
+              "expectedAnswer": null
+            },
+            {
+              "label": "∂r",
+              "prompt": "worship",
+              "expectedAnswer": null
+            },
+            {
+              "label": "∂r",
+              "prompt": "observe",
+              "expectedAnswer": null
+            },
+            {
+              "label": "∂r",
+              "prompt": "murder",
+              "expectedAnswer": null
+            },
+            {
+              "label": "∂r",
+              "prompt": "worship",
+              "expectedAnswer": null
+            },
+            {
+              "label": "I",
+              "prompt": "Commit",
+              "expectedAnswer": null
+            },
+            {
+              "label": "I",
+              "prompt": "Give",
+              "expectedAnswer": null
+            },
+            {
+              "label": "I",
+              "prompt": "Sing",
+              "expectedAnswer": null
+            },
+            {
+              "label": "I",
+              "prompt": "Sit",
+              "expectedAnswer": null
+            },
+            {
+              "label": "A",
+              "prompt": "have",
+              "expectedAnswer": null
+            },
+            {
+              "label": "A",
+              "prompt": "dance",
+              "expectedAnswer": null
+            },
+            {
+              "label": "A",
+              "prompt": "stand",
+              "expectedAnswer": null
+            },
+            {
+              "label": "a:",
+              "prompt": "honor",
+              "expectedAnswer": null
+            }
+          ]
+        }
+      ],
+      "referenceContent": {
+        "dialogues": [],
+        "vocabulary": [],
+        "grammarNotes": [
+          "This is a pronunciation lesson about vowel sounds. Let’s review the vowels sounds we learned in Book 1 and learn some more.",
+          "Os símbolos que usaremos não são as letras. São os sons (fonemas) e esse é o alfabeto fonético, ok? Se você pesquisar a pronúncia da palavra num bom dicionário, você vai encontrar esses símbolos. Vou pronunciar o som e dar um exemplo de uma palavra com cada som.",
+          "eI\taU\ti:\tE\tEr\tI \tA\ta",
+          "eight\tdown\tthree\tfrom\tfirst\tsix\tblack\tGod",
+          "Let’s practice more. Let’s combine the verbs from the 10 Commandments with the verbs from the “Jesus says” vocabulary video.",
+          "Listen to the verbs. Note the underlined syllables. Write the verbs under the correct column, according to the sound. I’ll pronounce the verbs twice.",
+          "HAVE\t\tMAKE\t\tBOW DOWN\tWORSHIP\tOBSERVE\tHONOR\tMURDER",
+          "COMMIT\tSTEAL\t\tGIVE\t\tCOVET\tSING\t\tPRAY\t\tRUN",
+          "READ\t\tSLEEP\t\tDANCE\tSTAND UP\tSIT DOWN\tKNEEL DOWN",
+          "And the answers are",
+          "Now, listen to the verbs again. Practice the pronunciation of the verbs. Repeat the verbs.",
+          "Let’s do more exercises on the platform."
+        ],
+        "tables": [
+          {
+            "rows": [
+              [
+                "eI",
+                "aU",
+                "i:",
+                "∂",
+                "∂r",
+                "I",
+                "A",
+                "a:"
+              ],
+              [
+                "",
+                "Bow",
+                "steal",
+                "covet",
+                "worship",
+                "commit",
+                "have",
+                "honor"
+              ],
+              [
+                "take",
+                "",
+                "keep",
+                "run",
+                "observe",
+                "give",
+                "dance",
+                ""
+              ],
+              [
+                "pray",
+                "",
+                "sleep",
+                "up",
+                "murder",
+                "sing",
+                "stand",
+                ""
+              ],
+              [
+                "",
+                "",
+                "kneel",
+                "",
+                "worship",
+                "sit",
+                "",
+                ""
+              ],
+              [
+                "",
+                "",
+                "read",
+                "",
+                "",
+                "",
+                "",
+                ""
+              ]
+            ],
+            "caption": "And the answers are"
+          }
+        ],
+        "practicePhrases": []
+      },
+      "requiresImages": false
+    },
+    {
+      "code": "22A",
+      "title": "Presentation and Grammar – IN ON UNDER",
+      "skill": "Presentation and Grammar",
+      "order": 4,
+      "tasks": [
+        {
+          "order": 1,
+          "instruction": "Debbie shows this picture of this office and asks the student questions about where the objects are, correcting the pronunciation as well as the subject-verb agreement, if necessary.",
+          "type": "student_answers",
+          "imageDependency": "visual",
+          "items": [
+            {
+              "prompt": "Where are the pens?",
+              "expectedAnswer": "The pens are on the desk."
+            },
+            {
+              "prompt": "Where’s the pencil?",
+              "expectedAnswer": "The pencil is on the floor, under the chair."
+            },
+            {
+              "prompt": "Where’s the computer?",
+              "expectedAnswer": "The computer is on the desk."
+            }
+          ]
+        },
+        {
+          "order": 2,
+          "instruction": "Debbie asks the student to start the dialogue, asking where the objects are, correcting the pronunciation as well as the subject-verb agreement.",
+          "type": "student_leads",
+          "imageDependency": "oral",
+          "items": [
+            {
+              "prompt": "book",
+              "expectedAnswer": "Where’s the book?",
+              "reply": "It’s in the drawer."
+            },
+            {
+              "prompt": "keyboard",
+              "expectedAnswer": "Where’s the book?",
+              "reply": "It’s in the drawer.",
+              "schoolCheck": "Dica \"keyboard\" com resposta \"Where's the book?\" — parece cópia do item anterior. Seria \"Where's the keyboard?\" (e qual a resposta)? (pergunta 23)"
+            },
+            {
+              "prompt": "notebook",
+              "expectedAnswer": "Where’s the notebook?",
+              "reply": "It’s under the desk."
+            }
+          ]
+        },
+        {
+          "order": 3,
+          "instruction": "Debbie says she’s going to “hide” (explain it means “esconder”) a piece of paper in the picture. The student has to ask questions until they find it. They have to use the interrogative form. For example, Debbie hides a piece of paper in the notebook.",
+          "type": "student_leads",
+          "imageDependency": "visual",
+          "items": [
+            {
+              "prompt": "Where’s the piece of paper?",
+              "expectedAnswer": "Is it under the keyboard?"
+            },
+            {
+              "prompt": "No, it’s not.",
+              "expectedAnswer": "Is it in the book?",
+              "reply": "No, it’s not."
+            },
+            {
+              "prompt": "",
+              "expectedAnswer": "Is it in the notebook?",
+              "reply": "Yes, it is."
+            }
+          ],
+          "itemsAreExamples": true
+        },
+        {
+          "order": 4,
+          "instruction": "Debbie asks the student to trade places. Now the student “hides” the piece of paper and starts the dialogue. Debbie asks the questions about where the piece of paper is.",
+          "type": "student_leads",
+          "imageDependency": "oral",
+          "items": [
+            {
+              "prompt": "",
+              "expectedAnswer": "Where’s the piece of paper?",
+              "reply": "Is it under the keyboard?"
+            },
+            {
+              "prompt": "",
+              "expectedAnswer": "No, it’s not.",
+              "reply": "Is it in the book?"
+            },
+            {
+              "prompt": "",
+              "expectedAnswer": "No, it’s not.",
+              "reply": "Is it in the notebook?"
+            },
+            {
+              "prompt": "",
+              "expectedAnswer": "Yes, it is."
+            }
+          ]
+        }
+      ],
+      "referenceContent": {
+        "dialogues": [],
+        "vocabulary": [],
+        "grammarNotes": [
+          "The topic of this lesson is God’s creation – in heaven, on the earth, and in the water under the earth.",
+          "Here´s some vocabulary about God’s creation.",
+          "animals    fish \t birds    flowers     stars    sun  man and woman   moon    sky   trees   plants",
+          "Where is God’s creation? In heaven? On the earth? In the water under the earth?",
+          "Put God’s creation in the chart. Lembre-se de que algumas coisas podem estar em mais de um lugar",
+          "For example, animals are on the earth or in the water under the earth.",
+          "And the answers are:",
+          "Now Look at the expressions:",
+          "ON the earth",
+          "IN the water",
+          "UNDER the earth",
+          "These words IN ON and UNDER are prepositions of place. The express locations, ou seja, LUGAR.",
+          "Look at the picture of this office.",
+          "Where’s the computer?",
+          "It’s ON the desk.",
+          "Complete the sentences with the prepositions IN, ON or UNDER.",
+          "Where is the pen?",
+          "It’s _____ the desk.",
+          "Where’s the pencil?",
+          "It’s ____ the chair.",
+          "Where’s the notebook?",
+          "It’s ____ the desk.",
+          "Where’s the book?",
+          "It’s ______ the drawer.",
+          "And the answers are:",
+          "Where is the pen?",
+          "It’s ON the desk.",
+          "Where’s the pencil?",
+          "It’s UNDER the chair.",
+          "Where’s the notebook?",
+          "It’s UNDER the desk.",
+          "Where’s the book?",
+          "It’s IN the drawer.",
+          "Let’s do more exercises on the platform to practice these prepositions."
+        ],
+        "tables": [
+          {
+            "rows": [
+              [
+                "IN HEAVEN",
+                "ON THE EARTH",
+                "IN THE WATER UNDER THE EARTH"
+              ],
+              [
+                "Sky\nstars\nsun\nmoon",
+                "land\nflowers\nanimals\nbirds\nman and woman\ntrees\nplants",
+                "animals\nfish\nplants"
+              ]
+            ],
+            "caption": "And the answers are:"
+          }
+        ],
+        "practicePhrases": []
+      },
+      "requiresImages": true,
+      "imageNote": "Debbie shows this picture of this office and asks the student questions about where the objects are, correcting the pronunciation as well as the subject-verb agreement, if necessary."
+    },
+    {
+      "code": "22B",
+      "title": "Vocabulary and Speaking – Colors",
+      "skill": "Vocabulary and Speaking",
+      "order": 5,
+      "tasks": [
+        {
+          "order": 1,
+          "instruction": "Debbie asks the student questions about them.\nDebbie asks 6 questions. Other possible questions: their eyes, the wall, door, window, desk of where the student is at the time of the class, the sky, the computer, their mother’s and father’s eyes and hair",
+          "type": "student_answers",
+          "imageDependency": "oral",
+          "items": [
+            {
+              "prompt": "What color is your hair?",
+              "expectedAnswer": "It’s _____."
+            },
+            {
+              "prompt": "Do you have a car? Or a bike?",
+              "expectedAnswer": "Yes, I do."
+            },
+            {
+              "prompt": "What color is your car / bike?",
+              "expectedAnswer": "It’s white."
+            }
+          ]
+        },
+        {
+          "order": 2,
+          "instruction": "Debbie asks the student to start the dialogue. They ask 6 questions about what color things are. Debbie corrects and supplies vocabulary if needed.",
+          "type": "student_leads",
+          "imageDependency": "oral",
+          "items": []
+        }
+      ],
+      "referenceContent": {
+        "dialogues": [
+          [
+            "Q: What color is the wall?",
+            "A: It’s green"
+          ],
+          [
+            "Q: What color are the flowers?"
+          ],
+          [
+            "Q: What color is the curtain?"
+          ],
+          [
+            "Q: What color are the houses?"
+          ]
+        ],
+        "vocabulary": [],
+        "grammarNotes": [
+          "And God also created the colors!! In this lesson, you’ll learn the colors in English and how you ask about colors.",
+          "The basic colors are:",
+          "black\t\twhite\tred\tblue\tgreen\tyellow\tbrown\tgray/grey\tpink\tpurple\torange",
+          "There are also the adjectives LIGHT and DARK:",
+          "LIGHT BLUE \t\t\tDARK BLUE",
+          "Listen again and repeat the colors to practice the pronunciation",
+          "And how do you ask about colors?",
+          "SINGULAR",
+          "What color is the book?",
+          "It’s blue.",
+          "PLURAL",
+          "What color are the flowers?",
+          "They’re orange.",
+          "Look at the pictures. Complete the dialogues with the question or the answer.",
+          "For example,",
+          "And the answers are:",
+          "2. Question: What color is the car?",
+          "Answer: It’s yellow.",
+          "3.",
+          "4.",
+          "They’re purple.",
+          "5.",
+          "It’s dark red.",
+          "6.",
+          "They’re brown.",
+          "Let’s practice this more on the platform."
+        ],
+        "tables": [
+          {
+            "rows": [
+              [
+                "1. Question: What color is her hair?\nAnswer: It’s black.",
+                ""
+              ],
+              [
+                "2. Question: What color is the car?\nAnswer: It’s yellow.",
+                ""
+              ],
+              [
+                "3. What color is the wall?\n________________ It’s green.\n\n4. What color _____________________?\nThey’re purple.",
+                ""
+              ],
+              [
+                "5. _______________________ the curtain?\nIt’s dark red.",
+                ""
+              ],
+              [
+                "6. What color are _____________________?\n________________ brown.",
+                ""
+              ]
+            ],
+            "caption": "For example,"
+          }
+        ],
+        "practicePhrases": []
+      },
+      "requiresImages": false
+    },
+    {
+      "code": "22C",
+      "title": "Pronunciation – Vowels before nasal sounds",
+      "skill": "Pronunciation",
+      "order": 6,
+      "tasks": [
+        {
+          "order": 1,
+          "instruction": "Debbie shows a random word from the chart below and asks the student to pronounce them, correcting the pronunciation of the vowel sounds, if necessary.",
+          "type": "student_reads",
+          "imageDependency": "oral",
+          "items": [
+            {
+              "prompt": "/In/\t\t/an/\t/En/\t\t/en/\t\t/æn/\t\t/un/",
+              "expectedAnswer": null
+            },
+            {
+              "prompt": "in\t\ton\tunder \tpen\t\tanimals\tmoon",
+              "expectedAnswer": null
+            },
+            {
+              "prompt": "pink\t\tsun\tpencil\tplants",
+              "expectedAnswer": null
+            },
+            {
+              "prompt": "woman",
+              "expectedAnswer": null
+            },
+            {
+              "prompt": "heaven",
+              "expectedAnswer": null
+            }
+          ]
+        }
+      ],
+      "referenceContent": {
+        "dialogues": [],
+        "vocabulary": [],
+        "grammarNotes": [
+          "In this lesson, you’ll learn about vowels before nasals.",
+          "Em português, temos vogais nasais, ou seja, na pronúncia o ar sai pelo nariz an (manga), en (ontem), in (sim), on (ontem), un (mundo). Em inglês não há essas vogais. Todas são orais, ou seja, o ar sai pela boca. Então, há uma tendência entre nós falantes de português de nasalizar as vogais que vem antes de sons nasais em inglês, que são 3: n, m  e ng, representados pelas letras n, m e ng. Devemos tentar evitar essa tendência.",
+          "For example, in the prepositions of place, the pronunciation is /in/, /an/, /un/. Also, pronounce the n after the vowel /in/.",
+          "Listen and repeat. Pronounce the vowel and then the letter n.",
+          "/In/\t/an/\t/En/\t/en/\t/\tæn/\t\t/un/",
+          "in\ton\tunder \tpen\t\tanimals\tmoon",
+          "pink\t\tsun\tpencil\tplants",
+          "woman",
+          "heaven",
+          "Let’s practice this more on the platform."
+        ],
+        "tables": [],
+        "practicePhrases": []
+      },
+      "requiresImages": false
+    },
+    {
+      "code": "23A",
+      "title": "Presentation and Vocabulary – Places in a city or in a town",
+      "skill": "Presentation and Vocabulary",
+      "order": 7,
+      "tasks": [
+        {
+          "order": 1,
+          "instruction": "Debbie asks the student, what is the name of the place where you…",
+          "type": "student_answers",
+          "imageDependency": "oral",
+          "items": [
+            {
+              "prompt": "pray and worship the Lord",
+              "expectedAnswer": "church"
+            },
+            {
+              "prompt": "shop for food and vegetables",
+              "expectedAnswer": "a market or a supermarket"
+            },
+            {
+              "prompt": "A place where you put gas in your car",
+              "expectedAnswer": "a gas station."
+            },
+            {
+              "prompt": "eat breakfast, lunch, or dinner",
+              "expectedAnswer": "a restaurant"
+            },
+            {
+              "prompt": "shop for bread",
+              "expectedAnswer": "a bakery"
+            },
+            {
+              "prompt": "see a movie",
+              "expectedAnswer": "a movie theater"
+            },
+            {
+              "prompt": "go shopping, eat, see a movie, meet friends",
+              "expectedAnswer": "a mall"
+            },
+            {
+              "prompt": "drink a coffee",
+              "expectedAnswer": "a coffee shop"
+            },
+            {
+              "prompt": "go when you are sick",
+              "expectedAnswer": "a drugstore or a hospital"
+            },
+            {
+              "prompt": "a place where you sleep when you travel",
+              "expectedAnswer": "a hotel"
+            },
+            {
+              "prompt": "a place where you have a drink, for example, wine",
+              "expectedAnswer": "a bar"
+            }
+          ]
+        }
+      ],
+      "referenceContent": {
+        "dialogues": [],
+        "vocabulary": [
+          "shop for bread – a bakery",
+          "see a movie – a movie theater",
+          "drink a coffee – a coffee shop",
+          "go when you are sick – a drugstore or a hospital"
+        ],
+        "grammarNotes": [
+          "In this lesson, we’ll learn about locations in a town or a city. But first, Let’s learn some vocabulary about places in a city or a town.",
+          "Remember that a city is big, for example, New York City. A town is small.",
+          "Look at the pictures and match the places and the names of the places in a town or a city:",
+          "Church",
+          "hotel",
+          "supermarket",
+          "market",
+          "shop/store",
+          "bank",
+          "theater",
+          "movie theater",
+          "hospital",
+          "mall (shopping mall)",
+          "school",
+          "drugstore",
+          "square",
+          "gas station",
+          "restaurant",
+          "bar",
+          "coffee shop",
+          "bakery",
+          "Let’s do an exercise with this vocabulary. I describe the place, you say the name, for example.",
+          "A place where you put your money – a bank",
+          "A place where you…",
+          "pray and worship the Lord – church",
+          "shop for food and vegetables – a market or a supermarket",
+          "A place where you put gas in your car – a gas station.",
+          "eat breakfast, lunch, or dinner – a restaurant",
+          "go shopping, eat, see a movie, meet friends – a mall",
+          "a place where you sleep when you travel – a hotel",
+          "a place where you have a drink, for example, wine – a bar",
+          "Now let’s practice this more on the platform?"
+        ],
+        "tables": [],
+        "practicePhrases": []
+      },
+      "requiresImages": false
+    },
+    {
+      "code": "23B",
+      "title": "Vocabulary – Locations in a town or in a city",
+      "skill": "Vocabulary",
+      "order": 8,
+      "tasks": [
+        {
+          "order": 1,
+          "instruction": "Debbie shows the pictures and asks the student to complete the sentences about where the place is. Debbie corrects the student, if necessary.",
+          "type": "student_answers",
+          "imageDependency": "visual",
+          "items": [
+            {
+              "label": "1",
+              "prompt": "Where’s the house?",
+              "expectedAnswer": "The house is _____ First Street.\non",
+              "imagePath": "book01/unit05/23B/task-1-item-1.png"
+            },
+            {
+              "label": "2",
+              "prompt": "Where’s the house?",
+              "expectedAnswer": "The house is ______ 5 First Street.\nat",
+              "imagePath": "book01/unit05/23B/task-1-item-2.png"
+            },
+            {
+              "label": "3",
+              "prompt": "Where’s the hotel?",
+              "expectedAnswer": "The hotel is ____ the bank.\nnear",
+              "imageFloatingInCell": true,
+              "imagePath": "book01/unit05/23B/task-1-item-3.png"
+            },
+            {
+              "label": "4",
+              "prompt": "Where’s the church?",
+              "expectedAnswer": "The church is ____ First ____ Second Street.\non the corner of – and",
+              "imagePath": "book01/unit05/23B/task-1-item-4.png"
+            },
+            {
+              "label": "5",
+              "prompt": "Where’s the mall?",
+              "expectedAnswer": "The mall is _____ the school. (2 choices)\nin front of / across from",
+              "imagePath": "book01/unit05/23B/task-1-item-5.png"
+            },
+            {
+              "label": "6",
+              "prompt": "Where’s the restaurant?",
+              "expectedAnswer": "The restaurant is ______ the shop.\nnear",
+              "imagePath": "book01/unit05/23B/task-1-item-6.png"
+            },
+            {
+              "label": "7",
+              "prompt": "Where’s the restaurant?",
+              "expectedAnswer": "The restaurant is _______ the left.\non",
+              "imagePath": "book01/unit05/23B/task-1-item-7.png"
+            },
+            {
+              "label": "8",
+              "prompt": "Where’s the shop?",
+              "expectedAnswer": "The shop is _______ the right.\non",
+              "imagePath": "book01/unit05/23B/task-1-item-8.png"
+            }
+          ]
+        }
+      ],
+      "referenceContent": {
+        "dialogues": [
+          [
+            "A: Where’s the house?",
+            "B: The house is __________ First Street.",
+            "A: Where’s the house?",
+            "B: The house is ______ 5 First Street.",
+            "A: Where’s the hotel?",
+            "B: The hotel is __________ the bank."
+          ],
+          [
+            "B: The church is __________ First _____ Second Street.",
+            "A: Where’s the mall?",
+            "B: The mall is __________ the school.",
+            "A: Where’s the restaurant?",
+            "B: The restaurant is __________ the shop.",
+            "A: Where’s the restaurant?"
+          ],
+          [
+            "B: The shop is ________ the right."
+          ],
+          [
+            "B: The house is on First Street."
+          ],
+          [
+            "B: The house is at 5 First Street."
+          ],
+          [
+            "B: The hotel is near the bank."
+          ],
+          [
+            "B: The church is on the corner of First and Second Street."
+          ],
+          [
+            "B: The mall is in front of / across from the school. (2 choices)"
+          ],
+          [
+            "B: The restaurant is next to the shop."
+          ],
+          [
+            "B: The shop is on the right."
+          ]
+        ],
+        "vocabulary": [],
+        "grammarNotes": [
+          "In this lesson, we’ll learn about locations in a town or a city. Let’s use the vocabulary from the places in a city from the previous video.",
+          "Look at the picture of locations.",
+          "Note that you use the verb to be to express locations. It’s equivalent to SEE ou FICAR in Portuguese.",
+          "A loja é na rua A. = A loja fica na rua A.",
+          "The house is on First Street.",
+          "Note que para endereços, ao contrário do português, o nome da rua vem primeiro e depois a palavra que indica se é uma rua, avenida, etc.",
+          "You use the preposition on when it is just the name of the street or avenue, etc.",
+          "The house is on First Street.",
+          "You use the preposition at when there is the number and the name of the street or avenue, etc.",
+          "The house is at 5 First Street.",
+          "The hotel is near the bank.",
+          "O hotel fica perto do banco.",
+          "The church is on the corner of First and Second Street.",
+          "A igreja fica na esquina da rua A com a B.",
+          "The mall is across from / in front of the school.",
+          "Tem duas expressões para em frente a: across from é quando tem algo no meio, por exemplo, uma rua, um rio; in front of é quando é simplesmente em frente.",
+          "The restaurant is next to the shop. The restaurant is on the right. The shop is on the left.",
+          "A loja fica (ou é) ao lado, vizinho ao restaurante.",
+          "To ask about locations, ou seja, para perguntar onde fica um lugar, the question is:",
+          "Where’s the church?",
+          "It’s on the corner of First and Second Street.",
+          "Now look at the pictures again, but this time complete the sentences with the correct expression.",
+          "4. A: Where’s the church?",
+          "B. The restaurant is _________ the left.",
+          "8. A: Where’s the shop?",
+          "And the answers are:",
+          "1. A: Where’s the house?",
+          "2. A: Where’s the house?",
+          "3. A: Where’s the hotel?",
+          "4. A: Where’s the church?",
+          "5. A: Where’s the mall?",
+          "6. A: Where’s the restaurant?",
+          "7. A: Where’s the restaurant?",
+          "B. The restaurant is on the left.",
+          "8. A: Where’s the shop?",
+          "Now let’s practice this more on the platform?"
+        ],
+        "tables": [],
+        "practicePhrases": []
+      },
+      "requiresImages": true,
+      "imageNote": "Debbie shows the pictures and asks the student to complete the sentences about where the place is. Debbie corrects the student, if necessary."
+    },
+    {
+      "code": "23C",
+      "title": "Reading – Jerusalem",
+      "skill": "Reading",
+      "order": 9,
+      "tasks": [],
+      "referenceContent": {
+        "dialogues": [],
+        "vocabulary": [],
+        "grammarNotes": [
+          "In this lesson, you’ll do a reading exercises about a very important city in the Bible. When I think of a city in the Bible, I think of Jerusalem.",
+          "Let’s read about some interesting places in Jerusalem. As you read, complete the chart about the name of the place, the type of place, the attractions and the opening hours.",
+          "The Israel Museum - this museum houses the Dead Sea Scrolls (picture). It has a collection of Archaeology, Israeli and International Art and temporary exhibits. Guided tours are available in English. Open every day from 10 a.m. to 5 p.m.",
+          "The Tower of David Museum - this museum traces Jerusalem’s history through shows, exhibits, and audio-visual techniques. Walk across the garden and see a view of the city. Open every day from 9 a.m to 5 p.m.",
+          "Pedestrian malls - in these open-air shops, you’ll find exclusive jewellery, gifts for souvenirs, art galleries, ceramics, artistic T-shirts, and glass objects. Open from 10 a.m. to 5 p.m.",
+          "The Wailing Wall was left standing. Jews face the wall when they pray and men have to cover their heads. Open 24 hours a day.",
+          "Read and fill in the chart.",
+          "And the answers are:",
+          "Let’s do more exercises with this information on the platform?"
+        ],
+        "tables": [
+          {
+            "rows": [
+              [
+                "Name",
+                "Type",
+                "Attraction",
+                "Opening hours"
+              ],
+              [
+                "1. The Israel Museum",
+                "",
+                "",
+                ""
+              ],
+              [
+                "2. The Tower of David Museum",
+                "",
+                "",
+                ""
+              ],
+              [
+                "3. Pedestrian malls",
+                "",
+                "",
+                ""
+              ],
+              [
+                "4. The Western Wall",
+                "",
+                "",
+                ""
+              ]
+            ]
+          },
+          {
+            "rows": [
+              [
+                "Name",
+                "Type",
+                "Attraction",
+                "Opening hours"
+              ],
+              [
+                "1. The Israel Museum",
+                "Museum",
+                "Dead Sea Scrolls, Archaelogy, art, exhibits",
+                "Every day, from 10 to 5"
+              ],
+              [
+                "2. The Tower of David Museum",
+                "Museum",
+                "Shows, exhibits, garden",
+                "Every day, from 9 to 5"
+              ],
+              [
+                "3. Pedestrian malls",
+                "Mall",
+                "Jewellery, gifts (souvenirs), art galleries, caramics, T-shirts, glass objects",
+                "Every day, from 10 to 5"
+              ],
+              [
+                "4. The Western Wall",
+                "Wall",
+                "Second temple",
+                "24 hours a day"
+              ]
+            ],
+            "caption": "And the answers are:"
+          }
+        ],
+        "practicePhrases": []
+      },
+      "requiresImages": false,
+      "practiceNote": "Não há TAREFA para essa lição."
+    },
+    {
+      "code": "24A",
+      "title": "Speaking – Directions",
+      "skill": "Speaking",
+      "order": 10,
+      "tasks": [
+        {
+          "order": 1,
+          "instruction": "Debbie shows the pictures and asks the student to complete the sentences about the directions. Debbie corrects the student, if necessary.",
+          "type": "student_answers",
+          "imageDependency": "visual",
+          "items": [
+            {
+              "prompt": "Go straight ahead for ____ block (s)",
+              "expectedAnswer": null,
+              "imagePath": "book01/unit05/24A/task-1-item-1.jpg"
+            },
+            {
+              "prompt": "Go/Walk to the corner.",
+              "expectedAnswer": null,
+              "imagePath": "book01/unit05/24A/task-1-item-2.jpg"
+            },
+            {
+              "prompt": "Turn right on ____ Street.\nTake the first right.",
+              "expectedAnswer": null,
+              "imagePath": "book01/unit05/24A/task-1-item-3.jpg"
+            },
+            {
+              "prompt": "Turn left on ____ Street\nTurn left at the crossroads.",
+              "expectedAnswer": null,
+              "imagePath": "book01/unit05/24A/task-1-item-4.jpg"
+            },
+            {
+              "prompt": "At the roundabout, take the first exit.",
+              "expectedAnswer": null,
+              "imagePath": "book01/unit05/24A/task-1-item-5.jpg"
+            },
+            {
+              "prompt": "Pass the church.",
+              "expectedAnswer": null,
+              "imagePath": "book01/unit05/24A/task-1-item-6.png"
+            }
+          ]
+        },
+        {
+          "order": 2,
+          "instruction": "Debbie asks the student to give directions to get from their house to their work or school.",
+          "type": "student_answers",
+          "imageDependency": "oral",
+          "items": []
+        }
+      ],
+      "referenceContent": {
+        "dialogues": [
+          [
+            "A: Where’s the Tower of David Museum?",
+            "B: Well, go straight ahead on Paul Emile Street for three blocks. Turn left on Jerusalem Street. Walk for one block. The museum is on the right.",
+            "A: Thank you (very much).",
+            "B: You’re welcome."
+          ]
+        ],
+        "vocabulary": [],
+        "grammarNotes": [
+          "In this lesson, we’ll talk about directions. But first, let’s talk about the apostle Paul. Do you remember his conversion? Think about it.",
+          "Now read the passage about Paul’s conversion and answer the questions.",
+          "Jesus: Saul, Saul, why do you persecute me?",
+          "Saul: Who are you? Lord?",
+          "Jesus: I am Jesus, whom you persecute. Now get up and go to the city.",
+          "Saul: I’m blind. Take me to the city.",
+          "In Damascus, Jesus calls Ananias, his disciple, in a vision.",
+          "Jesus: Ananias, go to the house of Judas, on Straight Street. Pray for a man named Saul from Tarsus.",
+          "Ananias goes to Judas’ house. He prays for Saul and he can see again.",
+          "Saul: I can see again!! Thank God!",
+          "1. Paul’s conversion was on the way to:",
+          "a. Jerusalem\t\tb. Damascus\t\tc. Bethlehem",
+          "2. On the way, Paul sees:",
+          "a. the sun\t\tb. a light\t\tc. the moon\t\tin heaven.",
+          "3. God changes his name, but Paul’s previous name is:",
+          "a. Saul\t\t\tb. Simon\t\tc. Tarsus",
+          "And the answers are:",
+          "B\t2. B\t3. A",
+          "In this passage in the Bible, Jesus gives directions to two people – Paul (or Saul) and Ananias.",
+          "Directions are instructions for people to go to a certain place. Read the text again and find the two directions.",
+          "a. Jesus’ directions to Paul ________________________________________________________",
+          "b. Jesus’ directions to Ananias _____________________________________________________",
+          "And the answers are:",
+          "a. Get up and go to the city.",
+          "b. Go to the house of Judas, on Straight Street.",
+          "To give directions, you also use the imperative form.",
+          "Go to Straight Street.",
+          "Today we have GPS in our cell phones, but it is important to understand the directions they give.",
+          "A common question for directions is",
+          "How do I get to the Tower of David?",
+          "Where’s the Tower of David?",
+          "Here are some common expressions for directions.",
+          "Listen to the directions. Follow them on the map.",
+          "You are a tourist in Jerusalem. You’re at the King David Hotel on King David Street. You want to go to the Tower of David Museum. Look at the directions in the dialogue below.",
+          "Now let’s practice this more on the platform!"
+        ],
+        "tables": [
+          {
+            "rows": [
+              [
+                "Go straight ahead for ____ block (s)",
+                ""
+              ],
+              [
+                "Go/Walk to the corner.",
+                ""
+              ],
+              [
+                "Turn right on ____ Street.\nTake the first right.",
+                ""
+              ],
+              [
+                "Turn left on ____ Street\nTurn left at the crossroads.",
+                ""
+              ],
+              [
+                "At the roundabout, take the first exit.",
+                ""
+              ],
+              [
+                "Pass the church.",
+                ""
+              ]
+            ]
+          }
+        ],
+        "practicePhrases": []
+      },
+      "requiresImages": true,
+      "imageNote": "Debbie shows the pictures and asks the student to complete the sentences about the directions. Debbie corrects the student, if necessary."
+    },
+    {
+      "code": "24B",
+      "title": "Reading and Grammar – Jesus’s Great Commission",
+      "skill": "Reading and Grammar",
+      "order": 11,
+      "tasks": [
+        {
+          "order": 1,
+          "instruction": "Debbie asks the student to substitute the underlined words from stories in the Bible, supplying the object pronouns. The sentences are from stories in the Bible studied in Book 1.",
+          "type": "student_answers",
+          "imageDependency": "oral",
+          "items": [
+            {
+              "prompt": "Jesus’s disciples baptize the new disciples.",
+              "expectedAnswer": "Jesus’s disciples baptize them"
+            },
+            {
+              "prompt": "Jesus asks Peter, “Do you love _____?”",
+              "expectedAnswer": "Jesus asks Peter, “Do you love me?”"
+            },
+            {
+              "prompt": "Peter loves Jesus.",
+              "expectedAnswer": "Peter loves him."
+            },
+            {
+              "prompt": "Jesus says, “The people are hungry. Give the people something to eat.",
+              "expectedAnswer": "Jesus says, “The people are hungry. Give them something to eat.”"
+            },
+            {
+              "prompt": "Elijah tells the widow of Zarephtah, “First, make some bread for men. Then make some bread for you and for your son.",
+              "expectedAnswer": "Elijah tells the widow of Zarephtah, “First, make some bread for men. Then make some bread for you and for him."
+            },
+            {
+              "prompt": "Observe the Sabbath and keep the Sabbath holy.",
+              "expectedAnswer": "Observe the Sabbath and keep it holy."
+            },
+            {
+              "prompt": "Martha says to Jesus, “Tell Mary to help me.”",
+              "expectedAnswer": "Martha says to Jesus, “Tell her to help me.”"
+            }
+          ]
+        }
+      ],
+      "referenceContent": {
+        "dialogues": [],
+        "vocabulary": [
+          "I - me",
+          "You - you",
+          "He - him",
+          "She - her",
+          "It - it",
+          "We - us",
+          "You - you",
+          "They – them",
+          "SONG – Go!"
+        ],
+        "grammarNotes": [
+          "In this lesson, you’ll read about Jesus’ final instructions to his disciples. That is the Great Commission – Go and make disciples! The Great Commission has four instructions. Read the text below and Do exercise 1. Find the four verbs in The Great Commission.",
+          "“The Great Commission” is Jesus’ final instructions to the disciples. Read about it and answer the questions below:",
+          "All authority in heaven and on earth has been given to me. Therefore, go and make disciples of all nations, and baptize them in the name of the Father and of the Son and of the Holy Spirit, and teach them to obey everything I have commanded you. And surely I am with you always, to the very end of age.",
+          "Matthew 28.18-20",
+          "What are the four instructions Jesus gives to his disciples?",
+          "Go",
+          "Make",
+          "Baptize",
+          "Teach",
+          "And the answers are:",
+          "The four verbs in the Great Commission are a) Go, b) Make, c) Baptize, and d) Teach.",
+          "Now let’s do Exercise 2. It’s a Grammar Exercise. Look at the underlined words:",
+          "a. Given to me; Jesus",
+          "b. And baptize them;",
+          "c. teach them,",
+          "d. I have commanded you,",
+          "e. I am with you.",
+          "Read the text again and say what do the words refer to? For example: All authority has been given to me. The word “me” refers to Jesus.",
+          "And the answers are:",
+          "The new disciples",
+          "The new disciples",
+          "Jesus’s disciples",
+          "Jesus’s disciples",
+          "Essas palavras sublinhadas são pronomes, ou seja, palavras que você usa para não repetir os nomes. Olha como esse texto ficaria estranho e repetitivo se não fossem os pronomes:",
+          "Go and make disciples of all nations. Baptize the new disciples and teach the new disciples all that I have commanded my disciples. I am with my disciples until the very end of age.",
+          "Perceberam como fica estranho? Para isso servem os pronomes.",
+          "Nas Lessons 1 a 4, aprendemos os pronomes que ficam antes dos verbos, no lugar do sujeito na oração, ou seja, “subject pronouns”.",
+          "I am Jesus.",
+          "He is from Brazil.",
+          "We are fine.",
+          "They are not here.",
+          "Em português, esses pronomes são chamados de pronomes do caso reto.",
+          "Já os pronomes do Exercício 2 que acabamos de fazer, note que ficam após os verbos ou preposições:",
+          "All authority has been given to me",
+          "Preposição + pronoun",
+          "to + me",
+          "Verb + pronoun",
+          "Baptize them.",
+          "Esse tipo de pronome em inglês é chamado de “object pronoun”, pois fica no lugar do objeto, ou seja, o complemento do verbo.",
+          "Em português, esse tipo de pronome é chamado de pronome do caso oblíquo.",
+          "Resumindo:",
+          "Subject Pronouns (before verbs)",
+          "I am with you always.",
+          "They listen to Jesus.",
+          "Object Pronouns (after verbs or prepositions)",
+          "All authority has been given to me.",
+          "Baptize them.",
+          "These are the object pronouns in English. It is very simple – one subject pronoun – one object pronoun",
+          "Listen to the song, “Go!” It’s a song about the Great Commission. Listen and complete with the SUBJECT or OBJECT pronouns.",
+          "Go and make disciples of all nations",
+          "Baptize ________(1) in the name of the Father",
+          "and of the Son and of the Holy Spirit",
+          "Teach _______(2) to obey ______(3)",
+          "______(4) am with _______(5) always,",
+          "to the very end of the age.",
+          "The answers are:",
+          "them",
+          "them",
+          "me",
+          "I",
+          "You",
+          "Let’s do more exercises about this important topic!"
+        ],
+        "tables": [],
+        "practicePhrases": []
+      },
+      "requiresImages": false
+    },
+    {
+      "code": "24C",
+      "title": "Bible Search – Jesus’s basic commandments",
+      "skill": null,
+      "order": 12,
+      "tasks": [
+        {
+          "order": 1,
+          "instruction": "",
+          "type": "student_answers",
+          "imageDependency": "oral",
+          "items": [
+            {
+              "prompt": "What is Jesus’s first commandment?",
+              "expectedAnswer": null
+            },
+            {
+              "prompt": "What’s Jesus’s second commandment?",
+              "expectedAnswer": null
+            }
+          ]
+        }
+      ],
+      "referenceContent": {
+        "dialogues": [],
+        "vocabulary": [
+          "First commandment - ________________________",
+          "Second commandment - ______________________",
+          "Second commandment – “Love your neighbor as yourself.”"
+        ],
+        "grammarNotes": [
+          "This is the last lesson in Book 1! It’s great to have you here!",
+          "I’d like to finish this lesson with Jesus’s two basic commandments. They are in Matthew 22.37-39:",
+          "Do a Bible Search and answer:",
+          "Matthew 22.37-39",
+          "And the answers are:",
+          "First commandment – “Love the Lord your God with all your heart and with all your soul and with all your mind.”",
+          "My suggestion is: memorize these 2 commandments and practice them every day!"
+        ],
+        "tables": [],
+        "practicePhrases": []
+      },
+      "requiresImages": false
+    },
+    {
+      "code": "25",
+      "title": "REVIEW LESSONS 21 TO 24",
+      "skill": null,
+      "order": 13,
+      "tasks": [
+        {
+          "order": 1,
+          "instruction": "Debbie repete aleatoriamente todas as tarefas feitas nessa unidade, revisando o conteúdo, mas repetindo menos vezes. Se o aluno tiver dificuldades, sugerir retornar para as respectivas lições.",
+          "type": "review",
+          "imageDependency": "oral",
+          "items": []
+        },
+        {
+          "order": 2,
+          "instruction": "Debbie pede para o aluno traduzir frases aleatórias da unit 5.",
+          "type": "translate",
+          "imageDependency": "oral",
+          "items": []
+        }
+      ],
+      "referenceContent": {
+        "dialogues": [],
+        "vocabulary": [],
+        "grammarNotes": [
+          "First of all, congratulations! You made it! Now you are A1 in English.",
+          "In Book 1, you learned at least 500 words! Now you are a basic learner of English.",
+          "In Unit 5, Lessons 21 to 24, you learned",
+          "to give commands,",
+          "to give instructions,",
+          "to give directions,",
+          "to talk about God’s creation.",
+          "Grammar",
+          "the Imperative Form,",
+          "prepositions of place",
+          "prepositions of directions",
+          "object pronouns.",
+          "Vocabulary",
+          "more than 30 verbs",
+          "the 10 commandments,",
+          "verbs of action",
+          "verbs to give directions.",
+          "God’s creation",
+          "places in a city or in a town.",
+          "Speaking",
+          "to give commands,",
+          "to give instructions",
+          "to give directions",
+          "to locate objects",
+          "to locate places in a town or in a city.",
+          "Pronunciation",
+          "review of vowel sounds",
+          "more vowel sounds",
+          "vowels before nasal sounds in English",
+          "Now go to the platform and do the Review exercises. Also do the vocabulary Review exercise for Book 1.",
+          "Well, see you in Book 2!"
+        ],
+        "tables": [],
+        "practicePhrases": []
+      },
+      "requiresImages": false
+    }
+  ]
+}

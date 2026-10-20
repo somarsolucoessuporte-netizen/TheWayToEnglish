@@ -5,7 +5,7 @@ import { branding } from "@/app-config/branding";
 import { TUTOR_SYSTEM_PROMPT } from "@/app-config/persona";
 import { DEMO_STUDENTS, type DemoStudent } from "@/app-config/demo-students";
 import type { CurriculumLesson } from "@/app-config/curriculum";
-import { findLessonByCode, nextLessonAfter } from "@/app-config/curriculum/lookup";
+import { findLessonByRef, findLessonFromLink, nextLessonAfter } from "@/app-config/curriculum/lookup";
 import { aiProvider, speechProvider, sttProvider } from "@/app-config/providers";
 import { AvatarEngine } from "@/core/avatar-engine/AvatarEngine";
 import { preloadAllAvatarVideos } from "@/core/avatar-engine/preloadAvatarAssets";
@@ -31,6 +31,7 @@ import { MobileVoiceScreen, type MobileVoiceScreenHandle } from "@/components/Mo
 import { StatusPills } from "@/components/StatusPills";
 import { TipsPanel, type TipsAttention } from "@/components/TipsPanel";
 import { CurrentLessonLabel } from "@/components/CurrentLessonLabel";
+import { LessonImage, currentItemImages } from "@/components/LessonImage";
 import { useIsMobile } from "@/components/useIsMobile";
 
 /** Lessons without an explicit durationMinutes (shouldn't happen with the
@@ -157,13 +158,16 @@ const STATE_LABELS: Record<CharacterState, string> = {
 };
 
 /** The student a lesson starts for: the school's ?aluno= when present;
- * otherwise test mode — no name, except 1A (whose introduction exchange
- * needs one, so it gets the "Aluno" placeholder). */
-function urlOrTestStudent(lessonCode: string, aluno: string | null): DemoStudent {
+ * otherwise test mode — no name, except Book 1's 1A (whose introduction
+ * exchange needs one, so it gets the "Aluno" placeholder). `lessonRef` is
+ * the lesson's id ("book02-unit01-1a") or, for a link we couldn't resolve,
+ * the raw code (/api/chat then falls back on its own). */
+function urlOrTestStudent(lessonRef: string, aluno: string | null): DemoStudent {
+  const ref = lessonRef.toLowerCase();
   return {
     id: aluno ?? "url-student",
-    name: aluno ?? (lessonCode.toLowerCase() === "1a" ? "Aluno" : ""),
-    currentLesson: lessonCode,
+    name: aluno ?? (ref === "book01-unit01-1a" || ref === "1a" ? "Aluno" : ""),
+    currentLesson: lessonRef,
     lastSession: "",
   };
 }
@@ -278,6 +282,10 @@ export default function TutorApp({ lessons }: { lessons: CurriculumLesson[] }) {
   const [totalSeconds, setTotalSeconds] = useState(0);
   const [remainingSeconds, setRemainingSeconds] = useState(0);
   const [lessonComplete, setLessonComplete] = useState(false);
+  // The picture of the item being asked (see components/LessonImage) —
+  // gone once the lesson is over.
+  const itemImages = useMemo(() => currentItemImages(entries), [entries]);
+  const lessonImages = started && !lessonComplete ? itemImages : null;
   const [showTimeUpNotice, setShowTimeUpNotice] = useState(false);
 
   useEffect(() => {
@@ -303,7 +311,7 @@ export default function TutorApp({ lessons }: { lessons: CurriculumLesson[] }) {
     if (remainingSeconds <= 0) {
       setShowTimeUpNotice(true);
       setLessonComplete(true);
-      void orchestrator.announceLessonComplete(currentLesson ? nextLessonAfter(allLessons, currentLesson.lessonCode) : undefined);
+      void orchestrator.announceLessonComplete(currentLesson ? nextLessonAfter(allLessons, currentLesson.id) : undefined);
     }
   }, [remainingSeconds, started, lessonComplete, totalSeconds, orchestrator, currentLesson, allLessons]);
 
@@ -314,12 +322,13 @@ export default function TutorApp({ lessons }: { lessons: CurriculumLesson[] }) {
   useEffect(() => {
     return orchestrator.onLessonComplete(() => {
       setLessonComplete(true);
-      void orchestrator.announceLessonComplete(currentLesson ? nextLessonAfter(allLessons, currentLesson.lessonCode) : undefined);
+      void orchestrator.announceLessonComplete(currentLesson ? nextLessonAfter(allLessons, currentLesson.id) : undefined);
     });
   }, [orchestrator, currentLesson, allLessons]);
 
   function handleEndLesson() {
     orchestrator.reset();
+    aiProvider.setLesson(undefined);
     setStarted(false);
     setCurrentLesson(undefined);
     setCurrentStudentName(undefined);
@@ -648,12 +657,12 @@ export default function TutorApp({ lessons }: { lessons: CurriculumLesson[] }) {
       });
     }
     console.log("[1 demo] currentLesson:", student.currentLesson);
-    const lesson = findLessonByCode(allLessons, student.currentLesson);
+    const lesson = findLessonByRef(allLessons, student.currentLesson);
     console.log(
       "[2 page] lessonCode state:",
       student.currentLesson,
       "-> resolvida localmente:",
-      lesson ? lesson.code : "NÃO (route.ts resolve com fallback)"
+      lesson ? lesson.id : "NÃO (route.ts resolve com fallback)"
     );
     // Every task of this lesson needs images we don't have yet (see
     // CurriculumTask.imageDependency) — never open an empty session.
@@ -679,9 +688,13 @@ export default function TutorApp({ lessons }: { lessons: CurriculumLesson[] }) {
     // live call, not replay an increasingly stale prefetched greeting.
     const prefetched = greetingCacheRef.current.get(student.id) ?? undefined;
     greetingCacheRef.current.delete(student.id);
+    // The orchestrator carries the code (it is also what the closing line
+    // says aloud); the provider adds the id, which tells Book 2's 1A from
+    // Book 1's.
+    aiProvider.setLesson(lesson ? { id: lesson.id, code: lesson.code } : undefined);
     await orchestrator.startLesson({
       studentName: student.name,
-      currentLessonCode: student.currentLesson,
+      currentLessonCode: lesson?.code ?? student.currentLesson,
       canDoGoals: lesson?.canDo,
       vocabulary: lesson?.vocabulary,
       prefetched,
@@ -701,8 +714,12 @@ export default function TutorApp({ lessons }: { lessons: CurriculumLesson[] }) {
     if (!licaoParam) return;
     autoStartedFromUrlRef.current = true;
     const alunoParam = params.get("aluno");
-    console.log("[url] parâmetros recebidos — aluno:", alunoParam, "licao:", licaoParam);
-    void handleStudentPick(urlOrTestStudent(licaoParam, alunoParam));
+    const bookParam = params.get("book");
+    const unitParam = params.get("unit");
+    console.log("[url] parâmetros recebidos — aluno:", alunoParam, "book:", bookParam, "unit:", unitParam, "licao:", licaoParam);
+    // ?book=2&unit=1&licao=1A; ?licao=1A alone = Book 1 / Unit 1.
+    const linked = findLessonFromLink(allLessons, { book: bookParam, unit: unitParam, licao: licaoParam });
+    void handleStudentPick(urlOrTestStudent(linked?.id ?? licaoParam, alunoParam));
     // handleStudentPick is re-created every render — depending on it would
     // re-fire this effect on unrelated renders; autoStartedFromUrlRef
     // already guarantees it runs at most once.
@@ -725,7 +742,7 @@ export default function TutorApp({ lessons }: { lessons: CurriculumLesson[] }) {
     orchestrator.stopAllMedia();
     orchestrator.reset();
     console.log("[start] estado antes de iniciar:", { busy: orchestrator.isBusy(), state: orchestrator.getState() });
-    void handleStudentPick(urlOrTestStudent(lesson.code, null));
+    void handleStudentPick(urlOrTestStudent(lesson.id, null));
   }
 
   // The ONLY call site for orchestrator.startListening() in the whole app
@@ -905,11 +922,13 @@ export default function TutorApp({ lessons }: { lessons: CurriculumLesson[] }) {
               onSubmit={handleSubmit}
               lessonComplete={lessonComplete}
               onEndLesson={handleEndLesson}
+              lessonImages={lessonImages}
             />
           ) : (
             <div className="main">
               <section className="stage">
                 <Avatar engine={avatarEngine} />
+                <LessonImage urls={lessonImages} variant="stage" />
 
                 {/* Absolute within .stage (not the page-level fixed dock
                     mobile uses below) — desktop's avatar only occupies
