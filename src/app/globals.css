@@ -14,6 +14,14 @@
   --text-secondary: #5a6472;
   --text-muted: #8b94a3;
 
+  /* Main buttons (Start, Enviar, Falar): two shades of the brand blue —
+     resting a little lighter than the navy, hover the navy itself, pressed
+     darker. Never gray: gray reads as "disabled". */
+  --btn-primary: #26398c;
+  --btn-primary-hover: var(--brand-navy);
+  --btn-primary-active: #131e4d;
+  --focus-ring: color-mix(in srgb, #26398c 55%, transparent);
+
   /* Semantic */
   --accent: #1c2b6c;
   --success: #1a7f4b;
@@ -124,8 +132,30 @@ body {
 }
 
 .lessons-back-btn {
+  position: relative;
   font-size: 13px;
   padding: 8px 12px;
+}
+
+/* Touch: a 48px-tall tap area without growing the header (other elements
+   are positioned against its height) — an invisible extension of the
+   button. */
+@media (pointer: coarse) {
+  .lessons-back-btn::after {
+    content: "";
+    position: absolute;
+    inset: -8px -4px;
+  }
+
+  .chat-form .btn-primary,
+  .chat-input {
+    min-height: 48px;
+  }
+
+  /* 16px or iOS Safari zooms in when the field gets focus. */
+  .chat-input {
+    font-size: 16px;
+  }
 }
 
 .app-shell {
@@ -158,7 +188,9 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 24px 16px;
+  /* Clear of the notch / home bar when installed as a PWA. */
+  padding: calc(24px + env(safe-area-inset-top, 0px)) calc(16px + env(safe-area-inset-right, 0px))
+    calc(24px + env(safe-area-inset-bottom, 0px)) calc(16px + env(safe-area-inset-left, 0px));
   background: var(--bg-page);
 }
 
@@ -206,8 +238,17 @@ body {
   font-size: 14px;
   font-weight: 600;
   color: var(--text-primary);
+  font-family: inherit;
   cursor: pointer;
   text-align: left;
+  transition: border-color 150ms ease;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.lesson-dropdown-trigger:focus-visible,
+.lesson-dropdown-option:focus-visible {
+  outline: 3px solid var(--focus-ring);
+  outline-offset: 2px;
 }
 
 .lesson-dropdown-trigger span:first-child {
@@ -216,8 +257,10 @@ body {
   white-space: nowrap;
 }
 
-.lesson-dropdown-trigger:hover:not(:disabled) {
-  border-color: var(--accent-soft);
+@media (hover: hover) {
+  .lesson-dropdown-trigger:hover:not(:disabled) {
+    border-color: var(--accent-soft);
+  }
 }
 
 .lesson-dropdown-trigger:disabled {
@@ -262,12 +305,20 @@ body {
   border-radius: 8px;
   padding: 9px 10px;
   font-size: 14px;
+  font-family: inherit;
   color: var(--text-primary);
   cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
 }
 
-.lesson-dropdown-option:hover {
-  background: var(--bg-page);
+@media (hover: hover) {
+  .lesson-dropdown-option:hover {
+    background: var(--bg-page);
+  }
+}
+
+.lesson-dropdown-option:active {
+  background: color-mix(in srgb, var(--accent) 10%, transparent);
 }
 
 .lesson-dropdown-option.selected {
@@ -278,13 +329,19 @@ body {
 
 .lesson-select-start {
   width: 100%;
+  min-height: 48px;
   padding: 13px;
-  font-size: 15px;
+  font-size: 16px;
 }
 
-.lesson-select-start:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
+/* After the base .lesson-dropdown-* rules so it wins: touch-sized, and
+   16px so iOS Safari doesn't zoom in on tap. */
+@media (max-width: 640px) {
+  .lesson-dropdown-trigger,
+  .lesson-dropdown-option {
+    min-height: 48px;
+    font-size: 16px;
+  }
 }
 
 .main {
@@ -1007,23 +1064,74 @@ body {
   border-radius: 14px;
   cursor: pointer;
   font-weight: 700;
+  font-family: inherit;
+  transition: background-color 150ms ease, border-color 150ms ease, transform 150ms ease, opacity 150ms ease;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
 }
 
-.btn:hover {
-  background: var(--border);
+/* Hover only with a real pointer: on a phone a tap would leave the hover
+   color stuck on the button. */
+@media (hover: hover) {
+  .btn:hover:not(:disabled) {
+    background: var(--border);
+  }
 }
 
+/* Pressed (mouse down or touch): a slight shrink as feedback. */
+.btn:active:not(:disabled) {
+  transform: scale(0.98);
+}
+
+.btn:focus-visible {
+  outline: 3px solid var(--focus-ring);
+  outline-offset: 2px;
+}
+
+.btn:disabled {
+  cursor: not-allowed;
+}
+
+/* Must out-rank .btn:hover above — before, that rule painted the primary
+   button light gray on hover and it looked disabled. */
 .btn-primary {
-  background: var(--accent);
-  border-color: var(--accent-soft);
-  /* Accent is brand navy now (very dark) — needs light text, not the old
-     near-black used when the accent was a mid-brightness teal. */
+  background: var(--btn-primary);
+  border-color: var(--btn-primary);
   color: #fff;
+}
+
+@media (hover: hover) {
+  .btn-primary:hover:not(:disabled) {
+    background: var(--btn-primary-hover);
+    border-color: var(--btn-primary-hover);
+  }
+}
+
+.btn-primary:active:not(:disabled) {
+  background: var(--btn-primary-active);
+  border-color: var(--btn-primary-active);
+}
+
+/* Disabled stays blue, only fainter — never gray. */
+.btn-primary:disabled {
+  opacity: 0.5;
 }
 
 .btn-ghost {
   background: var(--bg-page);
   border-color: var(--border);
+}
+
+@media (hover: hover) {
+  .btn-ghost:hover:not(:disabled) {
+    background: color-mix(in srgb, var(--btn-primary) 8%, var(--bg-page));
+    border-color: color-mix(in srgb, var(--btn-primary) 35%, var(--border));
+  }
+}
+
+.btn-ghost:active:not(:disabled) {
+  background: color-mix(in srgb, var(--btn-primary) 16%, var(--bg-page));
+  border-color: color-mix(in srgb, var(--btn-primary) 45%, var(--border));
 }
 
 .btn-lang-active {
@@ -1143,8 +1251,8 @@ body {
 }
 
 .force-send-btn {
-  background: var(--brand-navy);
-  border: 1px solid var(--brand-navy);
+  background: var(--btn-primary);
+  border: 1px solid var(--btn-primary);
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.25), 0 8px 24px rgba(0, 0, 0, 0.28);
   color: #fff;
   text-shadow: 0 1px 3px rgba(0, 0, 0, 0.5);
@@ -1153,7 +1261,8 @@ body {
   border-radius: 999px;
   font-weight: 800;
   font-size: 15px;
-  transition: background 150ms ease, box-shadow 150ms ease, opacity 200ms ease;
+  transition: background 150ms ease, border-color 150ms ease, box-shadow 150ms ease, opacity 200ms ease,
+    transform 150ms ease;
   animation: force-send-pulse 2600ms ease-in-out infinite;
 }
 
@@ -1185,19 +1294,27 @@ body {
   }
 }
 
-.force-send-btn:hover {
-  background: color-mix(in srgb, var(--brand-navy) 88%, black);
+@media (hover: hover) {
+  .force-send-btn:hover:not(:disabled) {
+    background: var(--btn-primary-hover);
+    border-color: var(--btn-primary-hover);
+  }
+}
+
+.force-send-btn:active:not(:disabled) {
+  background: var(--btn-primary-active);
+  border-color: var(--btn-primary-active);
 }
 
 @keyframes force-send-pulse {
   0%,
   100% {
     box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.25), 0 8px 24px rgba(0, 0, 0, 0.28),
-      0 0 0 0 color-mix(in srgb, var(--brand-navy) 40%, transparent);
+      0 0 0 0 color-mix(in srgb, var(--btn-primary) 40%, transparent);
   }
   50% {
     box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.25), 0 8px 24px rgba(0, 0, 0, 0.28),
-      0 0 0 8px color-mix(in srgb, var(--brand-navy) 0%, transparent);
+      0 0 0 8px color-mix(in srgb, var(--btn-primary) 0%, transparent);
   }
 }
 
@@ -1211,8 +1328,16 @@ body {
   animation: none;
 }
 
-.force-send-btn--listening:hover {
-  background: color-mix(in srgb, var(--brand-red) 88%, black);
+@media (hover: hover) {
+  .force-send-btn--listening:hover:not(:disabled) {
+    background: color-mix(in srgb, var(--brand-red) 88%, black);
+    border-color: color-mix(in srgb, var(--brand-red) 88%, black);
+  }
+}
+
+.force-send-btn--listening:active:not(:disabled) {
+  background: color-mix(in srgb, var(--brand-red) 78%, black);
+  border-color: color-mix(in srgb, var(--brand-red) 78%, black);
 }
 
 .force-send-btn--processing {
@@ -1225,8 +1350,10 @@ body {
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.28);
 }
 
-.force-send-btn--processing:hover {
+.force-send-btn--processing:hover,
+.force-send-btn--processing:active {
   background: var(--brand-gray);
+  border-color: var(--brand-gray);
 }
 
 .force-send-spinner {
