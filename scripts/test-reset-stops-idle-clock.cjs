@@ -59,11 +59,11 @@ async function check() {
   assert.equal(orchestrator.getState(), 'correction');
   orchestrator.reset();
 
-  // Wait past the FIRST nudge threshold (6s — see NUDGE_THRESHOLDS_MS).
+  // Wait past the FIRST nudge threshold (12s — see NUDGE_THRESHOLDS_MS).
   // If the old bug were present, the still-running idle clock would fire
   // a 'gentle' nudge (another send() call) right around this mark, on a
   // cleared session with no lesson code, no history, nothing left.
-  await new Promise((resolve) => setTimeout(resolve, 6800));
+  await new Promise((resolve) => setTimeout(resolve, 12800));
   assert.equal(sendCount, 1, 'reset() must leave no idle-nudge clock running — no AI calls after ending the session');
 
   console.log('PASS: reset() actually stops the idle-nudge clock — no background /api/chat calls after ending a session');

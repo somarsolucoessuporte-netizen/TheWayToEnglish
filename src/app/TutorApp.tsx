@@ -31,7 +31,7 @@ import { MobileVoiceScreen, type MobileVoiceScreenHandle } from "@/components/Mo
 import { StatusPills } from "@/components/StatusPills";
 import { TipsPanel, type TipsAttention } from "@/components/TipsPanel";
 import { CurrentLessonLabel } from "@/components/CurrentLessonLabel";
-import { LessonImage, currentItemImages } from "@/components/LessonImage";
+import { currentItemImages } from "@/components/LessonImage";
 import { useIsMobile } from "@/components/useIsMobile";
 
 /** Lessons without an explicit durationMinutes (shouldn't happen with the
@@ -283,9 +283,16 @@ export default function TutorApp({ lessons }: { lessons: CurriculumLesson[] }) {
   const [remainingSeconds, setRemainingSeconds] = useState(0);
   const [lessonComplete, setLessonComplete] = useState(false);
   // The picture of the item being asked (see components/LessonImage) —
-  // gone once the lesson is over.
+  // gone once the lesson is over. Desktop shows it only inside the chat
+  // (ChatLog); mobile also floats it above the caption.
   const itemImages = useMemo(() => currentItemImages(entries), [entries]);
   const lessonImages = started && !lessonComplete ? itemImages : null;
+
+  // Holds the tutor's idle reminder while the student has a draft in the
+  // text box — see orchestrator.setStudentTyping.
+  useEffect(() => {
+    orchestrator.setStudentTyping(inputValue.trim().length > 0);
+  }, [orchestrator, inputValue]);
   const [showTimeUpNotice, setShowTimeUpNotice] = useState(false);
 
   useEffect(() => {
@@ -928,7 +935,6 @@ export default function TutorApp({ lessons }: { lessons: CurriculumLesson[] }) {
             <div className="main">
               <section className="stage">
                 <Avatar engine={avatarEngine} />
-                <LessonImage urls={lessonImages} variant="stage" />
 
                 {/* Absolute within .stage (not the page-level fixed dock
                     mobile uses below) — desktop's avatar only occupies

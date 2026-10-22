@@ -46,7 +46,10 @@ export function LessonGrid({
   const [book, setBook] = useState<string | undefined>(books.length === 1 ? books[0] : undefined);
   const [unit, setUnit] = useState<string | undefined>(undefined);
   const [lessonCode, setLessonCode] = useState<string | undefined>(undefined);
-  const [openDropdown, setOpenDropdown] = useState<DropdownKey | null>(books.length === 1 ? "unit" : null);
+  // Picking an option only closes its list — the next level is never opened
+  // for the student: an auto-opened list read as closed, so the first click
+  // on it closed it and opening it took two clicks.
+  const [openDropdown, setOpenDropdown] = useState<DropdownKey | null>(null);
 
   const units = useMemo(
     () => (book ? uniqueInOrder(lessons.filter((lesson) => lesson.book === book).map((lesson) => lesson.unit)) : []),
@@ -61,7 +64,7 @@ export function LessonGrid({
   const selectedLesson = lessonsForUnit.find((lesson) => lesson.code === lessonCode);
 
   // Closes whichever dropdown is open on any click outside this screen —
-  // selecting an option or picking the next level already closes it, this
+  // selecting an option already closes it, this
   // is just for "clicked away without choosing anything".
   const rootRef = useRef<HTMLDivElement>(null);
   useEffect(() => {
@@ -80,13 +83,13 @@ export function LessonGrid({
     setBook(nextBook);
     setUnit(undefined);
     setLessonCode(undefined);
-    setOpenDropdown("unit");
+    setOpenDropdown(null);
   }
 
   function handleUnitSelect(nextUnit: string) {
     setUnit(nextUnit);
     setLessonCode(undefined);
-    setOpenDropdown("lesson");
+    setOpenDropdown(null);
   }
 
   function handleLessonSelect(code: string) {

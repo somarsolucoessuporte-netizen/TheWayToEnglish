@@ -2456,6 +2456,8 @@ body {
    over the avatar, top-centered in .stage. Mobile: under the floating
    header, above the caption. Light card on both themes so photos keep
    their colors. */
+/* The item's picture (components/LessonImage) — a tutor bubble in the
+   conversation, right above the question, as wide as the bubbles. */
 .lesson-image {
   display: flex;
   gap: 8px;
@@ -2465,8 +2467,20 @@ body {
   border-radius: 14px;
   background: var(--bg-surface);
   border: 1px solid var(--border);
-  box-shadow: 0 8px 28px rgba(0, 0, 0, 0.28);
   animation: lesson-image-in 180ms ease-out;
+}
+
+.lesson-image-btn {
+  flex: 1 1 0;
+  min-width: 0;
+  height: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 0;
+  border: none;
+  background: none;
+  cursor: zoom-in;
 }
 
 .lesson-image img {
@@ -2478,23 +2492,44 @@ body {
   border-radius: 8px;
 }
 
-.lesson-image--stage {
-  position: absolute;
-  top: 24px;
-  left: 50%;
-  transform: translateX(-50%);
-  z-index: 4;
-  width: min(86%, 560px);
-  height: min(56%, 420px);
+.lesson-image--chat {
+  flex: none;
+  height: 240px;
 }
 
+/* Mobile avatar screen: in the flow of the conversation, stacked right on
+   top of the caption (the question) — below the face, above the Falar
+   button. Its bottom = the caption's bottom + the caption's fixed height
+   (see .mobile-caption-wrap) + an 8px gap. */
 .lesson-image--mobile {
   position: absolute;
-  top: calc(env(safe-area-inset-top, 0px) + 96px);
-  left: 16px;
-  right: 16px;
-  z-index: 5;
-  height: min(38dvh, 340px);
+  left: 14px;
+  right: 14px;
+  bottom: calc(env(safe-area-inset-bottom, 0px) + 92px + 3 * var(--caption-line-height) + 20px + 8px);
+  z-index: 4;
+  height: min(22dvh, 180px);
+  box-shadow: 0 8px 28px rgba(0, 0, 0, 0.28);
+}
+
+.lesson-image-lightbox {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 16px;
+  background: rgba(0, 0, 0, 0.82);
+  cursor: zoom-out;
+  animation: lesson-image-in 180ms ease-out;
+}
+
+.lesson-image-lightbox img {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+  border-radius: 10px;
+  background: #fff;
 }
 
 @keyframes lesson-image-in {

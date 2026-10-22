@@ -4,6 +4,7 @@ import { useEffect, useMemo, useRef } from "react";
 import type { ChatEntry } from "@/core/conversation/orchestrator";
 import { detectVisualEntity } from "@/core/utils/detectVisualEntity";
 import { CorrectionCard } from "./CorrectionCard";
+import { LessonImage, itemImageBubbles } from "./LessonImage";
 import { MiniCorrectionCard } from "./MiniCorrectionCard";
 import { VisualCard } from "./VisualCard";
 
@@ -50,6 +51,10 @@ export function ChatLog({ entries, compact = false }: { entries: ChatEntry[]; co
     });
     return result;
   }, [entries]);
+
+  // The item pictures, each as its own tutor bubble right above the
+  // question that asks it — see itemImageBubbles.
+  const imageBubbles = useMemo(() => itemImageBubbles(entries), [entries]);
 
   // Flags the student's own message when the tutor's very next reply
   // praises it — the flash + checkmark are a reaction to that specific
@@ -115,6 +120,7 @@ export function ChatLog({ entries, compact = false }: { entries: ChatEntry[]; co
 
         return (
           <div key={i} style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+            {imageBubbles.has(i) && <LessonImage urls={imageBubbles.get(i)!} variant="chat" />}
             <div className="msg bot">
               {/* Match the spoken order for both normal replies and corrections. */}
               {englishShown}

@@ -3,10 +3,10 @@ import type { CurriculumLesson } from "@/app-config/curriculum";
 export function CurrentLessonLabel({ lesson }: { lesson: CurriculumLesson | undefined }) {
   if (!lesson) return null;
   return (
-    <div className="current-lesson-label" aria-label="Livro e lição atual">
-      <span>{lesson.book.replace(/^Book\s+/i, "Livro ")}</span>
+    <div className="current-lesson-label" aria-label="Current book and lesson">
+      <span>{lesson.book}</span>
       <span aria-hidden="true">·</span>
-      <strong>Lição {lesson.lessonCode}</strong>
+      <strong>Lesson {lesson.lessonCode}</strong>
     </div>
   );
 }

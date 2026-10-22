@@ -73,15 +73,17 @@ interface ChatRequestBody {
  * stop waiting and move the lesson forward. */
 const NUDGE_INSTRUCTIONS: Record<NonNullable<ChatRequestBody["nudge"]>, string> = {
   gentle:
-    "The student has been silent for about 6 seconds. Do NOT ask a generic question or give vague " +
-    "encouragement — look at your own last message in the conversation and REPEAT that exact instruction " +
-    "in English, so the student knows precisely what to do (e.g. \"Let's try again. Repeat after me: READING.\").",
+    "The student has been silent for about 12 seconds. They have NOT made a mistake — they just haven't " +
+    "answered yet, so never say \"try again\", \"let's try again\" or anything implying an error. Do NOT ask a " +
+    "generic question or give vague encouragement: start with a short, calm phrase like \"Take your time.\" and " +
+    "then REPEAT your last question or instruction in English, so the student knows precisely what to do " +
+    "(e.g. \"Take your time. Where do you save your pictures?\" or \"Take your time. Repeat after me: READING.\").",
   help:
-    "The student has been silent for about 14 seconds. In speech.english, re-ask your last question in simpler " +
+    "The student has been silent for about 20 seconds. In speech.english, re-ask your last question in simpler " +
     "English with a concrete example. Put a Portuguese reformulation in speech.portuguese (shown on screen, " +
     "never spoken) — never Portuguese inside speech.english.",
   offer:
-    "The student has been silent for about 25 seconds. In speech.english, offer (in English) to give them the " +
+    "The student has been silent for about 30 seconds. In speech.english, offer (in English) to give them the " +
     "answer so you can practice it together. You may add the same offer in Portuguese in speech.portuguese " +
     "(shown on screen, never spoken) — never Portuguese inside speech.english.",
   answer:

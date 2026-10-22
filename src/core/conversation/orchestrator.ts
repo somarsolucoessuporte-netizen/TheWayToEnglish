@@ -90,12 +90,13 @@ const MAX_CONSECUTIVE_NUDGES = 3;
 type StateOrigin = "normal" | "nudge" | "anuncio" | "sistema";
 
 /** Cumulative idle-ms thresholds at which each nudge level fires, in
- * order — see startIdleClock/checkNudgeThresholds. Matches the client
- * spec's 6s/14s/25s/(25+15=40)s escalation exactly. */
+ * order — see startIdleClock/checkNudgeThresholds. First reminder only
+ * after ~12s of silence (6s felt like interrupting a student who was still
+ * thinking); the 40s resolution (give the answer, move on) is unchanged. */
 const NUDGE_THRESHOLDS_MS: { level: NudgeLevel; ms: number }[] = [
-  { level: "gentle", ms: 6000 },
-  { level: "help", ms: 14000 },
-  { level: "offer", ms: 25000 },
+  { level: "gentle", ms: 12000 },
+  { level: "help", ms: 20000 },
+  { level: "offer", ms: 30000 },
   { level: "answer", ms: 40000 },
 ];
 
@@ -201,11 +202,14 @@ export class ConversationOrchestrator {
    * PAUSES (not resets) while a nudge itself is being spoken, and is
    * reset to 0 only by a real student interaction (handleUserMessage) or
    * by the 'answer' nudge (which represents moving on to a new question —
-   * see fireNudge). This is what lets the 6s/14s/25s/40s thresholds below
+   * see fireNudge). This is what lets the 12s/20s/30s/40s thresholds below
    * be measured from "the question was asked", not "the last nudge fired". */
   private idleAccumulatedMs = 0;
   private idleTickHandle: ReturnType<typeof setInterval> | null = null;
   private readonly IDLE_TICK_MS = 500;
+  /** The student has a draft in the text box — see setStudentTyping. The
+   * idle clock is held (not reset) while this is true. */
+  private studentTyping = false;
   /** Which nudge levels have already fired for the CURRENT question — see
    * idleAccumulatedMs's doc comment for what resets it. */
   private readonly nudgeLevelsFired = new Set<NudgeLevel>();
@@ -1145,6 +1149,7 @@ export class ConversationOrchestrator {
   private startIdleClock(): void {
     if (this.sessionState !== "active") return; // no nudge is ever scheduled after the lesson ends
     if (this.paused) return; // no nudges while paused — resume() rearms from zero
+    if (this.studentTyping) return; // typing is answering — setStudentTyping(false) rearms
     this.stopIdleClock();
     const next = NUDGE_THRESHOLDS_MS.find((t) => !this.nudgeLevelsFired.has(t.level));
     if (next) console.log("[nudge] agendado", next.ms);
@@ -1152,6 +1157,18 @@ export class ConversationOrchestrator {
       this.idleAccumulatedMs += this.IDLE_TICK_MS;
       void this.checkNudgeThresholds();
     }, this.IDLE_TICK_MS);
+  }
+
+  /** Called by the UI as the text box goes from empty to non-empty and
+   * back. While the student is typing the idle clock doesn't run (it
+   * already doesn't while recording — that's the "listening" state), so a
+   * nudge never talks over an answer being written. Accumulated time is
+   * kept, not reset: an abandoned draft resumes the count where it was. */
+  setStudentTyping(typing: boolean): void {
+    if (typing === this.studentTyping) return;
+    this.studentTyping = typing;
+    if (typing) this.stopIdleClock("digitando");
+    else if (this.stateMachine.getState() === "idle") this.startIdleClock();
   }
 
   /** `motivo`, when given, is logged as why the clock stopped (e.g. the
