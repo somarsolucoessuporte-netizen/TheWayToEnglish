@@ -7,6 +7,7 @@ import type { AvatarEngine } from "@/core/avatar-engine/AvatarEngine";
 import type { ChatEntry } from "@/core/conversation/orchestrator";
 import { Avatar } from "./Avatar";
 import { ChatLog } from "./ChatLog";
+import { itemImageBubbles } from "./LessonImage";
 import { LessonCompleteCard } from "./LessonCompleteCard";
 import { LessonTimer } from "./LessonTimer";
 import { TipsPanel, type TipsAttention } from "./TipsPanel";
@@ -152,6 +153,9 @@ export const MobileVoiceScreen = forwardRef<
   ref
 ) {
   const [drawerOpen, setDrawerOpen] = useState(false);
+  // Opened by itself for a question with a picture: half height, so the
+  // avatar and the Falar/Pausar buttons stay in view above it.
+  const [drawerHalf, setDrawerHalf] = useState(false);
   const drawerRef = useRef<HTMLDivElement>(null);
   const dragRef = useRef<DragState | null>(null);
 
@@ -168,7 +172,8 @@ export const MobileVoiceScreen = forwardRef<
     el.style.transform = `translateY(${pct}%)`;
   }
 
-  function openDrawer() {
+  function openDrawer(half = false) {
+    setDrawerHalf(half);
     setDrawerOpen(true);
     setDrawerTransform(0, true);
   }
@@ -241,6 +246,20 @@ export const MobileVoiceScreen = forwardRef<
       }
     }
     prevEntriesLengthRef.current = entries.length;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [entries]);
+
+  // Auto-open (half height) when the tutor asks an item that has a picture:
+  // the picture bubble and the question bubble right below it are already
+  // scrolled into view (ChatLog scrolls to the end). If the student closes
+  // the drawer it stays closed until the NEXT picture question. Questions
+  // without a picture never open it.
+  const lastPictureEntryRef = useRef(-1);
+  useEffect(() => {
+    let newest = -1;
+    for (const key of itemImageBubbles(entries).keys()) newest = Math.max(newest, key);
+    if (newest > lastPictureEntryRef.current && entries.length > 1) openDrawer(true);
+    lastPictureEntryRef.current = newest;
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [entries]);
 
@@ -367,7 +386,7 @@ export const MobileVoiceScreen = forwardRef<
               empty turn and a 3-line one. The text itself only shows once
               there's something revealed to show (pageText undefined
               otherwise), same as before. */}
-          <div className="mobile-caption-wrap" onClick={openDrawer}>
+          <div className="mobile-caption-wrap" onClick={() => openDrawer()}>
             {pageText && (
               <p className="mobile-caption-float" style={{ opacity: captionVisible ? 1 : 0 }}>
                 {pageText}
@@ -409,10 +428,10 @@ export const MobileVoiceScreen = forwardRef<
               class's own `transform: translateY(100%)` default (see
               globals.css) covers the very first paint, before any JS has
               run, since drawerOpen starts false. */}
-          <div className="mobile-drawer" ref={drawerRef}>
+          <div className={`mobile-drawer${drawerHalf ? " is-half" : ""}`} ref={drawerRef}>
             <div
               className="mobile-drawer-handle"
-              onClick={() => (drawerOpen ? closeDrawer() : openDrawer())}
+              onClick={() => (drawerOpen && !drawerHalf ? closeDrawer() : openDrawer())}
               onPointerDown={handleHandlePointerDown}
               onPointerMove={handleHandlePointerMove}
               onPointerUp={handleHandlePointerUp}
@@ -430,7 +449,7 @@ export const MobileVoiceScreen = forwardRef<
                   placeholder={branding.copy.chatPlaceholder}
                   value={inputValue}
                   onChange={onInputChange}
-                  onFocus={openDrawer}
+                  onFocus={() => openDrawer()}
                   autoComplete="off"
                 />
                 <button className="btn btn-primary" type="submit">

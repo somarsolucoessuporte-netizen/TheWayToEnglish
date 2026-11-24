@@ -1710,6 +1710,11 @@ body {
   transition: transform 300ms cubic-bezier(0.32, 0.72, 0, 1);
 }
 
+/* Auto-opened for a picture question: half the screen. */
+.mobile-drawer.is-half {
+  height: 50dvh;
+}
+
 .mobile-drawer-handle {
   flex: none;
   display: flex;
@@ -1735,7 +1740,7 @@ body {
      button now stays visible even while the drawer is open (see
      page.tsx), so its footprint has to be cleared here too or it would
      sit on top of the input row/footer credit. */
-  padding-bottom: 100px;
+  padding-bottom: calc(100px + env(safe-area-inset-bottom, 0px));
 }
 
 /* Reuses .chat-log (flex:1, overflow:auto — see the shared rule above)
