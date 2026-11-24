@@ -1,6 +1,7 @@
 "use client";
 
 import { startTransition, useActionState, useEffect, useState } from "react";
+import { LessonImage } from "@/components/LessonImage";
 import { useRouter } from "next/navigation";
 import { linkItemImage, saveTaskItems, uploadItemImage, type ItemsResult } from "./actions";
 
@@ -29,10 +30,9 @@ function fileName(path: string): string {
   return path.split("/").slice(-2).join("/");
 }
 
-function Thumb({ url, alt }: { url?: string; alt: string }) {
+function Thumb({ url }: { url?: string; alt: string }) {
   return url ? (
-    // eslint-disable-next-line @next/next/no-img-element -- short-lived signed URL
-    <img src={url} alt={alt} />
+    <LessonImage urls={[url]} />
   ) : (
     <span className="admin-muted">sem imagem</span>
   );

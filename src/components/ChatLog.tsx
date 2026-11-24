@@ -26,10 +26,11 @@ export function revealedText(text: string, wordsShown: number | undefined): stri
 export function ChatLog({ entries, compact = false }: { entries: ChatEntry[]; compact?: boolean }) {
   const logRef = useRef<HTMLDivElement>(null);
 
-  useEffect(() => {
+  const scrollToEnd = () => {
     const el = logRef.current;
     if (el) el.scrollTop = el.scrollHeight;
-  }, [entries]);
+  };
+  useEffect(scrollToEnd, [entries]);
 
   // Which entity (if any — see detectVisualEntity/app-config/visual-
   // entities.ts) earns an illustrative image for a given tutor entry —
@@ -120,7 +121,7 @@ export function ChatLog({ entries, compact = false }: { entries: ChatEntry[]; co
 
         return (
           <div key={i} style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-            {imageBubbles.has(i) && <LessonImage urls={imageBubbles.get(i)!} variant="chat" />}
+            {imageBubbles.has(i) && <LessonImage urls={imageBubbles.get(i)!} onLoaded={scrollToEnd} />}
             <div className="msg bot">
               {/* Match the spoken order for both normal replies and corrections. */}
               {englishShown}

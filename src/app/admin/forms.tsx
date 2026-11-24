@@ -1,6 +1,7 @@
 "use client";
 
 import { startTransition, useActionState, useEffect, useState } from "react";
+import { LessonImage } from "@/components/LessonImage";
 import { usesImage } from "@/lib/admin/tasks";
 import { importDocx, saveLesson, saveTask, saveUnitPrinciples, uploadTaskImage, type ActionResult } from "./actions";
 
@@ -138,8 +139,7 @@ export function TaskImageUpload({
     <div className="admin-task-image">
       <div className="admin-thumb">
         {url ? (
-          // eslint-disable-next-line @next/next/no-img-element -- short-lived signed URL
-          <img src={url} alt={`Imagem da task ${order}`} />
+          <LessonImage urls={[url]} />
         ) : (
           <span className="admin-muted">sem imagem</span>
         )}

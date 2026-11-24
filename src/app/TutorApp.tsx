@@ -31,7 +31,6 @@ import { MobileVoiceScreen, type MobileVoiceScreenHandle } from "@/components/Mo
 import { StatusPills } from "@/components/StatusPills";
 import { TipsPanel, type TipsAttention } from "@/components/TipsPanel";
 import { CurrentLessonLabel } from "@/components/CurrentLessonLabel";
-import { currentItemImages } from "@/components/LessonImage";
 import { useIsMobile } from "@/components/useIsMobile";
 
 /** Lessons without an explicit durationMinutes (shouldn't happen with the
@@ -282,11 +281,6 @@ export default function TutorApp({ lessons }: { lessons: CurriculumLesson[] }) {
   const [totalSeconds, setTotalSeconds] = useState(0);
   const [remainingSeconds, setRemainingSeconds] = useState(0);
   const [lessonComplete, setLessonComplete] = useState(false);
-  // The picture of the item being asked (see components/LessonImage) —
-  // gone once the lesson is over. Desktop shows it only inside the chat
-  // (ChatLog); mobile also floats it above the caption.
-  const itemImages = useMemo(() => currentItemImages(entries), [entries]);
-  const lessonImages = started && !lessonComplete ? itemImages : null;
 
   // Holds the tutor's idle reminder while the student has a draft in the
   // text box — see orchestrator.setStudentTyping.
@@ -929,7 +923,6 @@ export default function TutorApp({ lessons }: { lessons: CurriculumLesson[] }) {
               onSubmit={handleSubmit}
               lessonComplete={lessonComplete}
               onEndLesson={handleEndLesson}
-              lessonImages={lessonImages}
             />
           ) : (
             <div className="main">

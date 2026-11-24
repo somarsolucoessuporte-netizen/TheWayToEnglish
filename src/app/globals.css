@@ -2452,28 +2452,35 @@ body {
   gap: 12px;
 }
 
-/* Picture of the item the tutor is asking (components/LessonImage). Desktop:
-   over the avatar, top-centered in .stage. Mobile: under the floating
-   header, above the caption. Light card on both themes so photos keep
-   their colors. */
-/* The item's picture (components/LessonImage) — a tutor bubble in the
-   conversation, right above the question, as wide as the bubbles. */
+/* The item's picture (components/LessonImage) — a tutor bubble inside the
+   scrolling conversation, right above the question. Fixed 4:3 frame, never
+   floating: no fixed/absolute, no z-index. */
 .lesson-image {
   display: flex;
   gap: 8px;
-  justify-content: center;
-  align-items: center;
-  padding: 8px;
+  width: 100%;
+  max-width: 360px;
+  aspect-ratio: 4 / 3;
+  max-height: 260px;
+  padding: 6px;
+  box-sizing: border-box;
+  overflow: hidden;
   border-radius: 14px;
-  background: var(--bg-surface);
+  background: #f4f6f8;
   border: 1px solid var(--border);
-  animation: lesson-image-in 180ms ease-out;
+}
+
+@media (max-width: 768px) {
+  .lesson-image {
+    max-width: 100%;
+    max-height: 220px;
+  }
 }
 
 .lesson-image-btn {
   flex: 1 1 0;
   min-width: 0;
-  height: 100%;
+  min-height: 0;
   display: flex;
   justify-content: center;
   align-items: center;
@@ -2485,30 +2492,10 @@ body {
 
 .lesson-image img {
   display: block;
-  min-width: 0;
   max-width: 100%;
   max-height: 100%;
   object-fit: contain;
   border-radius: 8px;
-}
-
-.lesson-image--chat {
-  flex: none;
-  height: 240px;
-}
-
-/* Mobile avatar screen: in the flow of the conversation, stacked right on
-   top of the caption (the question) — below the face, above the Falar
-   button. Its bottom = the caption's bottom + the caption's fixed height
-   (see .mobile-caption-wrap) + an 8px gap. */
-.lesson-image--mobile {
-  position: absolute;
-  left: 14px;
-  right: 14px;
-  bottom: calc(env(safe-area-inset-bottom, 0px) + 92px + 3 * var(--caption-line-height) + 20px + 8px);
-  z-index: 4;
-  height: min(22dvh, 180px);
-  box-shadow: 0 8px 28px rgba(0, 0, 0, 0.28);
 }
 
 .lesson-image-lightbox {
@@ -2521,7 +2508,6 @@ body {
   padding: 16px;
   background: rgba(0, 0, 0, 0.82);
   cursor: zoom-out;
-  animation: lesson-image-in 180ms ease-out;
 }
 
 .lesson-image-lightbox img {
@@ -2532,9 +2518,28 @@ body {
   background: #fff;
 }
 
-@keyframes lesson-image-in {
-  from { opacity: 0; }
-  to { opacity: 1; }
+.lesson-image-close {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  width: 40px;
+  height: 40px;
+  border: none;
+  border-radius: 50%;
+  font-size: 26px;
+  line-height: 1;
+  color: #fff;
+  background: rgba(255, 255, 255, 0.2);
+  cursor: pointer;
+}
+
+/* Same component inside the /admin thumbnails. */
+.admin-thumb .lesson-image {
+  max-width: none;
+  max-height: none;
+  padding: 0;
+  border: none;
+  border-radius: 6px;
 }
 
 /* /admin items editor, "Imagens sem item", school checks (ItemsEditor.tsx). */
